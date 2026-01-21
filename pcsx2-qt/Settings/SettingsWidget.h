@@ -44,6 +44,7 @@ protected:
 	void addPageHeader(QWidget* header, bool custom_margins = false);
 	QWidget* addTab(QString name, QWidget* contents, bool custom_margins = false);
 	void setTabVisible(QWidget* tab, bool is_visible, QWidget* switch_to = nullptr);
+	void setCurrentTab(QWidget* tab);  // TODO REMOVE rendering tab change
 
 private:
 	void updateTabMargins(QScrollArea* scroll_area);

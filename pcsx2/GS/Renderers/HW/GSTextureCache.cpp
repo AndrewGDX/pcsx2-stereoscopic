@@ -2290,8 +2290,9 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(Target* target, int ty
 
 GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float scale)
 {
-	return GSVector2i(static_cast<int>(std::ceil(static_cast<float>(sz.x) * scale)),
-		static_cast<int>(std::ceil(static_cast<float>(sz.y) * scale)));
+	const GSVector2 scale_vector = GetStereoScaleVector2(scale);
+	return GSVector2i(static_cast<int>(std::ceil(static_cast<float>(sz.x) * scale_vector.x)),
+		static_cast<int>(std::ceil(static_cast<float>(sz.y) * scale_vector.y)));
 }
 
 void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src)
@@ -2397,7 +2398,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		clear = (size.x > tgt->m_unscaled_size.x || size.y > tgt->m_unscaled_size.y);
 		new_size = size.max(tgt->m_unscaled_size);
 		new_scaled_size = ScaleRenderTargetSize(new_size, scale);
-		dRect = (GSVector4(GSVector4i::loadh(tgt->m_unscaled_size)) * GSVector4(scale)).ceil();
+		dRect = (GSVector4(GSVector4i::loadh(tgt->m_unscaled_size)) * GetStereoScaleVector4(scale)).ceil();
 		GL_INS("TC: Rescale: %dx%d: %dx%d @ %f -> %dx%d @ %f", tgt->m_unscaled_size.x, tgt->m_unscaled_size.y,
 			tgt->m_texture->GetWidth(), tgt->m_texture->GetHeight(), tgt->m_scale, new_scaled_size.x, new_scaled_size.y,
 			scale);
@@ -2881,7 +2882,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			new_size = dst->m_unscaled_size;
 			new_scaled_size = ScaleRenderTargetSize(dst->m_unscaled_size, dst->m_scale);
 
-			dRect = (GSVector4(dst->m_valid) * GSVector4(dst->m_scale)).ceil();
+			dRect = (GSVector4(dst->m_valid) * GetStereoScaleVector4(dst->m_scale)).ceil();
 			GSVector4 source_rect = GSVector4(
 				static_cast<float>(dst->m_valid.x) / static_cast<float>(dst->m_unscaled_size.x),
 				static_cast<float>(dst->m_valid.y) / static_cast<float>(dst->m_unscaled_size.y),
@@ -3044,7 +3045,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						                                                                                   ShaderConvert::RGBA8_TO_FLOAT24;
 
 						g_gs_device->StretchRect(dst_match->m_texture, GSVector4(0, 0, 1, 1),
-							dst->m_texture, GSVector4(dst->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
+							dst->m_texture, GSVector4(dst->GetUnscaledRect()) * GetStereoScaleVector4(dst->GetScale()), shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 						dst_match->m_valid_rgb = !used;
@@ -3670,7 +3671,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						if (preserve_target && t->m_scale == dst->m_scale && dst->m_type == t->m_type && !t->m_drawn_since_read.rintersect(new_valid).eq(t->m_drawn_since_read))
 						{
 							// Clamp the copy inside the source and destination.
-							const GSVector4i copy_rect = GSVector4i(GSVector4((new_valid + GSVector4i(0, new_valid.w).xyxy()).rintersect(t->m_drawn_since_read).rintersect(GSVector4i(0, 0, dst->m_unscaled_size.x, new_valid.w + dst->m_unscaled_size.y))) * dst->m_scale);
+							const GSVector4i copy_rect = GSVector4i(GSVector4((new_valid + GSVector4i(0, new_valid.w).xyxy()).rintersect(t->m_drawn_since_read).rintersect(GSVector4i(0, 0, dst->m_unscaled_size.x, new_valid.w + dst->m_unscaled_size.y))) * GetStereoScaleVector4(dst->m_scale));
 							// Copy over the double buffer data, in case we need it.
 							// Clear the dirty first
 							bool copy_target = true;
@@ -4013,7 +4014,7 @@ void GSTextureCache::Target::ScaleRTAlpha()
 		if (m_alpha_max > 0)
 		{
 			const GSVector2i rtsize(m_texture->GetSize());
-			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
+			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GetStereoScaleVector4(m_scale));
 			GL_PUSH("TC: ScaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
@@ -4039,7 +4040,7 @@ void GSTextureCache::Target::UnscaleRTAlpha()
 		if (m_alpha_max > 0)
 		{
 			const GSVector2i rtsize(m_texture->GetSize());
-			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
+			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GetStereoScaleVector4(m_scale));
 			GL_PUSH("TC: UnscaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", valid_rect.width(), valid_rect.height(), valid_rect.x, valid_rect.y, valid_rect.z, valid_rect.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
@@ -5578,7 +5579,7 @@ void GSTextureCache::CopyPages(Target* src, u32 sbw, u32 src_offset, Target* dst
 	const GSVector2i& pgs = GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs;
 	const GSVector4i page_rc = GSVector4i::loadh(pgs);
 	const GSVector4 src_size = GSVector4(src->GetUnscaledSize()).xyxy();
-	const GSVector4 dst_scale = GSVector4(dst->GetScale());
+	const GSVector4 dst_scale = GetStereoScaleVector4(dst->GetScale());
 	GSDevice::MultiStretchRect* rects = static_cast<GSDevice::MultiStretchRect*>(alloca(sizeof(GSDevice::MultiStretchRect) * num_pages));
 	for (u32 i = 0; i < num_pages; i++)
 	{
@@ -6136,10 +6137,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
 		// Rounding up should never exceed the texture size (since it itself should be rounded up), but just in case.
+		const GSVector2 scale_vector = GetStereoScaleVector2(dst->m_scale);
 		GSVector2i new_size(
-			std::min(static_cast<int>(std::ceil(static_cast<float>(src->m_unscaled_size.x) * dst->m_scale)),
+			std::min(static_cast<int>(std::ceil(static_cast<float>(src->m_unscaled_size.x) * scale_vector.x)),
 				dst->m_texture->GetWidth()),
-			std::min(static_cast<int>(std::ceil(static_cast<float>(src->m_unscaled_size.y) * dst->m_scale)),
+			std::min(static_cast<int>(std::ceil(static_cast<float>(src->m_unscaled_size.y) * scale_vector.y)),
 				dst->m_texture->GetHeight()));
 
 		if (is_8bits)
@@ -6527,8 +6529,9 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const int tex_width = (std::max<int>(64 * TEX0.TBW, region.GetMaxX()) + (psm_s.bs.x - 1)) & ~(psm_s.bs.x - 1);
 	const int tex_height = ((region.HasY() ? region.GetHeight() : (1 << TEX0.TH)) + (psm_s.bs.y - 1)) & ~(psm_s.bs.y - 1);
-	const int scaled_width = static_cast<int>(static_cast<float>(tex_width) * scale);
-	const int scaled_height = static_cast<int>(static_cast<float>(tex_height) * scale);
+	const GSVector2 scale_vector = GetStereoScaleVector2(scale);
+	const int scaled_width = static_cast<int>(static_cast<float>(tex_width) * scale_vector.x);
+	const int scaled_height = static_cast<int>(static_cast<float>(tex_height) * scale_vector.y);
 
 	// Compute new end block based on size.
 	const u32 end_block = GSLocalMemory::m_psm[TEX0.PSM].info.bn(tex_width - 1, tex_height - 1, TEX0.TBP0, TEX0.TBW);
@@ -6602,7 +6605,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		// Upload texture -> render target.
 		const bool linear = (scale != 1.0f);
 		copy_queue[copy_count++] = {GSVector4(rect) / GSVector4(lmtex->GetSize()).xyxy(),
-			GSVector4(rect) * GSVector4(scale).xyxy(), lmtex, linear, 0xf};
+			GSVector4(rect) * GetStereoScaleVector4(scale).xyxy(), lmtex, linear, 0xf};
 	};
 
 	// The idea: loop through pages that this texture covers, find targets which overlap, and copy them in.
@@ -6724,10 +6727,10 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 							GL_INS("TC:  Copy from %d,%d -> %d,%d (%dx%d)", src_x, src_y, dst_x, dst_y, copy_width, copy_height);
 							copy_queue[copy_count++] = {
 								(GSVector4(src_x, src_y, src_x + copy_width, src_y + copy_height) *
-									GSVector4(t->m_scale).xyxy()) /
+									GetStereoScaleVector4(t->m_scale).xyxy()) /
 									GSVector4(t->m_texture->GetSize()).xyxy(),
 								GSVector4(dst_x, dst_y, dst_x + copy_width, dst_y + copy_height) *
-									GSVector4(scale).xyxy(),
+									GetStereoScaleVector4(scale).xyxy(),
 								t->m_texture, linear, 0xf};
 						}
 
@@ -7044,8 +7047,9 @@ GSTextureCache::Target* GSTextureCache::Target::Create(GIFRegTEX0 TEX0, int w, i
 {
 	pxAssert(type == RenderTarget || type == DepthStencil);
 
-	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale));
-	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale));
+	const GSVector2 scale_vector = GetStereoScaleVector2(scale);
+	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale_vector.x));
+	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale_vector.y));
 	GSTexture* texture = (type == RenderTarget) ?
 	                         g_gs_device->CreateRenderTarget(scaled_w, scaled_h, GSTexture::Format::Color, clear, PreferReusedLabelledTexture()) :
 	                         g_gs_device->CreateDepthStencil(scaled_w, scaled_h, GSTexture::Format::DepthStencil, clear, PreferReusedLabelledTexture());
@@ -7826,7 +7830,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		GSDevice::MultiStretchRect& drect = drects[ndrects++];
 		drect.src = t;
 		drect.src_rect = GSVector4(update_r - t_offset) / t_sizef;
-		drect.dst_rect = GSVector4(update_r) * GSVector4(m_scale);
+		drect.dst_rect = GSVector4(update_r) * GetStereoScaleVector4(m_scale);
 		drect.linear = linear && (m_dirty[i].req_linear || override_linear);
 
 		// Copy the new GS memory content into the destination texture.

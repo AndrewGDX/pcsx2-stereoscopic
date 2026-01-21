@@ -7,6 +7,25 @@
 #include <memory>
 #include <string>
 
+static __fi GSVector2 GetStereoScaleVector2()
+{
+	if (GSConfig.StereoMode == GSStereoMode::Off || GSConfig.StereoDisableCorrectSbsFramebufferSize)
+		return GSVector2(1.0f, 1.0f);
+
+	return GSConfig.StereoFlipRendering ? GSVector2(1.0f, 2.0f) : GSVector2(2.0f, 1.0f);
+}
+
+static __fi GSVector2 GetStereoScaleVector2(float scale)
+{
+	const GSVector2 stereo_scale = GetStereoScaleVector2();
+	return GSVector2(scale * stereo_scale.x, scale * stereo_scale.y);
+}
+
+static __fi GSVector4 GetStereoScaleVector4(float scale) {
+	const GSVector2 stereo_scale = GetStereoScaleVector2();
+	return GSVector4(scale * stereo_scale.x, scale * stereo_scale.y, scale * stereo_scale.x, scale * stereo_scale.y);
+}
+
 class GSRenderer : public GSState
 {
 private:
