@@ -176,7 +176,7 @@ bool GSRenderer::Merge(int field)
 
 		// src_gs_read is the size which we're really reading from GS memory.
 		src_gs_read[i] = ((GSVector4(curCircuit.framebufferRect) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
-		
+
 		float interlace_offset = 0.0f;
 		if (isReallyInterlaced() && m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
@@ -685,9 +685,97 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			{
 				const u64 current_time = Common::Timer::GetCurrentValue();
 				const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
+				const s32 window_width = g_gs_device->GetWindowWidth();
+				const s32 window_height = g_gs_device->GetWindowHeight();
+				const bool flip_y = g_gs_device->UsesLowerLeftOrigin();
+				const bool is_progressive = GetVideoMode() == GSVideoMode::SDTV_480P;
 
-				g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-					s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				GSVector4i src_rect_left, src_rect_right;
+				GSVector2i left_src_size, right_src_size;
+				GSVector4 left_rect, right_rect;
+
+                if (!GSConfig.StereoFlipRendering) {
+                    const int src_mid_x = src_rect.x + (src_rect.width() / 2);
+                    src_rect_left = GSVector4i(src_rect.x, src_rect.y, src_mid_x, src_rect.w);
+                    src_rect_right = GSVector4i(src_mid_x, src_rect.y, src_rect.z, src_rect.w);
+                    left_src_size = GSVector2i(current->GetWidth() / 2, current->GetHeight());
+                    right_src_size = GSVector2i(current->GetWidth() - left_src_size.x, current->GetHeight());
+                }
+                else
+                {
+                    const int src_mid_y = src_rect.y + (src_rect.height() / 2);
+                    src_rect_left = GSVector4i(src_rect.x, src_rect.y, src_rect.z, src_mid_y);
+                    src_rect_right = GSVector4i(src_rect.x, src_mid_y, src_rect.z, src_rect.w);
+                    left_src_size = GSVector2i(current->GetWidth(), current->GetHeight() / 2);
+                    right_src_size = GSVector2i(current->GetWidth(), current->GetHeight() - left_src_size.y);
+                }
+
+                const GSVector4 src_uv_l = GSVector4(src_rect_left) / GSVector4(current->GetSize()).xyxy();
+                const GSVector4 src_uv_r = GSVector4(src_rect_right) / GSVector4(current->GetSize()).xyxy();
+
+				// Stereoscopic 3D rendering (Dolphin-style: single render pass + presentation split)
+				if (GSConfig.StereoMode == GSStereoMode::SideBySide)
+				{
+    				const float half_width = static_cast<float>(window_width) * 0.5f;
+
+                    left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
+                        s_display_alignment, flip_y, is_progressive);
+                    right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
+                        s_display_alignment, flip_y, is_progressive);
+                    left_rect.x *= 0.5f;
+                    left_rect.z *= 0.5f;
+                    right_rect.x = (right_rect.x * 0.5f) + half_width;
+                    right_rect.z = (right_rect.z * 0.5f) + half_width;
+
+					// Swap eyes if requested
+					if (GSConfig.StereoSwapEyes)
+					{
+						std::swap(left_rect, right_rect);
+					}
+
+					// Present textures to both halves (stereoscopic rendering)
+					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
+						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
+						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				}
+				else if (GSConfig.StereoMode == GSStereoMode::TopAndBottom)
+				{
+                    const float half_height = static_cast<float>(window_height) * 0.5f;
+                    const float top_origin_y = flip_y ? half_height : 0.0f;
+                    const float bottom_origin_y = flip_y ? 0.0f : half_height;
+
+                    GSVector4 left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
+                        s_display_alignment, flip_y, is_progressive);
+                    GSVector4 right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
+                        s_display_alignment, flip_y, is_progressive);
+                    left_rect.y = (left_rect.y * 0.5f) + top_origin_y;
+                    left_rect.w = (left_rect.w * 0.5f) + top_origin_y;
+                    right_rect.y = (right_rect.y * 0.5f) + bottom_origin_y;
+                    right_rect.w = (right_rect.w * 0.5f) + bottom_origin_y;
+
+                    // Swap eyes if requested
+                    if (GSConfig.StereoSwapEyes)
+                    {
+                        std::swap(left_rect, right_rect);
+                    }
+
+					// Present textures to both halves
+					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
+						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
+						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				}
+				else
+				{
+					// Normal mono presentation
+					g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
+						s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				}
 			}
 
 			EndPresentFrame();

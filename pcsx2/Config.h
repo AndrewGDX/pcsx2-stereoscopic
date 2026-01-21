@@ -310,6 +310,14 @@ enum class GSPostBilinearMode : u8
 	BilinearSharp,
 };
 
+enum class GSStereoMode : u8
+{
+	Off,
+	SideBySide,
+	TopAndBottom,
+	Count
+};
+
 // Ordering was done to keep compatibility with older ini file.
 enum class BiFiltering : u8
 {
@@ -695,6 +703,7 @@ struct Pcsx2Config
 		static const char* FMVAspectRatioSwitchNames[];
 		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
+		static const char* StereoModeNames[];
 
 		static const char* GetRendererName(GSRendererType type);
 
@@ -862,6 +871,81 @@ struct Pcsx2Config
 		u8 ShadeBoost_Saturation = DEFAULT_SHADEBOOST_SATURATION;
 		u8 ShadeBoost_Gamma = DEFAULT_SHADEBOOST_GAMMA;
 		u8 PNGCompressionLevel = 1;
+
+		GSStereoMode StereoMode = GSStereoMode::Off;
+		float StereoSeparation = 0.0f;
+		float StereoConvergence = 0.0f;
+		float StereoDepthFactor = 1.0f;
+		float StereoUiDepth = 0.0f;
+		bool StereoSwapEyes = false;
+		bool StereoFlipRendering = false;
+		bool StereoDontRenderMonoObjects = false;
+		bool StereoRequireDisplayBuffer = true;
+		bool StereoRequirePerspectiveUV = true;
+		bool StereoRequireZVaries = true;
+		bool StereoRequireDepthActive = true;
+		bool StereoRejectSprites = true;
+		bool StereoRejectUiLike = true;
+		bool StereoRequireTextureMapping = false;
+		bool StereoRequireAlphaBlend = false;
+		bool StereoRequireAlphaTest = false;
+		bool StereoRequireUvVaries = false;
+		bool StereoRequireColorVaries = false;
+		bool StereoRequireFog = false;
+		bool StereoStencilRequireDate = false;
+		bool StereoStencilRequireDatm = false;
+		bool StereoStencilRequireAte = false;
+		bool StereoStencilRequireAfailZbOnly = false;
+		bool StereoStencilRequireAfailNotKeep = false;
+		bool StereoStencilRequireZWrite = false;
+		bool StereoStencilRequireZTest = false;
+		bool StereoStencilRequireZTestGequal = false;
+		bool StereoStencilRequireFbMask = false;
+		bool StereoStencilRequireFbMaskFull = false;
+		bool StereoStencilRequireTexIsFb = false;
+		bool StereoRejectFullscreenDraw = false;
+		bool StereoRejectFullscreenScissor = false;
+		bool StereoRejectFullscreenDrawArea = false;
+		bool StereoRejectFullCover = false;
+		bool StereoRejectSpriteNoGaps = false;
+		bool StereoRejectTexIsRt = false;
+		bool StereoRejectTexIsFb = false;
+		bool StereoRejectChannelShuffle = false;
+		bool StereoRejectTextureShuffle = false;
+		bool StereoRejectFullscreenShuffle = false;
+		bool StereoRejectShaderShuffle = false;
+		bool StereoRejectShuffleAcross = false;
+		bool StereoRejectShuffleSame = false;
+		bool StereoRejectChannelFetch = false;
+		bool StereoRejectChannelFetchFb = false;
+		bool StereoRejectFeedbackLoop = false;
+		bool StereoRejectColclip = false;
+		bool StereoRejectRtaCorrection = false;
+		bool StereoRejectBlendMix = false;
+		bool StereoRejectPabe = false;
+		bool StereoRejectDither = false;
+		bool StereoRejectScanmask = false;
+		bool StereoRejectRegionRect = false;
+		bool StereoRejectNoColorOutput = false;
+		bool StereoRejectHleShuffle = false;
+		bool StereoRejectTCOffsetHack = false;
+		bool StereoRejectPoints = false;
+		bool StereoRejectLines = false;
+		bool StereoRejectFlatShading = false;
+		bool StereoRejectFst = false;
+		bool StereoRejectFixedQ = false;
+		bool StereoRejectAa1 = false;
+		bool StereoRejectNoZTest = false;
+		bool StereoRejectNoZWrite = false;
+		bool StereoRejectZTestAlways = false;
+		bool StereoRejectZTestNever = false;
+		bool StereoRejectAlphaTestOff = false;
+		bool StereoRejectAlphaTestAlways = false;
+		bool StereoRejectAlphaTestNever = false;
+		bool StereoRejectTfxModulate = false;
+		bool StereoRejectTfxDecal = false;
+		bool StereoRejectTfxHighlight = false;
+		bool StereoRejectTfxHighlight2 = false;
 
 		u16 SWExtraThreads = 2;
 		u16 SWExtraThreadsHeight = 4;

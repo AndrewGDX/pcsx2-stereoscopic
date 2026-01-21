@@ -94,6 +94,7 @@ struct GSMTLMainVSUniform
 	vector_float2 texture_offset;
 	vector_float2 point_size;
 	uint max_depth;
+	vector_float4 stereo_params;
 };
 
 struct GSMTLMainPSUniform

@@ -1247,6 +1247,7 @@ cbuffer cb0
 	float2 PointSize;
 	uint MaxDepth;
 	uint BaseVertex; // Only used in DX11.
+	float4 StereoParams;
 };
 
 VS_OUTPUT vs_main(VS_INPUT input)
@@ -1265,6 +1266,25 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	output.p.xy = output.p.xy * float2(VertexScale.x, -VertexScale.y) - float2(VertexOffset.x, -VertexOffset.y);
 	output.p.z *= exp2(-32.0f);		// integer->float depth
+
+	// Apply stereoscopic 3D offset if enabled
+	// Based on Nvidia 3D Vision Automatic Best Practices Guide
+	if (StereoParams.w > 0.5f && input.z > 0)
+	{
+		float depth = output.p.z * StereoParams.z;
+		output.p.x -= StereoParams.x * (depth - StereoParams.y);
+
+		if (StereoParams.w < 1.5f)
+		{
+			output.p.x *= 0.5f;
+			output.p.x += sign(StereoParams.x) * 0.5f;
+		}
+		else
+		{
+			output.p.y *= 0.5f;
+			output.p.y -= sign(StereoParams.x) * 0.5f;
+		}
+	}
 
 	if(VS_TME)
 	{

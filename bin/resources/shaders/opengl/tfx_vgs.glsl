@@ -14,6 +14,7 @@ layout(std140, binding = 1) uniform cb20
 	vec2  PointSize;
 	uint  MaxDepth;
 	uint  pad_cb20;
+	vec4  StereoParams;
 };
 
 #ifdef VERTEX_SHADER
@@ -75,6 +76,25 @@ void vs_main()
 	gl_Position.z = float(z) * exp_min32;
 	gl_Position.w = 1.0f;
 
+	// Apply stereoscopic 3D offset if enabled
+	// Based on Nvidia 3D Vision Automatic Best Practices Guide
+	if (StereoParams.w > 0.5f && i_z > 0u)
+	{
+		float depth = gl_Position.z * StereoParams.z;
+		gl_Position.x -= StereoParams.x * (depth - StereoParams.y);
+
+		if (StereoParams.w < 1.5f)
+		{
+			gl_Position.x *= 0.5f;
+			gl_Position.x += sign(StereoParams.x) * 0.5f;
+		}
+		else
+		{
+			gl_Position.y *= 0.5f;
+			gl_Position.y -= sign(StereoParams.x) * 0.5f;
+		}
+	}
+
 	texture_coord();
 
 	VSout.c = i_c;
@@ -130,6 +150,25 @@ ProcessedVertex load_vertex(uint index)
 	vtx.p.xy = vtx.p.xy * VertexScale - VertexOffset;
 	vtx.p.z = float(z) * exp_min32;
 	vtx.p.w = 1.0f;
+
+	// Apply stereoscopic 3D offset if enabled
+	// Based on Nvidia 3D Vision Automatic Best Practices Guide
+	if (StereoParams.w > 0.5f && i_z > 0u)
+	{
+		float depth = vtx.p.z * StereoParams.z;
+		vtx.p.x -= StereoParams.x * (depth - StereoParams.y);
+
+		if (StereoParams.w < 1.5f)
+		{
+			vtx.p.x *= 0.5f;
+			vtx.p.x += sign(StereoParams.x) * 0.5f;
+		}
+		else
+		{
+			vtx.p.y *= 0.5f;
+			vtx.p.y -= sign(StereoParams.x) * 0.5f;
+		}
+	}
 
 	vec2 uv = vec2(i_uv) - TextureOffset;
 	vec2 st = i_st - TextureOffset;

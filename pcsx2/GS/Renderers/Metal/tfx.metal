@@ -179,6 +179,26 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	out.p.w = 1;
 	out.p.z = float(z) * exp_min32;
 
+	// Apply stereoscopic 3D offset if enabled
+	// Based on Nvidia 3D Vision Automatic Best Practices Guide
+	if (cb.stereo_params.w > 0.5f && v.z > 0)
+	{
+        // float depth = (float(v.z) / float(cb.max_depth)) * cb.stereo_params.z;
+        float depth = out.p.z * cb.stereo_params.z;
+        out.p.x -= cb.stereo_params.x * (depth - cb.stereo_params.y);
+
+        if (cb.stereo_params.w < 1.5f)
+        {
+            out.p.x *= 0.5f;
+            out.p.x += sign(cb.stereo_params.x) * 0.5f;
+        }
+        else
+        {
+            out.p.y *= 0.5f;
+            out.p.y -= sign(cb.stereo_params.x) * 0.5f;
+        }
+	}
+
 	texture_coord(v, out, cb);
 
 	if (IIP)

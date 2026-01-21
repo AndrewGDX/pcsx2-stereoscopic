@@ -671,6 +671,12 @@ const char* Pcsx2Config::GSOptions::CaptureContainers[] = {
 	nullptr};
 const char* Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER = "mp4";
 
+const char* Pcsx2Config::GSOptions::StereoModeNames[(size_t)GSStereoMode::Count + 1] = {
+	"Off",
+	"Side by Side",
+	"Top and Bottom",
+	nullptr};
+
 const char* Pcsx2Config::AchievementsOptions::OverlayPositionNames[(size_t)AchievementOverlayPosition::MaxCount + 1] = {
 	"TopLeft",
 	"TopCenter",
@@ -881,6 +887,81 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(VideoCaptureHeight) &&
 		OpEqu(AudioCaptureBitrate) &&
 
+		OpEqu(StereoMode) &&
+		OpEqu(StereoSeparation) &&
+		OpEqu(StereoConvergence) &&
+		OpEqu(StereoDepthFactor) &&
+		OpEqu(StereoUiDepth) &&
+		OpEqu(StereoSwapEyes) &&
+		OpEqu(StereoFlipRendering) &&
+		OpEqu(StereoDontRenderMonoObjects) &&
+		OpEqu(StereoRequireDisplayBuffer) &&
+		OpEqu(StereoRequirePerspectiveUV) &&
+		OpEqu(StereoRequireZVaries) &&
+		OpEqu(StereoRequireDepthActive) &&
+		OpEqu(StereoRejectSprites) &&
+		OpEqu(StereoRejectUiLike) &&
+		OpEqu(StereoRequireTextureMapping) &&
+		OpEqu(StereoRequireAlphaBlend) &&
+		OpEqu(StereoRequireAlphaTest) &&
+		OpEqu(StereoRequireUvVaries) &&
+		OpEqu(StereoRequireColorVaries) &&
+		OpEqu(StereoRequireFog) &&
+		OpEqu(StereoStencilRequireDate) &&
+		OpEqu(StereoStencilRequireDatm) &&
+		OpEqu(StereoStencilRequireAte) &&
+		OpEqu(StereoStencilRequireAfailZbOnly) &&
+		OpEqu(StereoStencilRequireAfailNotKeep) &&
+		OpEqu(StereoStencilRequireZWrite) &&
+		OpEqu(StereoStencilRequireZTest) &&
+		OpEqu(StereoStencilRequireZTestGequal) &&
+		OpEqu(StereoStencilRequireFbMask) &&
+		OpEqu(StereoStencilRequireFbMaskFull) &&
+		OpEqu(StereoStencilRequireTexIsFb) &&
+		OpEqu(StereoRejectFullscreenDraw) &&
+		OpEqu(StereoRejectFullscreenScissor) &&
+		OpEqu(StereoRejectFullscreenDrawArea) &&
+		OpEqu(StereoRejectFullCover) &&
+		OpEqu(StereoRejectSpriteNoGaps) &&
+		OpEqu(StereoRejectTexIsRt) &&
+		OpEqu(StereoRejectTexIsFb) &&
+		OpEqu(StereoRejectChannelShuffle) &&
+		OpEqu(StereoRejectTextureShuffle) &&
+		OpEqu(StereoRejectFullscreenShuffle) &&
+		OpEqu(StereoRejectShaderShuffle) &&
+		OpEqu(StereoRejectShuffleAcross) &&
+		OpEqu(StereoRejectShuffleSame) &&
+		OpEqu(StereoRejectChannelFetch) &&
+		OpEqu(StereoRejectChannelFetchFb) &&
+		OpEqu(StereoRejectFeedbackLoop) &&
+		OpEqu(StereoRejectColclip) &&
+		OpEqu(StereoRejectRtaCorrection) &&
+		OpEqu(StereoRejectBlendMix) &&
+		OpEqu(StereoRejectPabe) &&
+		OpEqu(StereoRejectDither) &&
+		OpEqu(StereoRejectScanmask) &&
+		OpEqu(StereoRejectRegionRect) &&
+		OpEqu(StereoRejectNoColorOutput) &&
+		OpEqu(StereoRejectHleShuffle) &&
+		OpEqu(StereoRejectTCOffsetHack) &&
+		OpEqu(StereoRejectPoints) &&
+		OpEqu(StereoRejectLines) &&
+		OpEqu(StereoRejectFlatShading) &&
+		OpEqu(StereoRejectFst) &&
+		OpEqu(StereoRejectFixedQ) &&
+		OpEqu(StereoRejectAa1) &&
+		OpEqu(StereoRejectNoZTest) &&
+		OpEqu(StereoRejectNoZWrite) &&
+		OpEqu(StereoRejectZTestAlways) &&
+		OpEqu(StereoRejectZTestNever) &&
+		OpEqu(StereoRejectAlphaTestOff) &&
+		OpEqu(StereoRejectAlphaTestAlways) &&
+		OpEqu(StereoRejectAlphaTestNever) &&
+		OpEqu(StereoRejectTfxModulate) &&
+		OpEqu(StereoRejectTfxDecal) &&
+		OpEqu(StereoRejectTfxHighlight) &&
+		OpEqu(StereoRejectTfxHighlight2) &&
+
 		OpEqu(Adapter) &&
 
 		OpEqu(HWDumpDirectory) &&
@@ -1083,6 +1164,81 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(SWDumpDirectory);
 	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
+
+	SettingsWrapEnumEx(StereoMode, "StereoMode", StereoModeNames);
+	SettingsWrapEntry(StereoSeparation);
+	SettingsWrapEntry(StereoConvergence);
+	SettingsWrapEntry(StereoDepthFactor);
+	SettingsWrapEntry(StereoUiDepth);
+	SettingsWrapEntry(StereoSwapEyes);
+	SettingsWrapEntry(StereoFlipRendering);
+	SettingsWrapEntry(StereoDontRenderMonoObjects);
+	SettingsWrapEntry(StereoRequireDisplayBuffer);
+	SettingsWrapEntry(StereoRequirePerspectiveUV);
+	SettingsWrapEntry(StereoRequireZVaries);
+	SettingsWrapEntry(StereoRequireDepthActive);
+	SettingsWrapEntry(StereoRejectSprites);
+	SettingsWrapEntry(StereoRejectUiLike);
+	SettingsWrapEntry(StereoRequireTextureMapping);
+	SettingsWrapEntry(StereoRequireAlphaBlend);
+	SettingsWrapEntry(StereoRequireAlphaTest);
+	SettingsWrapEntry(StereoRequireUvVaries);
+	SettingsWrapEntry(StereoRequireColorVaries);
+	SettingsWrapEntry(StereoRequireFog);
+	SettingsWrapEntry(StereoStencilRequireDate);
+	SettingsWrapEntry(StereoStencilRequireDatm);
+	SettingsWrapEntry(StereoStencilRequireAte);
+	SettingsWrapEntry(StereoStencilRequireAfailZbOnly);
+	SettingsWrapEntry(StereoStencilRequireAfailNotKeep);
+	SettingsWrapEntry(StereoStencilRequireZWrite);
+	SettingsWrapEntry(StereoStencilRequireZTest);
+	SettingsWrapEntry(StereoStencilRequireZTestGequal);
+	SettingsWrapEntry(StereoStencilRequireFbMask);
+	SettingsWrapEntry(StereoStencilRequireFbMaskFull);
+	SettingsWrapEntry(StereoStencilRequireTexIsFb);
+	SettingsWrapEntry(StereoRejectFullscreenDraw);
+	SettingsWrapEntry(StereoRejectFullscreenScissor);
+	SettingsWrapEntry(StereoRejectFullscreenDrawArea);
+	SettingsWrapEntry(StereoRejectFullCover);
+	SettingsWrapEntry(StereoRejectSpriteNoGaps);
+	SettingsWrapEntry(StereoRejectTexIsRt);
+	SettingsWrapEntry(StereoRejectTexIsFb);
+	SettingsWrapEntry(StereoRejectChannelShuffle);
+	SettingsWrapEntry(StereoRejectTextureShuffle);
+	SettingsWrapEntry(StereoRejectFullscreenShuffle);
+	SettingsWrapEntry(StereoRejectShaderShuffle);
+	SettingsWrapEntry(StereoRejectShuffleAcross);
+	SettingsWrapEntry(StereoRejectShuffleSame);
+	SettingsWrapEntry(StereoRejectChannelFetch);
+	SettingsWrapEntry(StereoRejectChannelFetchFb);
+	SettingsWrapEntry(StereoRejectFeedbackLoop);
+	SettingsWrapEntry(StereoRejectColclip);
+	SettingsWrapEntry(StereoRejectRtaCorrection);
+	SettingsWrapEntry(StereoRejectBlendMix);
+	SettingsWrapEntry(StereoRejectPabe);
+	SettingsWrapEntry(StereoRejectDither);
+	SettingsWrapEntry(StereoRejectScanmask);
+	SettingsWrapEntry(StereoRejectRegionRect);
+	SettingsWrapEntry(StereoRejectNoColorOutput);
+	SettingsWrapEntry(StereoRejectHleShuffle);
+	SettingsWrapEntry(StereoRejectTCOffsetHack);
+	SettingsWrapEntry(StereoRejectPoints);
+	SettingsWrapEntry(StereoRejectLines);
+	SettingsWrapEntry(StereoRejectFlatShading);
+	SettingsWrapEntry(StereoRejectFst);
+	SettingsWrapEntry(StereoRejectFixedQ);
+	SettingsWrapEntry(StereoRejectAa1);
+	SettingsWrapEntry(StereoRejectNoZTest);
+	SettingsWrapEntry(StereoRejectNoZWrite);
+	SettingsWrapEntry(StereoRejectZTestAlways);
+	SettingsWrapEntry(StereoRejectZTestNever);
+	SettingsWrapEntry(StereoRejectAlphaTestOff);
+	SettingsWrapEntry(StereoRejectAlphaTestAlways);
+	SettingsWrapEntry(StereoRejectAlphaTestNever);
+	SettingsWrapEntry(StereoRejectTfxModulate);
+	SettingsWrapEntry(StereoRejectTfxDecal);
+	SettingsWrapEntry(StereoRejectTfxHighlight);
+	SettingsWrapEntry(StereoRejectTfxHighlight2);
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))

@@ -16,6 +16,7 @@ layout(std140, set = 0, binding = 0) uniform cb0
 	vec2 PointSize;
 	uint MaxDepth;
 	uint pad_cb0;
+	vec4 StereoParams;
 };
 
 layout(location = 0) out VSOutput
@@ -54,6 +55,25 @@ void main()
 	gl_Position.xy = gl_Position.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
+
+	// Apply stereoscopic 3D offset if enabled
+	// Based on Nvidia 3D Vision Automatic Best Practices Guide
+	// Formula: pos.x += separation * (pos.w - convergence)
+	if (StereoParams.w > 0.5f && a_z > 0)
+	{
+		float depth = float(gl_Position.z) * StereoParams.z;
+        gl_Position.x -= StereoParams.x * (depth - StereoParams.y);
+
+		if (StereoParams.w < 1.5f) {
+			gl_Position.x *= 0.5f;
+			gl_Position.x += sign(StereoParams.x) * 0.5f;
+		}
+		else
+		{
+			gl_Position.y *= 0.5f;
+			gl_Position.y -= sign(StereoParams.x) * 0.5f;
+		}
+	}
 
 	#if VS_TME
 		vec2 uv = a_uv - TextureOffset;
@@ -131,6 +151,23 @@ ProcessedVertex load_vertex(uint index)
 	vtx.p.xy = vtx.p.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	vtx.p.z *= exp2(-32.0f);		// integer->float depth
 	vtx.p.y = -vtx.p.y;
+
+	// Apply stereoscopic 3D offset if enabled (same as main vertex shader)
+	if (StereoParams.w > 0.5f && a_z > 0)
+	{
+		float depth = float(vtx.p.z) * StereoParams.z;
+		vtx.p.x -= StereoParams.x * (depth - StereoParams.y);
+
+		if (StereoParams.w < 1.5f) {
+			vtx.p.x *= 0.5f;
+			vtx.p.x += sign(StereoParams.x) * 0.5f;
+		}
+		else
+		{
+			vtx.p.y *= 0.5f;
+			vtx.p.y -= sign(StereoParams.x) * 0.5f;
+		}
+	}
 
 	#if VS_TME
 		vec2 uv = a_uv - TextureOffset;
