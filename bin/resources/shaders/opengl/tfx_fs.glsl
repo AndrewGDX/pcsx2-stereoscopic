@@ -56,8 +56,14 @@ layout(std140, binding = 0) uniform cb21
 
 	mat4 DitherMatrix;
 
-	float ScaledScaleFactor;
-	float RcpScaleFactor;
+	vec2 ScaledScaleFactor;
+	vec2 RcpScaleFactor;
+	vec4 StereoRemap;
+	vec4 StereoClipParams;
+	vec4 StereoScissorLeft;
+	vec4 StereoScissorRight;
+	vec4 StereoDrawLeft;
+	vec4 StereoDrawRight;
 };
 
 in SHADER
@@ -70,6 +76,9 @@ in SHADER
 	#else
 		flat vec4 c;
 	#endif
+	noperspective vec2 stereo_pos;
+	flat float stereo_eye;
+	flat float stereo_axis;
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -152,6 +161,16 @@ vec4 sample_c(vec2 uv)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || PSin.stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (PSin.stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return texture(TextureSampler, uv);
@@ -382,7 +401,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
 vec4 sample_depth(vec2 st)
 {
-	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
+	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * ScaledScaleFactor;
 
 	#if PS_REGION_RECT == 1
 		uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);
@@ -974,6 +993,35 @@ float As = As_rgba.a;
 
 void ps_main()
 {
+	if (PSin.stereo_eye != 0.0f)
+	{
+		if (StereoClipParams.x > 0.5f)
+		{
+			vec2 frag = gl_FragCoord.xy;
+			vec4 sc = (PSin.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			vec4 da = (PSin.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
+				discard;
+		}
+		else
+		{
+			if (PSin.stereo_axis > 0.5f)
+			{
+				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y < 0.0f) ||
+					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.x > 0.0f) ||
+					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.x < 0.0f))
+					discard;
+			}
+		}
+	}
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))

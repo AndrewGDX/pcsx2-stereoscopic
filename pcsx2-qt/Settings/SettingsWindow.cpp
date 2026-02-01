@@ -211,9 +211,19 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	m_ui.settingsCategory->setCurrentRow(0);
-	m_ui.settingsContainer->setCurrentIndex(0);
-	m_ui.helpText->setText(m_category_help_text[0]);
+	int default_row = 0;  // TODO REMOVE rendering tab change
+	const QString graphics_label = tr("Graphics");
+	for (int i = 0; i < m_ui.settingsCategory->count(); i++)
+	{
+		if (m_ui.settingsCategory->item(i)->text() == graphics_label)
+		{
+			default_row = i;
+			break;
+		}
+	}
+	m_ui.settingsCategory->setCurrentRow(default_row);
+	m_ui.settingsContainer->setCurrentIndex(default_row);
+	m_ui.helpText->setText(m_category_help_text[default_row]);
 	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsWindow::onCategoryCurrentRowChanged);
 	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsWindow::close);
 	if (m_ui.restoreDefaultsButton)
