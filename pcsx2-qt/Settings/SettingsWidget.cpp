@@ -89,6 +89,15 @@ void SettingsWidget::setTabVisible(QWidget* tab, bool is_visible, QWidget* switc
 	m_tab_widget->setTabVisible(index, is_visible);
 }
 
+void SettingsWidget::setCurrentTab(QWidget* tab)  // TODO REMOVE rendering tab change
+{
+	if (!tab)
+		return;
+	const int index = m_tab_widget->indexOf(tab);
+	if (index >= 0)
+		m_tab_widget->setCurrentIndex(index);
+}
+
 void SettingsWidget::updateTabMargins(QScrollArea* scroll_area)
 {
 	if (!scroll_area->widget()->layout())

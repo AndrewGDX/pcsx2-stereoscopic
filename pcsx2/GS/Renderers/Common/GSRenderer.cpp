@@ -169,7 +169,7 @@ bool GSRenderer::Merge(int field)
 		if (!curCircuit.enabled || !tex[i])
 			continue;
 
-		const GSVector4 scale = GSVector4(tex_scale[i]);
+		const GSVector4 scale = GetStereoScaleVector4(tex_scale[i]);
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * GSVector4(curCircuit.displayRect);
@@ -201,7 +201,7 @@ bool GSRenderer::Merge(int field)
 
 	if (feedback_merge && tex[2])
 	{
-		const GSVector4 scale = GSVector4(tex_scale[2]);
+		const GSVector4 scale = GetStereoScaleVector4(tex_scale[2]);
 		GSVector4i feedback_rect;
 
 		feedback_rect.left = m_regs->EXTBUF.WDX;
@@ -213,8 +213,9 @@ bool GSRenderer::Merge(int field)
 	}
 
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
-	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
-		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
+	const GSVector2 stereo_scale = GetStereoScaleVector2(GetUpscaleMultiplier());
+	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * stereo_scale.x),
+		static_cast<int>(static_cast<float>(resolution.y) * stereo_scale.y));
 
 	m_real_size = GSVector2i(fs.x, fs.y);
 
@@ -232,7 +233,7 @@ bool GSRenderer::Merge(int field)
 
 	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 	{
-		const float offset = is_bob ? (tex[1] ? tex_scale[1] : tex_scale[0]) : 0.0f;
+		const float offset = is_bob ? ((tex[1] ? tex_scale[1] : tex_scale[0]) * stereo_scale.y) : 0.0f;
 
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
@@ -357,7 +358,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		{
 			const GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
 			const GSVector2i fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * g_gs_renderer->GetUpscaleMultiplier()),
-				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier()));
+				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier())); // TODO works incorrect in stereoscopic rendering
 
 			if (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y)
 			{
@@ -713,19 +714,34 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
                 const GSVector4 src_uv_l = GSVector4(src_rect_left) / GSVector4(current->GetSize()).xyxy();
                 const GSVector4 src_uv_r = GSVector4(src_rect_right) / GSVector4(current->GetSize()).xyxy();
 
-				// Stereoscopic 3D rendering (Dolphin-style: single render pass + presentation split)
+				// Stereoscopic 3D rendering (single render pass + presentation split)
 				if (GSConfig.StereoMode == GSStereoMode::SideBySide)
 				{
-    				const float half_width = static_cast<float>(window_width) * 0.5f;
+					if (GSConfig.StereoEnableFullSbsAspectRatio)
+					{
+						const s32 left_eye_width = window_width / 2;
+						const s32 right_eye_width = window_width - left_eye_width;
 
-                    left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
-                        s_display_alignment, flip_y, is_progressive);
-                    right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
-                        s_display_alignment, flip_y, is_progressive);
-                    left_rect.x *= 0.5f;
-                    left_rect.z *= 0.5f;
-                    right_rect.x = (right_rect.x * 0.5f) + half_width;
-                    right_rect.z = (right_rect.z * 0.5f) + half_width;
+						left_rect = CalculateDrawDstRect(left_eye_width, window_height, src_rect_left, left_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						right_rect = CalculateDrawDstRect(right_eye_width, window_height, src_rect_right, right_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						right_rect.x += static_cast<float>(left_eye_width);
+						right_rect.z += static_cast<float>(left_eye_width);
+					}
+					else
+					{
+						const float half_width = static_cast<float>(window_width) * 0.5f;
+
+						left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						left_rect.x *= 0.5f;
+						left_rect.z *= 0.5f;
+						right_rect.x = (right_rect.x * 0.5f) + half_width;
+						right_rect.z = (right_rect.z * 0.5f) + half_width;
+					}
 
 					// Swap eyes if requested
 					if (GSConfig.StereoSwapEyes)
@@ -743,18 +759,37 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				}
 				else if (GSConfig.StereoMode == GSStereoMode::TopAndBottom)
 				{
-                    const float half_height = static_cast<float>(window_height) * 0.5f;
-                    const float top_origin_y = flip_y ? half_height : 0.0f;
-                    const float bottom_origin_y = flip_y ? 0.0f : half_height;
+					if (GSConfig.StereoEnableFullSbsAspectRatio)
+					{
+						const s32 top_eye_height = window_height / 2;
+						const s32 bottom_eye_height = window_height - top_eye_height;
+						const float top_origin_y = flip_y ? static_cast<float>(bottom_eye_height) : 0.0f;
+						const float bottom_origin_y = flip_y ? 0.0f : static_cast<float>(top_eye_height);
 
-                    GSVector4 left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
-                        s_display_alignment, flip_y, is_progressive);
-                    GSVector4 right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
-                        s_display_alignment, flip_y, is_progressive);
-                    left_rect.y = (left_rect.y * 0.5f) + top_origin_y;
-                    left_rect.w = (left_rect.w * 0.5f) + top_origin_y;
-                    right_rect.y = (right_rect.y * 0.5f) + bottom_origin_y;
-                    right_rect.w = (right_rect.w * 0.5f) + bottom_origin_y;
+						left_rect = CalculateDrawDstRect(window_width, top_eye_height, src_rect_left, left_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						right_rect = CalculateDrawDstRect(window_width, bottom_eye_height, src_rect_right, right_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						left_rect.y += top_origin_y;
+						left_rect.w += top_origin_y;
+						right_rect.y += bottom_origin_y;
+						right_rect.w += bottom_origin_y;
+					}
+					else
+					{
+						const float half_height = static_cast<float>(window_height) * 0.5f;
+						const float top_origin_y = flip_y ? half_height : 0.0f;
+						const float bottom_origin_y = flip_y ? 0.0f : half_height;
+
+						left_rect = CalculateDrawDstRect(window_width, window_height, src_rect_left, left_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						right_rect = CalculateDrawDstRect(window_width, window_height, src_rect_right, right_src_size,
+							s_display_alignment, flip_y, is_progressive);
+						left_rect.y = (left_rect.y * 0.5f) + top_origin_y;
+						left_rect.w = (left_rect.w * 0.5f) + top_origin_y;
+						right_rect.y = (right_rect.y * 0.5f) + bottom_origin_y;
+						right_rect.w = (right_rect.w * 0.5f) + bottom_origin_y;
+					}
 
                     // Swap eyes if requested
                     if (GSConfig.StereoSwapEyes)

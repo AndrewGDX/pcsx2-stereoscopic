@@ -136,6 +136,12 @@ struct GSMTLMainPSUniform
 	matrix_float4x4 dither_matrix;
 
 	vector_float4 scale_factor;
+	vector_float4 stereo_remap;
+	vector_float4 stereo_clip_params;
+	vector_float4 stereo_scissor_left;
+	vector_float4 stereo_scissor_right;
+	vector_float4 stereo_draw_left;
+	vector_float4 stereo_draw_right;
 };
 
 enum GSMTLAttributes
