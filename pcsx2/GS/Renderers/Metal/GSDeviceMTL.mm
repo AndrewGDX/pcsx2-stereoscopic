@@ -2087,6 +2087,12 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TCOffsetHack)     == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == offsetof(GSMTLMainPSUniform, st_scale));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == offsetof(GSMTLMainPSUniform, dither_matrix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ScaleFactor)      == offsetof(GSMTLMainPSUniform, scale_factor));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoRemap)      == offsetof(GSMTLMainPSUniform, stereo_remap));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoClipParams) == offsetof(GSMTLMainPSUniform, stereo_clip_params));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoScissorLeft) == offsetof(GSMTLMainPSUniform, stereo_scissor_left));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoScissorRight) == offsetof(GSMTLMainPSUniform, stereo_scissor_right));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoDrawLeft)   == offsetof(GSMTLMainPSUniform, stereo_draw_left));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, StereoDrawRight)  == offsetof(GSMTLMainPSUniform, stereo_draw_right));
 
 void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm)
 {
@@ -2335,7 +2341,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		                indexCount:config.nindices
 		                 indexType:MTLIndexTypeUInt16
 		               indexBuffer:buffer
-		         indexBufferOffset:off];
+		         indexBufferOffset:off
+                 instanceCount:config.instance_count];
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		
@@ -2377,7 +2384,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			                indexCount:count
 			                 indexType:MTLIndexTypeUInt16
 			               indexBuffer:buffer
-			         indexBufferOffset:off + p * sizeof(*config.indices)];
+			         indexBufferOffset:off + p * sizeof(*config.indices)
+                     instanceCount:config.instance_count];
 			p += count;
 		}
 
@@ -2395,7 +2403,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 	                indexCount:config.nindices
 	                 indexType:MTLIndexTypeUInt16
 	               indexBuffer:buffer
-	         indexBufferOffset:off];
+	         indexBufferOffset:off
+             instanceCount:config.instance_count];
 
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }

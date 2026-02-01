@@ -221,25 +221,69 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="stereoscopicMode">
+       <layout class="QHBoxLayout" name="stereoscopicModeRowLayout">
         <item>
-         <property name="text">
-          <string>Off</string>
-         </property>
+         <widget class="QComboBox" name="stereoscopicMode">
+          <item>
+           <property name="text">
+            <string>Off</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Side by Side</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Top and Bottom</string>
+           </property>
+          </item>
+         </widget>
         </item>
-        <item>
-         <property name="text">
-          <string>Side by Side</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Top and Bottom</string>
-         </property>
-        </item>
-       </widget>
+       </layout>
       </item>
       <item row="1" column="0">
+       <widget class="QLabel" name="stereoDominantEyeLabel">
+        <property name="text">
+         <string>Dominant Eye:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoDominantEye</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="stereoDominantEyeRowLayout">
+        <item>
+         <widget class="QComboBox" name="stereoDominantEye">
+          <item>
+           <property name="text">
+            <string>No (default)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Left</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Right</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSwapEyes">
+          <property name="text">
+           <string>Swap Eyes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
        <widget class="QLabel" name="stereoSeparationLabel">
         <property name="text">
          <string>Separation:</string>
@@ -249,69 +293,53 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="stereoSeparation">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>0.0</double>
-        </property>
-        <property name="maximum">
-         <double>200.0</double>
-        </property>
-        <property name="value">
-         <double>20.0</double>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="stereoConvergenceLabel">
-        <property name="text">
-         <string>Convergence:</string>
-        </property>
-        <property name="buddy">
-         <cstring>stereoConvergence</cstring>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="stereoConvergence">
-        <property name="minimum">
-         <double>0.0</double>
-        </property>
-        <property name="maximum">
-         <double>200.0</double>
-        </property>
-        <property name="value">
-         <double>20.0</double>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="stereoSeparationConvergenceLayout" stretch="1,0,1">
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoSeparation">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0</double>
+          </property>
+          <property name="maximum">
+           <double>100.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoConvergenceLabel">
+          <property name="text">
+           <string>Convergence:</string>
+          </property>
+          <property name="buddy">
+           <cstring>stereoConvergence</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoConvergence">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0</double>
+          </property>
+          <property name="maximum">
+           <double>1000.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="stereoDepthFactorLabel">
-        <property name="text">
-         <string>Depth Factor:</string>
-        </property>
-        <property name="buddy">
-         <cstring>stereoDepthFactor</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="stereoDepthFactor">
-        <property name="minimum">
-         <double>0.0</double>
-        </property>
-        <property name="maximum">
-         <double>1000.0</double>
-        </property>
-        <property name="value">
-         <double>5.0</double>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
        <widget class="QLabel" name="stereoUiDepthLabel">
         <property name="text">
          <string>UI Depth:</string>
@@ -321,507 +349,2692 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="stereoUiDepth">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>-50.0</double>
-        </property>
-        <property name="maximum">
-         <double>50.0</double>
-        </property>
-        <property name="value">
-         <double>0.0</double>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoSwapEyes">
-        <property name="text">
-         <string>Swap Eyes</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoFlipRendering">
-        <property name="text">
-         <string>Misalignment Fix: Flip Stereo Rendering</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireZVaries">
-        <property name="text">
-         <string>UI Fix: Require Varying Z</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectZTestAlways">
-        <property name="text">
-         <string>UI Fix: Reject Z Test Always</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFixedQ">
-        <property name="text">
-         <string>UI Fix: Reject Fixed Q</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireZTestGequal">
-        <property name="text">
-         <string>UI Fix: Require ZTST GEQUAL/GREATER</string>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectUiLike">
-        <property name="text">
-         <string>UI Fix: UI-like Sprites (not working?)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFullCover">
-        <property name="text">
-         <string>Framebuffer Fix: Reject Full Cover</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFullscreenDraw">
-        <property name="text">
-         <string>Framebuffer Fix: Reject Full Draw Rect</string>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFullscreenDrawArea">
-        <property name="text">
-         <string>Framebuffer Fix: Reject Full Draw Area</string>
-        </property>
-       </widget>
-      </item>
-      <item row="15" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireDisplayBuffer">
-        <property name="text">
-         <string>Framebuffer Fix (bad): Require Display Buffer</string>
-        </property>
-       </widget>
-      </item>
-      <item row="16" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectSpriteNoGaps">
-        <property name="text">
-         <string>Postprocessing fix: Reject Sprite No Gaps</string>
-        </property>
-       </widget>
-      </item>
-      <item row="17" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFeedbackLoop">
-        <property name="text">
-         <string>Postprocessing fix: Reject Feedback Loop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="18" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFst">
-        <property name="text">
-         <string>Postprocessing fix: Reject Fixed ST</string>
-        </property>
-       </widget>
-      </item>
-      <item row="19" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoDontRenderMonoObjects">
-        <property name="text">
-         <string>DON'T RENDER MONO OBJECTS</string>
-        </property>
-       </widget>
-      </item>
-      <item row="20" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireTexIsFb">
-        <property name="text">
-         <string>Stencil: Require Tex-is-FB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="21" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequirePerspectiveUV">
-        <property name="text">
-         <string>Require Perspective UV</string>
-        </property>
-       </widget>
-      </item>
-      <item row="22" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireDepthActive">
-        <property name="text">
-         <string>Require Depth Test</string>
-        </property>
-       </widget>
-      </item>
-      <item row="23" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectSprites">
-        <property name="text">
-         <string>Reject Sprites</string>
-        </property>
-       </widget>
-      </item>
-      <item row="24" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireTextureMapping">
-        <property name="text">
-         <string>Require Texture Mapping</string>
-        </property>
-       </widget>
-      </item>
-      <item row="25" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireAlphaBlend">
-        <property name="text">
-         <string>Require Alpha Blending</string>
-        </property>
-       </widget>
-      </item>
-      <item row="26" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireAlphaTest">
-        <property name="text">
-         <string>Require Alpha Test</string>
-        </property>
-       </widget>
-      </item>
-      <item row="27" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireUvVaries">
-        <property name="text">
-         <string>Require Varying UV</string>
-        </property>
-       </widget>
-      </item>
-      <item row="28" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireColorVaries">
-        <property name="text">
-         <string>Require Varying Color</string>
-        </property>
-       </widget>
-      </item>
-      <item row="29" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRequireFog">
-        <property name="text">
-         <string>Require Fog</string>
-        </property>
-       </widget>
-      </item>
-      <item row="30" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireDate">
-        <property name="text">
-         <string>Stencil: Require DATE</string>
-        </property>
-       </widget>
-      </item>
-      <item row="31" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireDatm">
-        <property name="text">
-         <string>Stencil: Require DATM</string>
-        </property>
-       </widget>
-      </item>
-      <item row="32" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireAte">
-        <property name="text">
-         <string>Stencil: Require Alpha Test</string>
-        </property>
-       </widget>
-      </item>
-      <item row="33" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireAfailZbOnly">
-        <property name="text">
-         <string>Stencil: Require AFAIL ZB Only</string>
-        </property>
-       </widget>
-      </item>
-      <item row="34" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireAfailNotKeep">
-        <property name="text">
-         <string>Stencil: Require AFAIL Not Keep</string>
-        </property>
-       </widget>
-      </item>
-      <item row="35" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireZWrite">
-        <property name="text">
-         <string>Stencil: Require Z Write</string>
-        </property>
-       </widget>
-      </item>
-      <item row="36" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireZTest">
-        <property name="text">
-         <string>Stencil: Require Z Test</string>
-        </property>
-       </widget>
-      </item>
-      <item row="37" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireFbMask">
-        <property name="text">
-         <string>Stencil: Require FB Mask</string>
-        </property>
-       </widget>
-      </item>
-      <item row="38" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoStencilRequireFbMaskFull">
-        <property name="text">
-         <string>Stencil: Require FB Mask 0x00FFFFFF</string>
-        </property>
-       </widget>
-      </item>
-      <item row="39" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFullscreenScissor">
-        <property name="text">
-         <string>Fullscreen: Reject Full Scissor</string>
-        </property>
-       </widget>
-      </item>
-      <item row="40" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTexIsRt">
-        <property name="text">
-         <string>Fullscreen: Reject Tex-is-RT</string>
-        </property>
-       </widget>
-      </item>
-      <item row="41" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTexIsFb">
-        <property name="text">
-         <string>Fullscreen: Reject Tex-is-FB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="42" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectChannelShuffle">
-        <property name="text">
-         <string>Effects: Reject Channel Shuffle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="43" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTextureShuffle">
-        <property name="text">
-         <string>Effects: Reject Texture Shuffle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="44" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFullscreenShuffle">
-        <property name="text">
-         <string>Effects: Reject Fullscreen Shuffle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="45" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectShaderShuffle">
-        <property name="text">
-         <string>Effects: Reject Shader Shuffle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="46" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectShuffleAcross">
-        <property name="text">
-         <string>Effects: Reject Shuffle Across</string>
-        </property>
-       </widget>
-      </item>
-      <item row="47" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectShuffleSame">
-        <property name="text">
-         <string>Effects: Reject Shuffle Same</string>
-        </property>
-       </widget>
-      </item>
-      <item row="48" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectChannelFetch">
-        <property name="text">
-         <string>Effects: Reject Channel Fetch</string>
-        </property>
-       </widget>
-      </item>
-      <item row="49" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectChannelFetchFb">
-        <property name="text">
-         <string>Effects: Reject Channel Fetch FB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="50" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectColclip">
-        <property name="text">
-         <string>Effects: Reject Colclip</string>
-        </property>
-       </widget>
-      </item>
-      <item row="51" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectRtaCorrection">
-        <property name="text">
-         <string>Effects: Reject RTA Correction</string>
-        </property>
-       </widget>
-      </item>
-      <item row="52" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectBlendMix">
-        <property name="text">
-         <string>Effects: Reject Blend Mix</string>
-        </property>
-       </widget>
-      </item>
-      <item row="53" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectPabe">
-        <property name="text">
-         <string>Effects: Reject PABE</string>
-        </property>
-       </widget>
-      </item>
-      <item row="54" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectDither">
-        <property name="text">
-         <string>Effects: Reject Dither</string>
-        </property>
-       </widget>
-      </item>
-      <item row="55" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectScanmask">
-        <property name="text">
-         <string>Effects: Reject Scanmask</string>
-        </property>
-       </widget>
-      </item>
-      <item row="56" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectRegionRect">
-        <property name="text">
-         <string>Effects: Reject Region Rect</string>
-        </property>
-       </widget>
-      </item>
-      <item row="57" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectNoColorOutput">
-        <property name="text">
-         <string>Effects: Reject No Color Output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="58" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectHleShuffle">
-        <property name="text">
-         <string>Effects: Reject HLE Shuffle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="59" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTCOffsetHack">
-        <property name="text">
-         <string>Effects: Reject TC Offset Hack</string>
-        </property>
-       </widget>
-      </item>
-      <item row="60" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectPoints">
-        <property name="text">
-         <string>2D: Reject Points</string>
-        </property>
-       </widget>
-      </item>
-      <item row="61" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectLines">
-        <property name="text">
-         <string>2D: Reject Lines</string>
-        </property>
-       </widget>
-      </item>
-      <item row="62" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectFlatShading">
-        <property name="text">
-         <string>2D: Reject Flat Shading</string>
-        </property>
-       </widget>
-      </item>
-      <item row="64" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectAa1">
-        <property name="text">
-         <string>2D: Reject AA1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="65" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectNoZTest">
-        <property name="text">
-         <string>2D: Reject No Z Test</string>
-        </property>
-       </widget>
-      </item>
-      <item row="66" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectNoZWrite">
-        <property name="text">
-         <string>2D: Reject No Z Write</string>
-        </property>
-       </widget>
-      </item>
-      <item row="67" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectZTestNever">
-        <property name="text">
-         <string>2D: Reject Z Test Never</string>
-        </property>
-       </widget>
-      </item>
-      <item row="68" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectAlphaTestOff">
-        <property name="text">
-         <string>2D: Reject Alpha Test Off</string>
-        </property>
-       </widget>
-      </item>
-      <item row="69" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectAlphaTestAlways">
-        <property name="text">
-         <string>2D: Reject Alpha Test Always</string>
-        </property>
-       </widget>
-      </item>
-      <item row="70" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectAlphaTestNever">
-        <property name="text">
-         <string>2D: Reject Alpha Test Never</string>
-        </property>
-       </widget>
-      </item>
-      <item row="71" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTfxModulate">
-        <property name="text">
-         <string>2D: Reject TFX Modulate</string>
-        </property>
-       </widget>
-      </item>
-      <item row="72" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTfxDecal">
-        <property name="text">
-         <string>2D: Reject TFX Decal</string>
-        </property>
-       </widget>
-      </item>
-      <item row="73" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTfxHighlight">
-        <property name="text">
-         <string>2D: Reject TFX Highlight</string>
-        </property>
-       </widget>
-      </item>
-      <item row="74" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoRejectTfxHighlight2">
-        <property name="text">
-         <string>2D: Reject TFX Highlight2</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="stereoUiDepthLayout" stretch="1,0,0,1,0">
+         <item>
+          <widget class="QSlider" name="stereoUiDepth">
+          <property name="minimum">
+           <number>-75</number>
+          </property>
+          <property name="maximum">
+           <number>25</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TickPosition::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>25</number>
+          </property>
+         </widget>
+        </item>
+         <item>
+          <widget class="QLabel" name="stereoUiDepthValue">
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="stereoUiSecondLayerDepthLabel">
+           <property name="text">
+            <string>Second Layer Offset:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="stereoUiSecondLayerDepth">
+           <property name="minimum">
+            <number>-25</number>
+           </property>
+           <property name="maximum">
+            <number>25</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TickPosition::TicksBelow</enum>
+           </property>
+           <property name="tickInterval">
+            <number>12.5</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="stereoUiSecondLayerDepthValue">
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+       </layout>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <layout class="QVBoxLayout" name="stereoMonoObjectLayout">
+        <item>
+         <layout class="QHBoxLayout" name="stereoFixProfileLayout">
+          <item>
+           <widget class="QLabel" name="stereoFeedbackLoopFixLabel">
+            <property name="text">
+             <string>Feedback Loop Fix:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoFeedbackLoopFix</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="stereoFeedbackLoopFix">
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Moderate</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Full</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stereoSbsRemapFixLabel">
+            <property name="text">
+             <string>SBS Remap Fix:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoSbsRemapFix</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="stereoSbsRemapFix">
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Moderate</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Full</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="stereoUiDetectModeLayout">
+          <item>
+           <widget class="QLabel" name="stereoUiDetectModeLabel">
+            <property name="text">
+             <string>UI Detection Mode:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoUiDetectMode</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="stereoUiDetectMode">
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Unsafe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Advanced</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="stereoUiDetectThresholdLayout" stretch="0,1,0,1">
+          <item>
+           <widget class="QLabel" name="stereoUiDetectThresholdLabel">
+            <property name="text">
+             <string>UI Detection Threshold:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoUiDetectThreshold</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="stereoUiDetectThreshold">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>80</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TickPosition::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stereoUiDetectThresholdValue">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectZTestAlways">
+          <property name="text">
+           <string>UI Detect 1: Reject Z Test Always</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireZTestGequal">
+          <property name="text">
+           <string>UI Detect 2: Require ZTST GEQUAL/GREATER</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireZVaries">
+          <property name="text">
+           <string>UI Detect 3: Require Varying Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFixedQ">
+          <property name="text">
+           <string>UI Detect 4: Reject Fixed Q</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiDetectSkyDepth">
+          <property name="text">
+           <string>UI Detect 5: Sky Depth</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiDetectFst">
+          <property name="text">
+           <string>UI Detect 6: Fixed ST (FST)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+		 <widget class="QCheckBox" name="stereoUiDetectFullscreenDrawArea">
+		  <property name="text">
+		   <string>UI Detect: Fullscreen Draw Area</string>
+		  </property>
+		 </widget>
+		</item>
+		<item>
+		 <widget class="QCheckBox" name="stereoUiDetectFullscreenSprite">
+		  <property name="text">
+		   <string>UI Detect: Fullscreen Sprite</string>
+		  </property>
+		 </widget>
+		</item>
+        <item>
+         <widget class="QFrame">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiSecondLayerSelector1">
+          <property name="text">
+           <string>UI Second Layer: Selector 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiSecondLayerSelector2">
+          <property name="text">
+           <string>UI Second Layer: Selector 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiSecondLayerSelector3">
+          <property name="text">
+           <string>UI Second Layer: Selector 3</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiSecondLayerSelector4">
+          <property name="text">
+           <string>UI Second Layer: Selector 4</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiSecondLayerSelector5">
+          <property name="text">
+           <string>UI Second Layer: Selector 5</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+		 <widget class="QCheckBox" name="stereoDisableInstancedRendering">
+		  <property name="text">
+		   <string>Disable Instanced Rendering (not recommended)</string>
+		  </property>
+		 </widget>
+		</item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapMono">
+          <property name="text">
+           <string>Feedback Loop: Mono SBS Remap</string>
+          </property>
+         </widget>
+        </item>
+		<item>
+		 <widget class="QCheckBox" name="stereoFlipRendering">
+		  <property name="text">
+		   <string>Misalignment Fix: Flip Stereo Rendering</string>
+		  </property>
+		 </widget>
+		</item>
+		<item>
+		 <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
+		  <property name="text">
+		   <string>Disable full framebuffer for each eye</string>
+		  </property>
+		 </widget>
+		</item>
+        <item>
+         <widget class="QFrame">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoCloseDepthFix">
+          <property name="text">
+           <string>Depth Fix: God of War, Gun</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireRtaCorrection">
+          <property name="text">
+           <string>Shadows Fix: Require RTA Correction (MK, COD shadows fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFixStencilShadows1">
+          <property name="text">
+           <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFixStencilShadows2">
+          <property name="text">
+           <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectRegionRect">
+          <property name="text">
+           <string>PostFX Overlay Fix 1: Reject Region Rect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTfxDecal">
+          <property name="text">
+           <string>PostFX Overlay Fix 2: Reject TFX Decal</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix1">
+          <property name="text">
+           <string>Master Fix 1 (legacy fixes)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix2">
+          <property name="text">
+           <string>Master Fix 2 (legacy fixes)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix3">
+          <property name="text">
+           <string>Master Fix 3 (Gran Turismo 4)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix4">
+          <property name="text">
+           <string>Master Fix 4 (NFS artifacts)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix5">
+          <property name="text">
+           <string>Master Fix 5 (Medal of Honor artifacts)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFixMovies">
+          <property name="text">
+           <string>Master Movies Fix</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFixTest">
+          <property name="text">
+           <string>Master FIX Test</string>
+          </property>
+         </widget>
+        </item>
+		<item>
+		 <widget class="QFrame">
+		  <property name="frameShape">
+		   <enum>QFrame::HLine</enum>
+		  </property>
+		  <property name="frameShadow">
+		   <enum>QFrame::Sunken</enum>
+		  </property>
+		 </widget>
+		</item>
+        <item>
+         <widget class="QCheckBox" name="stereoDontRenderCheckedObjects">
+          <property name="text">
+           <string>DON'T RENDER CHECKED OBJECTS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRenderCheckedObjectsMono">
+          <property name="text">
+           <string>RENDER CHECKED OBJECTS AS MONO</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRenderCheckedObjectsStereo">
+          <property name="text">
+           <string>RENDER CHECKED OBJECTS AS STEREO</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectNonPositiveZ">
+          <property name="text">
+           <string>Double Image Fix: Reject Z &lt;= 0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSmallZRange">
+          <property name="text">
+           <string>Double Image Fix: Reject Small Z Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSpriteBlit">
+          <property name="text">
+           <string>Double Image Fix: Reject Sprite Blit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullscreenScissor">
+          <property name="text">
+           <string>Double Image Fix 2: Reject Full Scissor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullscreenDraw">
+          <property name="text">
+           <string>Double Image Fix 3: Reject Full Draw Rect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullCover">
+          <property name="text">
+           <string>Double Image Fix 4: Reject Full Cover</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectScanmask">
+          <property name="text">
+           <string>Double Image Fix 5: Reject Scanmask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDisplayBuffer1">
+          <property name="text">
+           <string>Double Image Fix: Require Display Buffer 1 (reflections fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDisplayBuffer2">
+          <property name="text">
+           <string>Double Image Fix: Require Display Buffer 2 (reflections fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoop">
+          <property name="text">
+           <string>PostFX Reflections Fix: Reject Feedback Loop</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Require Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Reject Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Require Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Reject Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Require Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Reject Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Require In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Reject In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Require Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Reject Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Require Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Reject Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopDisableStereo">
+          <property name="text">
+           <string>Feedback Loop: Disable Stereo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopClampToDominantEye">
+          <property name="text">
+           <string>Feedback Loop: Clamp To Dominant Eye</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopSourceFromTargetOnly">
+          <property name="text">
+           <string>Feedback Loop: Source From Target Only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectConstantColor">
+          <property name="text">
+           <string>Mono Fix: Reject Constant Color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectScalingDraw">
+          <property name="text">
+           <string>Double Image Fix: Reject Scaling Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSbsInput">
+          <property name="text">
+           <string>Double Image Fix: Reject SBS Input</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTabInput">
+          <property name="text">
+           <string>Double Image Fix: Reject TAB Input</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSpriteNoGaps">
+          <property name="text">
+           <string>PostFX Artifacts Remove: Reject Sprite No Gaps (not working?)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireRtaSourceCorrection">
+          <property name="text">
+           <string>Universal 3D Fix 1: Require RTA Source Correction</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFst">
+          <property name="text">
+           <string>Universal 3D Fix 2: Reject Fixed ST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAdjt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject ADJT (Gran Turismo 4 menu fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTfx">
+          <property name="text">
+           <string>Universal 3D Fix: Require TFX (Bully UI fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendMix">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend Mix (Default UI fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectRtaCorrection">
+          <property name="text">
+           <string>Universal 3D Fix: Reject RTA Correction (Fixes a lot of games)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireWms">
+          <property name="text">
+           <string>Universal 3D Fix: Require WMS (MGS 2 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireWmt">
+          <property name="text">
+           <string>Universal 3D Fix: Require WMT (MGS 2 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireLtf">
+          <property name="text">
+           <string>Universal 3D Fix: Require LTF (MGS 2 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectIip">
+          <property name="text">
+           <string>Universal 3D Fix: Reject IIP (SOC, Tekken 5 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAutomaticLod">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Automatic LOD (SOC fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireNoColor1">
+          <property name="text">
+           <string>Universal 3D Fix: Require No Color Output 1 (SOC fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendB">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend B (GOW fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAtst">
+          <property name="text">
+           <string>Universal 3D Fix: Reject ATST (RE4 UI fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireShuffle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Shuffle (Gun, MGS 3 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTcc">
+          <property name="text">
+           <string>Universal 3D Fix: Reject TCC (Tekken 4 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectProcessBa">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Process BA</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectProcessRg">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Process RG</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectShuffleAcross">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Shuffle Across</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTextureShuffle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Texture Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectRtaSourceCorrection">
+          <property name="text">
+           <string>Universal 3D Fix: Reject RTA Source Correction</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectColclipHw">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Colclip HW</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectColclip">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Colclip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectPabe">
+          <property name="text">
+           <string>Universal 3D Fix: Reject PABE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectFbMask">
+          <property name="text">
+           <string>Universal 3D Fix: Reject FB Mask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTexIsFb">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Tex-is-FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectNoColor">
+          <property name="text">
+           <string>Universal 3D Fix: Reject No Color Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectNoColor1">
+          <property name="text">
+           <string>Universal 3D Fix: Reject No Color Output 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAemFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject AEM Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectPalFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject PAL Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectDstFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject DST Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectDepthFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Depth Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAem">
+          <property name="text">
+           <string>Universal 3D Fix: Reject AEM</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectFba">
+          <property name="text">
+           <string>Universal 3D Fix: Reject FBA</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectFog">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Fog</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectDate">
+          <property name="text">
+           <string>Universal 3D Fix: Reject DATE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAfail">
+          <property name="text">
+           <string>Universal 3D Fix: Reject AFAIL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectFst">
+          <property name="text">
+           <string>Universal 3D Fix: Reject FST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTfx">
+          <property name="text">
+           <string>Universal 3D Fix: Reject TFX</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectWms">
+          <property name="text">
+           <string>Universal 3D Fix: Reject WMS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectWmt">
+          <property name="text">
+           <string>Universal 3D Fix: Reject WMT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAdjs">
+          <property name="text">
+           <string>Universal 3D Fix: Reject ADJS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectLtf">
+          <property name="text">
+           <string>Universal 3D Fix: Reject LTF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectShuffle">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectShuffleSame">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Shuffle Same</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectReal16Src">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Real16 Src</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectWriteRg">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Write RG</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendA">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend A</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendC">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend C</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendD">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend D</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectFixedOneA">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Fixed One A</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectBlendHw">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Blend HW</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectAMasked">
+          <property name="text">
+           <string>Universal 3D Fix: Reject A Masked</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectRoundInv">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Round Inv</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectChannel">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Channel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectChannelFb">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Channel FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectDither">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Dither</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectDitherAdjust">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Dither Adjust</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectZClamp">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Z Clamp</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectZFloor">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Z Floor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTCOffsetHack">
+          <property name="text">
+           <string>Universal 3D Fix: Reject TC Offset Hack</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectUrbanChaosHle">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Urban Chaos HLE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTalesOfAbyssHle">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Tales of Abyss HLE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectManualLod">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Manual LOD</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectPointSampler">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Point Sampler</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectRegionRect">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Region Rect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectScanmask">
+          <property name="text">
+           <string>Universal 3D Fix: Reject Scanmask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireColclipHw">
+          <property name="text">
+           <string>Universal 3D Fix: Require Colclip HW</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireColclip">
+          <property name="text">
+           <string>Universal 3D Fix: Require Colclip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendMix">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend Mix</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequirePabe">
+          <property name="text">
+           <string>Universal 3D Fix: Require PABE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFbMask">
+          <property name="text">
+           <string>Universal 3D Fix: Require FB Mask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTexIsFb">
+          <property name="text">
+           <string>Universal 3D Fix: Require Tex-is-FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireNoColor">
+          <property name="text">
+           <string>Universal 3D Fix: Require No Color Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAemFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Require AEM Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequirePalFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Require PAL Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDstFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Require DST Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDepthFmt">
+          <property name="text">
+           <string>Universal 3D Fix: Require Depth Format</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAem">
+          <property name="text">
+           <string>Universal 3D Fix: Require AEM</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFba">
+          <property name="text">
+           <string>Universal 3D Fix: Require FBA</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFog">
+          <property name="text">
+           <string>Universal 3D Fix: Require Fog</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireIip">
+          <property name="text">
+           <string>Universal 3D Fix: Require IIP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDate">
+          <property name="text">
+           <string>Universal 3D Fix: Require DATE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAtst">
+          <property name="text">
+           <string>Universal 3D Fix: Require ATST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAfail">
+          <property name="text">
+           <string>Universal 3D Fix: Require AFAIL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFst">
+          <property name="text">
+           <string>Universal 3D Fix: Require FST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTcc">
+          <property name="text">
+           <string>Universal 3D Fix: Require TCC</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAdjs">
+          <property name="text">
+           <string>Universal 3D Fix: Require ADJS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAdjt">
+          <property name="text">
+           <string>Universal 3D Fix: Require ADJT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireShuffleSame">
+          <property name="text">
+           <string>Universal 3D Fix: Require Shuffle Same</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireReal16Src">
+          <property name="text">
+           <string>Universal 3D Fix: Require Real16 Src</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireProcessBa">
+          <property name="text">
+           <string>Universal 3D Fix: Require Process BA</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireProcessRg">
+          <property name="text">
+           <string>Universal 3D Fix: Require Process RG</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireShuffleAcross">
+          <property name="text">
+           <string>Universal 3D Fix: Require Shuffle Across</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireWriteRg">
+          <property name="text">
+           <string>Universal 3D Fix: Require Write RG</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendA">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend A</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendB">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend B</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendC">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend C</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendD">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend D</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFixedOneA">
+          <property name="text">
+           <string>Universal 3D Fix: Require Fixed One A</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireBlendHw">
+          <property name="text">
+           <string>Universal 3D Fix: Require Blend HW</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAMasked">
+          <property name="text">
+           <string>Universal 3D Fix: Require A Masked</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireRoundInv">
+          <property name="text">
+           <string>Universal 3D Fix: Require Round Inv</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireChannel">
+          <property name="text">
+           <string>Universal 3D Fix: Require Channel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireChannelFb">
+          <property name="text">
+           <string>Universal 3D Fix: Require Channel FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDither">
+          <property name="text">
+           <string>Universal 3D Fix: Require Dither</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDitherAdjust">
+          <property name="text">
+           <string>Universal 3D Fix: Require Dither Adjust</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZClamp">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Clamp</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZFloor">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Floor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTCOffsetHack">
+          <property name="text">
+           <string>Universal 3D Fix: Require TC Offset Hack</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireUrbanChaosHle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Urban Chaos HLE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTalesOfAbyssHle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Tales of Abyss HLE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAutomaticLod">
+          <property name="text">
+           <string>Universal 3D Fix: Require Automatic LOD</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireManualLod">
+          <property name="text">
+           <string>Universal 3D Fix: Require Manual LOD</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequirePointSampler">
+          <property name="text">
+           <string>Universal 3D Fix: Require Point Sampler</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireRegionRect">
+          <property name="text">
+           <string>Universal 3D Fix: Require Region Rect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireScanmask">
+          <property name="text">
+           <string>Universal 3D Fix: Require Scanmask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAlphaBlend">
+          <property name="text">
+           <string>Universal 3D Fix: Require Alpha Blend</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAlphaTest">
+          <property name="text">
+           <string>Universal 3D Fix: Require Alpha Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireDatm">
+          <property name="text">
+           <string>Universal 3D Fix: Require DATM</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZTest">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZWrite">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZTestAlways">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Test Always</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireZTestNever">
+          <property name="text">
+           <string>Universal 3D Fix: Require Z Test Never</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireAa1">
+          <property name="text">
+           <string>Universal 3D Fix: Require AA1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireChannelShuffle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Channel Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFullscreenShuffle">
+          <property name="text">
+           <string>Universal 3D Fix: Require Fullscreen Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequirePoints">
+          <property name="text">
+           <string>Universal 3D Fix: Require Points</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireLines">
+          <property name="text">
+           <string>Universal 3D Fix: Require Lines</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireTriangles">
+          <property name="text">
+           <string>Universal 3D Fix: Require Triangles</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireSprites">
+          <property name="text">
+           <string>Universal 3D Fix: Require Sprites</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFixedQ">
+          <property name="text">
+           <string>Universal 3D Fix: TEX0.TFX == TFX_DECAL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireFixedZ">
+          <property name="text">
+           <string>Universal 3D Fix: TEX0.TFX != TFX_DECAL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRequireConstantColor">
+          <property name="text">
+           <string>Universal 3D Fix: TFX_DECAL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireTexIsFb">
+          <property name="text">
+           <string>Stencil: Require Tex-is-FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePerspectiveUV">
+          <property name="text">
+           <string>Require Perspective UV</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDepthActive">
+          <property name="text">
+           <string>Require Depth Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSprites">
+          <property name="text">
+           <string>Reject Sprites</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireTextureMapping">
+          <property name="text">
+           <string>Require Texture Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireAlphaBlend">
+          <property name="text">
+           <string>Require Alpha Blending</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireAlphaTest">
+          <property name="text">
+           <string>Require Alpha Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireUvVaries">
+          <property name="text">
+           <string>Require Varying UV</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireColorVaries">
+          <property name="text">
+           <string>Require Varying Color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFog">
+          <property name="text">
+           <string>Require Fog</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireDate">
+          <property name="text">
+           <string>Stencil: Require DATE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireDatm">
+          <property name="text">
+           <string>Stencil: Require DATM</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireAte">
+          <property name="text">
+           <string>Stencil: Require Alpha Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireAfailZbOnly">
+          <property name="text">
+           <string>Stencil: Require AFAIL ZB Only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireAfailNotKeep">
+          <property name="text">
+           <string>Stencil: Require AFAIL Not Keep</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireZWrite">
+          <property name="text">
+           <string>Stencil: Require Z Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireZTest">
+          <property name="text">
+           <string>Stencil: Require Z Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireFbMask">
+          <property name="text">
+           <string>Stencil: Require FB Mask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoStencilRequireFbMaskFull">
+          <property name="text">
+           <string>Stencil: Require FB Mask 0x00FFFFFF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTexIsFb">
+          <property name="text">
+           <string>Fullscreen: Reject Tex-is-FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectChannelShuffle">
+          <property name="text">
+           <string>Effects: Reject Channel Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTextureShuffle">
+          <property name="text">
+           <string>Effects: Reject Texture Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullscreenShuffle">
+          <property name="text">
+           <string>Effects: Reject Fullscreen Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectShaderShuffle">
+          <property name="text">
+           <string>Effects: Reject Shader Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectShuffleAcross">
+          <property name="text">
+           <string>Effects: Reject Shuffle Across</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectShuffleSame">
+          <property name="text">
+           <string>Effects: Reject Shuffle Same</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectChannelFetch">
+          <property name="text">
+           <string>Effects: Reject Channel Fetch</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectChannelFetchFb">
+          <property name="text">
+           <string>Effects: Reject Channel Fetch FB</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectColclip">
+          <property name="text">
+           <string>Effects: Reject Colclip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectBlendMix">
+          <property name="text">
+           <string>Effects: Reject Blend Mix</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPabe">
+          <property name="text">
+           <string>Effects: Reject PABE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDither">
+          <property name="text">
+           <string>Effects: Reject Dither</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectNoColorOutput">
+          <property name="text">
+           <string>Effects: Reject No Color Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectHleShuffle">
+          <property name="text">
+           <string>Effects: Reject HLE Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTCOffsetHack">
+          <property name="text">
+           <string>Effects: Reject TC Offset Hack</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPoints">
+          <property name="text">
+           <string>2D: Reject Points</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectLines">
+          <property name="text">
+           <string>2D: Reject Lines</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFlatShading">
+          <property name="text">
+           <string>2D: Reject Flat Shading</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectAa1">
+          <property name="text">
+           <string>2D: Reject AA1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectNoZTest">
+          <property name="text">
+           <string>2D: Reject No Z Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectNoZWrite">
+          <property name="text">
+           <string>2D: Reject No Z Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectZTestNever">
+          <property name="text">
+           <string>2D: Reject Z Test Never</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectAlphaTestOff">
+          <property name="text">
+           <string>2D: Reject Alpha Test Off</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectAlphaTestAlways">
+          <property name="text">
+           <string>2D: Reject Alpha Test Always</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectAlphaTestNever">
+          <property name="text">
+           <string>2D: Reject Alpha Test Never</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTfxModulate">
+          <property name="text">
+           <string>2D: Reject TFX Modulate</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTfxHighlight">
+          <property name="text">
+           <string>2D: Reject TFX Highlight</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTfxHighlight2">
+          <property name="text">
+           <string>2D: Reject TFX Highlight2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSmallDrawArea">
+          <property name="text">
+           <string>2D: Reject Small Draw Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectWideDrawBand">
+          <property name="text">
+           <string>2D: Reject Wide Draw Band</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTopDrawBand">
+          <property name="text">
+           <string>2D: Reject Top Draw Band</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectRtSpriteNoDepth">
+          <property name="text">
+           <string>2D: Reject RT Sprite (No Z Test)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectRtSpriteAlphaBlend">
+          <property name="text">
+           <string>2D: Reject RT Sprite (Alpha Blend)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireProcessTexture">
+          <property name="text">
+           <string>MOVIES: Require Process Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectProcessTexture">
+          <property name="text">
+           <string>MOVIES: Reject Process Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireSourceFromTarget">
+          <property name="text">
+           <string>MOVIES: Require Texture From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSourceFromTarget">
+          <property name="text">
+           <string>MOVIES: Reject Texture From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDrawUsesTarget">
+          <property name="text">
+           <string>MOVIES: Require Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDrawUsesTarget">
+          <property name="text">
+           <string>MOVIES: Reject Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireTexIsRt">
+          <property name="text">
+           <string>MOVIES: Require Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTexIsRt">
+          <property name="text">
+           <string>MOVIES: Reject Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireInTargetDraw">
+          <property name="text">
+           <string>MOVIES: Require In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectInTargetDraw">
+          <property name="text">
+           <string>MOVIES: Reject In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireTempZ">
+          <property name="text">
+           <string>MOVIES: Require Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTempZ">
+          <property name="text">
+           <string>MOVIES: Reject Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireOneBarrier">
+          <property name="text">
+           <string>MOVIES: Require One Barrier</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectOneBarrier">
+          <property name="text">
+           <string>MOVIES: Reject One Barrier</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFullBarrier">
+          <property name="text">
+           <string>MOVIES: Require Full Barrier</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullBarrier">
+          <property name="text">
+           <string>MOVIES: Reject Full Barrier</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireSinglePass">
+          <property name="text">
+           <string>MOVIES: Require Single Pass</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectSinglePass">
+          <property name="text">
+           <string>MOVIES: Reject Single Pass</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFullscreenDrawArea">
+          <property name="text">
+           <string>MOVIES: Require Full Draw Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullscreenDrawArea">
+          <property name="text">
+           <string>MOVIES: Reject Full Draw Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFullscreenSprite">
+          <property name="text">
+           <string>MOVIES: Require Fullscreen Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFullscreenSprite">
+          <property name="text">
+           <string>MOVIES: Reject Fullscreen Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireTexturedSprite">
+          <property name="text">
+           <string>MOVIES: Require Textured Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTexturedSprite">
+          <property name="text">
+           <string>MOVIES: Reject Textured Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireRtOutput">
+          <property name="text">
+           <string>MOVIES: Require RT Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectRtOutput">
+          <property name="text">
+           <string>MOVIES: Reject RT Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDepthOutput">
+          <property name="text">
+           <string>MOVIES: Require Depth Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDepthOutput">
+          <property name="text">
+           <string>MOVIES: Reject Depth Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDepthRead">
+          <property name="text">
+           <string>MOVIES: Require Depth Read</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDepthRead">
+          <property name="text">
+           <string>MOVIES: Reject Depth Read</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDepthWrite">
+          <property name="text">
+           <string>MOVIES: Require Depth Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDepthWrite">
+          <property name="text">
+           <string>MOVIES: Reject Depth Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePalettedTexture">
+          <property name="text">
+           <string>MOVIES: Require Paletted Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPalettedTexture">
+          <property name="text">
+           <string>MOVIES: Reject Paletted Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireDepthTexture">
+          <property name="text">
+           <string>MOVIES: Require Depth Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectDepthTexture">
+          <property name="text">
+           <string>MOVIES: Reject Depth Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireMipmap">
+          <property name="text">
+           <string>MOVIES: Require Mipmap</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectMipmap">
+          <property name="text">
+           <string>MOVIES: Reject Mipmap</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireLinearSampling">
+          <property name="text">
+           <string>FMV: Require Linear Sampling</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectLinearSampling">
+          <property name="text">
+           <string>FMV: Reject Linear Sampling</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvActive">
+          <property name="text">
+           <string>FMV: Require IPU FMV Active</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvActive">
+          <property name="text">
+           <string>FMV: Reject IPU FMV Active</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvHeuristic">
+          <property name="text">
+           <string>FMV: Require Heuristic Match</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvHeuristic">
+          <property name="text">
+           <string>FMV: Reject Heuristic Match</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvSprite">
+          <property name="text">
+           <string>FMV: Require Sprite Primitive</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvSprite">
+          <property name="text">
+           <string>FMV: Reject Sprite Primitive</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvSingleSprite">
+          <property name="text">
+           <string>FMV: Require Single Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvSingleSprite">
+          <property name="text">
+           <string>FMV: Reject Single Sprite</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvTextureMapping">
+          <property name="text">
+           <string>FMV: Require Texture Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvTextureMapping">
+          <property name="text">
+           <string>FMV: Reject Texture Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvProcessTexture">
+          <property name="text">
+           <string>FMV: Require Process Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvProcessTexture">
+          <property name="text">
+           <string>FMV: Reject Process Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvFullscreenDrawArea">
+          <property name="text">
+           <string>FMV: Require Full Draw Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvFullscreenDrawArea">
+          <property name="text">
+           <string>FMV: Reject Full Draw Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvFullscreenScissor">
+          <property name="text">
+           <string>FMV: Require Full Scissor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvFullscreenScissor">
+          <property name="text">
+           <string>FMV: Reject Full Scissor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoAlphaBlend">
+          <property name="text">
+           <string>FMV: Require No Alpha Blend</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoAlphaBlend">
+          <property name="text">
+           <string>FMV: Reject No Alpha Blend</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoAlphaTest">
+          <property name="text">
+           <string>FMV: Require No Alpha Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoAlphaTest">
+          <property name="text">
+           <string>FMV: Reject No Alpha Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoDepthTest">
+          <property name="text">
+           <string>FMV: Require No Z Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoDepthTest">
+          <property name="text">
+           <string>FMV: Reject No Z Test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoDepthWrite">
+          <property name="text">
+           <string>FMV: Require No Z Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoDepthWrite">
+          <property name="text">
+           <string>FMV: Reject No Z Write</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoDepthOutput">
+          <property name="text">
+           <string>FMV: Require No Depth Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoDepthOutput">
+          <property name="text">
+           <string>FMV: Reject No Depth Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoDepthRead">
+          <property name="text">
+           <string>FMV: Require No Depth Read</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoDepthRead">
+          <property name="text">
+           <string>FMV: Reject No Depth Read</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoFbMask">
+          <property name="text">
+           <string>FMV: Require No FB Mask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoFbMask">
+          <property name="text">
+           <string>FMV: Reject No FB Mask</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvColorOutput">
+          <property name="text">
+           <string>FMV: Require Color Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvColorOutput">
+          <property name="text">
+           <string>FMV: Reject Color Output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvSourceNotFromTarget">
+          <property name="text">
+           <string>FMV: Require Source Not From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvSourceNotFromTarget">
+          <property name="text">
+           <string>FMV: Reject Source Not From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvDrawMatchesTex">
+          <property name="text">
+           <string>FMV: Require Draw Matches Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvDrawMatchesTex">
+          <property name="text">
+           <string>FMV: Reject Draw Matches Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoShuffle">
+          <property name="text">
+           <string>FMV: Require No Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoShuffle">
+          <property name="text">
+           <string>FMV: Reject No Shuffle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvNoMipmap">
+          <property name="text">
+           <string>FMV: Require No Mipmap</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvNoMipmap">
+          <property name="text">
+           <string>FMV: Reject No Mipmap</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvLinearSampling">
+          <property name="text">
+           <string>FMV: Require Linear Sampling</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvLinearSampling">
+          <property name="text">
+           <string>FMV: Reject Linear Sampling</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvEeUpload">
+          <property name="text">
+           <string>FMV: Require EE Upload</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvEeUpload">
+          <property name="text">
+           <string>FMV: Reject EE Upload</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvDisplayMatch">
+          <property name="text">
+           <string>FMV: Require Display Match</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvDisplayMatch">
+          <property name="text">
+           <string>FMV: Reject Display Match</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvRecentEeUpload">
+          <property name="text">
+           <string>FMV: Require Recent EE Upload</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvRecentEeUpload">
+          <property name="text">
+           <string>FMV: Reject Recent EE Upload</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFmvRecentTransferDraw">
+          <property name="text">
+           <string>FMV: Require Recent Transfer Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFmvRecentTransferDraw">
+          <property name="text">
+           <string>FMV: Reject Recent Transfer Draw</string>
+          </property>
+         </widget>
+        </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
    </item>
    <item row="8" column="0">
     <spacer name="verticalSpacer">
@@ -839,34 +3052,225 @@
   </layout>
  </widget>
   <tabstops>
-  <tabstop>upscaleMultiplier</tabstop>
-  <tabstop>textureFiltering</tabstop>
-  <tabstop>trilinearFiltering</tabstop>
-  <tabstop>anisotropicFiltering</tabstop>
-  <tabstop>dithering</tabstop>
-  <tabstop>blending</tabstop>
-  <tabstop>mipmapping</tabstop>
-  <tabstop>enableHWFixes</tabstop>
-  <tabstop>stereoscopicMode</tabstop>
-  <tabstop>stereoSeparation</tabstop>
-  <tabstop>stereoConvergence</tabstop>
-   <tabstop>stereoDepthFactor</tabstop>
-   <tabstop>stereoUiDepth</tabstop>
-   <tabstop>stereoSwapEyes</tabstop>
-   <tabstop>stereoFlipRendering</tabstop>
-   <tabstop>stereoRequireZVaries</tabstop>
-   <tabstop>stereoRejectZTestAlways</tabstop>
-   <tabstop>stereoRejectFixedQ</tabstop>
-   <tabstop>stereoStencilRequireZTestGequal</tabstop>
-   <tabstop>stereoRejectUiLike</tabstop>
-   <tabstop>stereoRejectFullCover</tabstop>
-   <tabstop>stereoRejectFullscreenDraw</tabstop>
-   <tabstop>stereoRejectFullscreenDrawArea</tabstop>
-   <tabstop>stereoRequireDisplayBuffer</tabstop>
-   <tabstop>stereoRejectSpriteNoGaps</tabstop>
-   <tabstop>stereoRejectFeedbackLoop</tabstop>
+   <tabstop>upscaleMultiplier</tabstop>
+   <tabstop>textureFiltering</tabstop>
+   <tabstop>trilinearFiltering</tabstop>
+   <tabstop>anisotropicFiltering</tabstop>
+   <tabstop>dithering</tabstop>
+   <tabstop>blending</tabstop>
+   <tabstop>mipmapping</tabstop>
+   <tabstop>enableHWFixes</tabstop>
+	    <tabstop>stereoscopicMode</tabstop>
+	    <tabstop>stereoDominantEye</tabstop>
+	    <tabstop>stereoSwapEyes</tabstop>
+	    <tabstop>stereoSeparation</tabstop>
+	    <tabstop>stereoConvergence</tabstop>
+	    <tabstop>stereoUiDepth</tabstop>
+	    <tabstop>stereoUiSecondLayerDepth</tabstop>
+	    <tabstop>stereoFeedbackLoopFix</tabstop>
+	    <tabstop>stereoSbsRemapFix</tabstop>
+	    <tabstop>stereoUiDetectMode</tabstop>
+	    <tabstop>stereoUiDetectThreshold</tabstop>
+	    <tabstop>stereoRejectZTestAlways</tabstop>
+	    <tabstop>stereoStencilRequireZTestGequal</tabstop>
+	    <tabstop>stereoRequireZVaries</tabstop>
+	    <tabstop>stereoRejectFixedQ</tabstop>
+	    <tabstop>stereoUiDetectSkyDepth</tabstop>
+	    <tabstop>stereoUiDetectFst</tabstop>
+	    <tabstop>stereoUiDetectFullscreenDrawArea</tabstop>
+	    <tabstop>stereoUiDetectFullscreenSprite</tabstop>
+	    <tabstop>stereoUiSecondLayerSelector1</tabstop>
+	    <tabstop>stereoUiSecondLayerSelector2</tabstop>
+	    <tabstop>stereoUiSecondLayerSelector3</tabstop>
+	    <tabstop>stereoUiSecondLayerSelector4</tabstop>
+	    <tabstop>stereoUiSecondLayerSelector5</tabstop>
+	    <tabstop>stereoDisableInstancedRendering</tabstop>
+	    <tabstop>stereoSbsRemapMono</tabstop>
+	    <tabstop>stereoFlipRendering</tabstop>
+	    <tabstop>stereoCloseDepthFix</tabstop>
+	    <tabstop>stereoRequireRtaCorrection</tabstop>
+	    <tabstop>stereoFixStencilShadows1</tabstop>
+	    <tabstop>stereoFixStencilShadows2</tabstop>
+	    <tabstop>stereoRejectRegionRect</tabstop>
+	    <tabstop>stereoRejectTfxDecal</tabstop>
+	    <tabstop>stereoMasterFix1</tabstop>
+	    <tabstop>stereoMasterFix2</tabstop>
+	    <tabstop>stereoMasterFix3</tabstop>
+	    <tabstop>stereoMasterFix4</tabstop>
+	    <tabstop>stereoMasterFix5</tabstop>
+	    <tabstop>stereoMasterFixMovies</tabstop>
+	    <tabstop>stereoMasterFixTest</tabstop>
+	    <tabstop>stereoDontRenderCheckedObjects</tabstop>
+	    <tabstop>stereoRenderCheckedObjectsMono</tabstop>
+	    <tabstop>stereoRenderCheckedObjectsStereo</tabstop>
+	    <tabstop>stereoRejectNonPositiveZ</tabstop>
+	    <tabstop>stereoRejectSmallZRange</tabstop>
+	    <tabstop>stereoRejectSpriteBlit</tabstop>
+	    <tabstop>stereoRejectFullscreenScissor</tabstop>
+	    <tabstop>stereoRejectFullscreenDraw</tabstop>
+	    <tabstop>stereoRejectFullCover</tabstop>
+	    <tabstop>stereoRejectScanmask</tabstop>
+	    <tabstop>stereoRequireDisplayBuffer1</tabstop>
+	    <tabstop>stereoRequireDisplayBuffer2</tabstop>
+	    <tabstop>stereoRejectFeedbackLoop</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopAny</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopAny</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopShader</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopShader</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopDrawUsesTarget</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopDrawUsesTarget</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopTexIsRt</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopTexIsRt</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopSourceFromTarget</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopSourceFromTarget</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopInTargetDraw</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopInTargetDraw</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopTempZ</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopTempZ</tabstop>
+	    <tabstop>stereoRequireFeedbackLoopOverlapDrawRange</tabstop>
+	    <tabstop>stereoRejectFeedbackLoopOverlapDrawRange</tabstop>
+	    <tabstop>stereoFeedbackLoopDisableStereo</tabstop>
+	    <tabstop>stereoFeedbackLoopClampToDominantEye</tabstop>
+	    <tabstop>stereoFeedbackLoopSourceFromTargetOnly</tabstop>
+	    <tabstop>stereoRejectConstantColor</tabstop>
+	    <tabstop>stereoRejectScalingDraw</tabstop>
+	    <tabstop>stereoRejectSbsInput</tabstop>
+	    <tabstop>stereoRejectTabInput</tabstop>
+	    <tabstop>stereoRejectSpriteNoGaps</tabstop>
+	    <tabstop>stereoUniversalRequireRtaSourceCorrection</tabstop>
    <tabstop>stereoRejectFst</tabstop>
-   <tabstop>stereoDontRenderMonoObjects</tabstop>
+   <tabstop>stereoUniversalRejectAdjt</tabstop>
+   <tabstop>stereoUniversalRequireTfx</tabstop>
+   <tabstop>stereoUniversalRejectBlendMix</tabstop>
+   <tabstop>stereoRejectRtaCorrection</tabstop>
+   <tabstop>stereoUniversalRequireWms</tabstop>
+   <tabstop>stereoUniversalRequireWmt</tabstop>
+   <tabstop>stereoUniversalRequireLtf</tabstop>
+   <tabstop>stereoUniversalRejectIip</tabstop>
+   <tabstop>stereoUniversalRejectAutomaticLod</tabstop>
+   <tabstop>stereoUniversalRequireNoColor1</tabstop>
+   <tabstop>stereoUniversalRejectBlendB</tabstop>
+   <tabstop>stereoUniversalRejectAtst</tabstop>
+   <tabstop>stereoUniversalRequireShuffle</tabstop>
+   <tabstop>stereoUniversalRejectTcc</tabstop>
+   <tabstop>stereoUniversalRejectProcessBa</tabstop>
+   <tabstop>stereoUniversalRejectProcessRg</tabstop>
+   <tabstop>stereoUniversalRejectShuffleAcross</tabstop>
+   <tabstop>stereoUniversalRequireTextureShuffle</tabstop>
+   <tabstop>stereoUniversalRejectRtaSourceCorrection</tabstop>
+   <tabstop>stereoUniversalRejectColclipHw</tabstop>
+   <tabstop>stereoUniversalRejectColclip</tabstop>
+   <tabstop>stereoUniversalRejectPabe</tabstop>
+   <tabstop>stereoUniversalRejectFbMask</tabstop>
+   <tabstop>stereoUniversalRejectTexIsFb</tabstop>
+   <tabstop>stereoUniversalRejectNoColor</tabstop>
+   <tabstop>stereoUniversalRejectNoColor1</tabstop>
+   <tabstop>stereoUniversalRejectAemFmt</tabstop>
+   <tabstop>stereoUniversalRejectPalFmt</tabstop>
+   <tabstop>stereoUniversalRejectDstFmt</tabstop>
+   <tabstop>stereoUniversalRejectDepthFmt</tabstop>
+   <tabstop>stereoUniversalRejectAem</tabstop>
+   <tabstop>stereoUniversalRejectFba</tabstop>
+   <tabstop>stereoUniversalRejectFog</tabstop>
+   <tabstop>stereoUniversalRejectDate</tabstop>
+   <tabstop>stereoUniversalRejectAfail</tabstop>
+   <tabstop>stereoUniversalRejectFst</tabstop>
+   <tabstop>stereoUniversalRejectTfx</tabstop>
+   <tabstop>stereoUniversalRejectWms</tabstop>
+   <tabstop>stereoUniversalRejectWmt</tabstop>
+   <tabstop>stereoUniversalRejectAdjs</tabstop>
+   <tabstop>stereoUniversalRejectLtf</tabstop>
+   <tabstop>stereoUniversalRejectShuffle</tabstop>
+   <tabstop>stereoUniversalRejectShuffleSame</tabstop>
+   <tabstop>stereoUniversalRejectReal16Src</tabstop>
+   <tabstop>stereoUniversalRejectWriteRg</tabstop>
+   <tabstop>stereoUniversalRejectBlendA</tabstop>
+   <tabstop>stereoUniversalRejectBlendC</tabstop>
+   <tabstop>stereoUniversalRejectBlendD</tabstop>
+   <tabstop>stereoUniversalRejectFixedOneA</tabstop>
+   <tabstop>stereoUniversalRejectBlendHw</tabstop>
+   <tabstop>stereoUniversalRejectAMasked</tabstop>
+   <tabstop>stereoUniversalRejectRoundInv</tabstop>
+   <tabstop>stereoUniversalRejectChannel</tabstop>
+   <tabstop>stereoUniversalRejectChannelFb</tabstop>
+   <tabstop>stereoUniversalRejectDither</tabstop>
+   <tabstop>stereoUniversalRejectDitherAdjust</tabstop>
+   <tabstop>stereoUniversalRejectZClamp</tabstop>
+   <tabstop>stereoUniversalRejectZFloor</tabstop>
+   <tabstop>stereoUniversalRejectTCOffsetHack</tabstop>
+   <tabstop>stereoUniversalRejectUrbanChaosHle</tabstop>
+   <tabstop>stereoUniversalRejectTalesOfAbyssHle</tabstop>
+   <tabstop>stereoUniversalRejectManualLod</tabstop>
+   <tabstop>stereoUniversalRejectPointSampler</tabstop>
+   <tabstop>stereoUniversalRejectRegionRect</tabstop>
+   <tabstop>stereoUniversalRejectScanmask</tabstop>
+   <tabstop>stereoUniversalRequireColclipHw</tabstop>
+   <tabstop>stereoUniversalRequireColclip</tabstop>
+   <tabstop>stereoUniversalRequireBlendMix</tabstop>
+   <tabstop>stereoUniversalRequirePabe</tabstop>
+   <tabstop>stereoUniversalRequireFbMask</tabstop>
+   <tabstop>stereoUniversalRequireTexIsFb</tabstop>
+   <tabstop>stereoUniversalRequireNoColor</tabstop>
+   <tabstop>stereoUniversalRequireAemFmt</tabstop>
+   <tabstop>stereoUniversalRequirePalFmt</tabstop>
+   <tabstop>stereoUniversalRequireDstFmt</tabstop>
+   <tabstop>stereoUniversalRequireDepthFmt</tabstop>
+   <tabstop>stereoUniversalRequireAem</tabstop>
+   <tabstop>stereoUniversalRequireFba</tabstop>
+   <tabstop>stereoUniversalRequireFog</tabstop>
+   <tabstop>stereoUniversalRequireIip</tabstop>
+   <tabstop>stereoUniversalRequireDate</tabstop>
+   <tabstop>stereoUniversalRequireAtst</tabstop>
+   <tabstop>stereoUniversalRequireAfail</tabstop>
+   <tabstop>stereoUniversalRequireFst</tabstop>
+   <tabstop>stereoUniversalRequireTcc</tabstop>
+   <tabstop>stereoUniversalRequireAdjs</tabstop>
+   <tabstop>stereoUniversalRequireAdjt</tabstop>
+   <tabstop>stereoUniversalRequireShuffleSame</tabstop>
+   <tabstop>stereoUniversalRequireReal16Src</tabstop>
+   <tabstop>stereoUniversalRequireProcessBa</tabstop>
+   <tabstop>stereoUniversalRequireProcessRg</tabstop>
+   <tabstop>stereoUniversalRequireShuffleAcross</tabstop>
+   <tabstop>stereoUniversalRequireWriteRg</tabstop>
+   <tabstop>stereoUniversalRequireBlendA</tabstop>
+   <tabstop>stereoUniversalRequireBlendB</tabstop>
+   <tabstop>stereoUniversalRequireBlendC</tabstop>
+   <tabstop>stereoUniversalRequireBlendD</tabstop>
+   <tabstop>stereoUniversalRequireFixedOneA</tabstop>
+   <tabstop>stereoUniversalRequireBlendHw</tabstop>
+   <tabstop>stereoUniversalRequireAMasked</tabstop>
+   <tabstop>stereoUniversalRequireRoundInv</tabstop>
+   <tabstop>stereoUniversalRequireChannel</tabstop>
+   <tabstop>stereoUniversalRequireChannelFb</tabstop>
+   <tabstop>stereoUniversalRequireDither</tabstop>
+   <tabstop>stereoUniversalRequireDitherAdjust</tabstop>
+   <tabstop>stereoUniversalRequireZClamp</tabstop>
+   <tabstop>stereoUniversalRequireZFloor</tabstop>
+   <tabstop>stereoUniversalRequireTCOffsetHack</tabstop>
+   <tabstop>stereoUniversalRequireUrbanChaosHle</tabstop>
+   <tabstop>stereoUniversalRequireTalesOfAbyssHle</tabstop>
+   <tabstop>stereoUniversalRequireAutomaticLod</tabstop>
+   <tabstop>stereoUniversalRequireManualLod</tabstop>
+   <tabstop>stereoUniversalRequirePointSampler</tabstop>
+   <tabstop>stereoUniversalRequireRegionRect</tabstop>
+   <tabstop>stereoUniversalRequireScanmask</tabstop>
+   <tabstop>stereoUniversalRequireAlphaBlend</tabstop>
+   <tabstop>stereoUniversalRequireAlphaTest</tabstop>
+   <tabstop>stereoUniversalRequireDatm</tabstop>
+   <tabstop>stereoUniversalRequireZTest</tabstop>
+   <tabstop>stereoUniversalRequireZWrite</tabstop>
+   <tabstop>stereoUniversalRequireZTestAlways</tabstop>
+   <tabstop>stereoUniversalRequireZTestNever</tabstop>
+   <tabstop>stereoUniversalRequireAa1</tabstop>
+   <tabstop>stereoUniversalRequireChannelShuffle</tabstop>
+   <tabstop>stereoUniversalRequireFullscreenShuffle</tabstop>
+   <tabstop>stereoUniversalRequirePoints</tabstop>
+   <tabstop>stereoUniversalRequireLines</tabstop>
+   <tabstop>stereoUniversalRequireTriangles</tabstop>
+   <tabstop>stereoUniversalRequireSprites</tabstop>
+   <tabstop>stereoUniversalRequireFixedQ</tabstop>
+   <tabstop>stereoUniversalRequireFixedZ</tabstop>
+   <tabstop>stereoUniversalRequireConstantColor</tabstop>
    <tabstop>stereoStencilRequireTexIsFb</tabstop>
    <tabstop>stereoRequirePerspectiveUV</tabstop>
    <tabstop>stereoRequireDepthActive</tabstop>
@@ -886,8 +3290,6 @@
    <tabstop>stereoStencilRequireZTest</tabstop>
    <tabstop>stereoStencilRequireFbMask</tabstop>
    <tabstop>stereoStencilRequireFbMaskFull</tabstop>
-   <tabstop>stereoRejectFullscreenScissor</tabstop>
-   <tabstop>stereoRejectTexIsRt</tabstop>
    <tabstop>stereoRejectTexIsFb</tabstop>
    <tabstop>stereoRejectChannelShuffle</tabstop>
    <tabstop>stereoRejectTextureShuffle</tabstop>
@@ -898,12 +3300,9 @@
    <tabstop>stereoRejectChannelFetch</tabstop>
    <tabstop>stereoRejectChannelFetchFb</tabstop>
    <tabstop>stereoRejectColclip</tabstop>
-   <tabstop>stereoRejectRtaCorrection</tabstop>
    <tabstop>stereoRejectBlendMix</tabstop>
    <tabstop>stereoRejectPabe</tabstop>
    <tabstop>stereoRejectDither</tabstop>
-   <tabstop>stereoRejectScanmask</tabstop>
-   <tabstop>stereoRejectRegionRect</tabstop>
    <tabstop>stereoRejectNoColorOutput</tabstop>
    <tabstop>stereoRejectHleShuffle</tabstop>
    <tabstop>stereoRejectTCOffsetHack</tabstop>
@@ -918,10 +3317,104 @@
    <tabstop>stereoRejectAlphaTestAlways</tabstop>
    <tabstop>stereoRejectAlphaTestNever</tabstop>
    <tabstop>stereoRejectTfxModulate</tabstop>
-   <tabstop>stereoRejectTfxDecal</tabstop>
    <tabstop>stereoRejectTfxHighlight</tabstop>
    <tabstop>stereoRejectTfxHighlight2</tabstop>
-  </tabstops>
+   <tabstop>stereoRejectSmallDrawArea</tabstop>
+   <tabstop>stereoRejectWideDrawBand</tabstop>
+    <tabstop>stereoRejectTopDrawBand</tabstop>
+    <tabstop>stereoRejectRtSpriteNoDepth</tabstop>
+    <tabstop>stereoRejectRtSpriteAlphaBlend</tabstop>
+    <tabstop>stereoRequireProcessTexture</tabstop>
+    <tabstop>stereoRejectProcessTexture</tabstop>
+    <tabstop>stereoRequireSourceFromTarget</tabstop>
+    <tabstop>stereoRejectSourceFromTarget</tabstop>
+    <tabstop>stereoRequireDrawUsesTarget</tabstop>
+    <tabstop>stereoRejectDrawUsesTarget</tabstop>
+    <tabstop>stereoRequireTexIsRt</tabstop>
+    <tabstop>stereoRejectTexIsRt</tabstop>
+    <tabstop>stereoRequireInTargetDraw</tabstop>
+    <tabstop>stereoRejectInTargetDraw</tabstop>
+    <tabstop>stereoRequireTempZ</tabstop>
+    <tabstop>stereoRejectTempZ</tabstop>
+    <tabstop>stereoRequireOneBarrier</tabstop>
+    <tabstop>stereoRejectOneBarrier</tabstop>
+    <tabstop>stereoRequireFullBarrier</tabstop>
+    <tabstop>stereoRejectFullBarrier</tabstop>
+    <tabstop>stereoRequireSinglePass</tabstop>
+    <tabstop>stereoRejectSinglePass</tabstop>
+    <tabstop>stereoRequireFullscreenDrawArea</tabstop>
+    <tabstop>stereoRejectFullscreenDrawArea</tabstop>
+    <tabstop>stereoRequireFullscreenSprite</tabstop>
+    <tabstop>stereoRejectFullscreenSprite</tabstop>
+    <tabstop>stereoRequireTexturedSprite</tabstop>
+    <tabstop>stereoRejectTexturedSprite</tabstop>
+    <tabstop>stereoRequireRtOutput</tabstop>
+    <tabstop>stereoRejectRtOutput</tabstop>
+    <tabstop>stereoRequireDepthOutput</tabstop>
+    <tabstop>stereoRejectDepthOutput</tabstop>
+    <tabstop>stereoRequireDepthRead</tabstop>
+    <tabstop>stereoRejectDepthRead</tabstop>
+    <tabstop>stereoRequireDepthWrite</tabstop>
+    <tabstop>stereoRejectDepthWrite</tabstop>
+    <tabstop>stereoRequirePalettedTexture</tabstop>
+    <tabstop>stereoRejectPalettedTexture</tabstop>
+    <tabstop>stereoRequireDepthTexture</tabstop>
+    <tabstop>stereoRejectDepthTexture</tabstop>
+    <tabstop>stereoRequireMipmap</tabstop>
+    <tabstop>stereoRejectMipmap</tabstop>
+    <tabstop>stereoRequireLinearSampling</tabstop>
+    <tabstop>stereoRejectLinearSampling</tabstop>
+    <tabstop>stereoRequireFmvActive</tabstop>
+    <tabstop>stereoRejectFmvActive</tabstop>
+    <tabstop>stereoRequireFmvHeuristic</tabstop>
+    <tabstop>stereoRejectFmvHeuristic</tabstop>
+    <tabstop>stereoRequireFmvSprite</tabstop>
+    <tabstop>stereoRejectFmvSprite</tabstop>
+    <tabstop>stereoRequireFmvSingleSprite</tabstop>
+    <tabstop>stereoRejectFmvSingleSprite</tabstop>
+    <tabstop>stereoRequireFmvTextureMapping</tabstop>
+    <tabstop>stereoRejectFmvTextureMapping</tabstop>
+    <tabstop>stereoRequireFmvProcessTexture</tabstop>
+    <tabstop>stereoRejectFmvProcessTexture</tabstop>
+    <tabstop>stereoRequireFmvFullscreenDrawArea</tabstop>
+    <tabstop>stereoRejectFmvFullscreenDrawArea</tabstop>
+    <tabstop>stereoRequireFmvFullscreenScissor</tabstop>
+    <tabstop>stereoRejectFmvFullscreenScissor</tabstop>
+    <tabstop>stereoRequireFmvNoAlphaBlend</tabstop>
+    <tabstop>stereoRejectFmvNoAlphaBlend</tabstop>
+    <tabstop>stereoRequireFmvNoAlphaTest</tabstop>
+    <tabstop>stereoRejectFmvNoAlphaTest</tabstop>
+    <tabstop>stereoRequireFmvNoDepthTest</tabstop>
+    <tabstop>stereoRejectFmvNoDepthTest</tabstop>
+    <tabstop>stereoRequireFmvNoDepthWrite</tabstop>
+    <tabstop>stereoRejectFmvNoDepthWrite</tabstop>
+    <tabstop>stereoRequireFmvNoDepthOutput</tabstop>
+    <tabstop>stereoRejectFmvNoDepthOutput</tabstop>
+    <tabstop>stereoRequireFmvNoDepthRead</tabstop>
+    <tabstop>stereoRejectFmvNoDepthRead</tabstop>
+    <tabstop>stereoRequireFmvNoFbMask</tabstop>
+    <tabstop>stereoRejectFmvNoFbMask</tabstop>
+    <tabstop>stereoRequireFmvColorOutput</tabstop>
+    <tabstop>stereoRejectFmvColorOutput</tabstop>
+    <tabstop>stereoRequireFmvSourceNotFromTarget</tabstop>
+    <tabstop>stereoRejectFmvSourceNotFromTarget</tabstop>
+    <tabstop>stereoRequireFmvDrawMatchesTex</tabstop>
+    <tabstop>stereoRejectFmvDrawMatchesTex</tabstop>
+    <tabstop>stereoRequireFmvNoShuffle</tabstop>
+    <tabstop>stereoRejectFmvNoShuffle</tabstop>
+    <tabstop>stereoRequireFmvNoMipmap</tabstop>
+    <tabstop>stereoRejectFmvNoMipmap</tabstop>
+    <tabstop>stereoRequireFmvLinearSampling</tabstop>
+    <tabstop>stereoRejectFmvLinearSampling</tabstop>
+    <tabstop>stereoRequireFmvEeUpload</tabstop>
+    <tabstop>stereoRejectFmvEeUpload</tabstop>
+    <tabstop>stereoRequireFmvDisplayMatch</tabstop>
+    <tabstop>stereoRejectFmvDisplayMatch</tabstop>
+    <tabstop>stereoRequireFmvRecentEeUpload</tabstop>
+    <tabstop>stereoRejectFmvRecentEeUpload</tabstop>
+    <tabstop>stereoRequireFmvRecentTransferDraw</tabstop>
+    <tabstop>stereoRejectFmvRecentTransferDraw</tabstop>
+   </tabstops>
  <resources/>
  <connections/>
 </ui>

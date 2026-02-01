@@ -29,6 +29,9 @@ layout(location = 0) out VSOutput
 	#else
 		flat vec4 c;
 	#endif
+	noperspective vec2 stereo_pos;
+	flat float stereo_eye;
+	flat float stereo_axis;
 } vsOut;
 
 #if VS_EXPAND == 0
@@ -59,21 +62,37 @@ void main()
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
 	// Formula: pos.x += separation * (pos.w - convergence)
-	if (StereoParams.w > 0.5f && a_z > 0)
+	int stereo_mode = int(StereoParams.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0)
 	{
-		float depth = float(gl_Position.z) * StereoParams.z;
-        gl_Position.x -= StereoParams.x * (depth - StereoParams.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
+		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		gl_Position.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (StereoParams.w < 1.5f) {
-			gl_Position.x *= 0.5f;
-			gl_Position.x += sign(StereoParams.x) * 0.5f;
+		if (base_mode == 2 || base_mode == 4)
+		{
+			gl_Position.y *= 0.5f;
+			gl_Position.y -= eye_sign * 0.5f;
 		}
 		else
 		{
-			gl_Position.y *= 0.5f;
-			gl_Position.y -= sign(StereoParams.x) * 0.5f;
+			gl_Position.x *= 0.5f;
+			gl_Position.x += eye_sign * 0.5f;
 		}
 	}
+
+	vsOut.stereo_pos = gl_Position.xy;
+	vsOut.stereo_eye = (base_mode >= 3) ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
+	vsOut.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
 
 	#if VS_TME
 		vec2 uv = a_uv - TextureOffset;
@@ -153,19 +172,31 @@ ProcessedVertex load_vertex(uint index)
 	vtx.p.y = -vtx.p.y;
 
 	// Apply stereoscopic 3D offset if enabled (same as main vertex shader)
-	if (StereoParams.w > 0.5f && a_z > 0)
+	int stereo_mode = int(StereoParams.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0)
 	{
-		float depth = float(vtx.p.z) * StereoParams.z;
-		vtx.p.x -= StereoParams.x * (depth - StereoParams.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
+		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		vtx.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (StereoParams.w < 1.5f) {
-			vtx.p.x *= 0.5f;
-			vtx.p.x += sign(StereoParams.x) * 0.5f;
+		if (base_mode == 2 || base_mode == 4)
+		{
+			vtx.p.y *= 0.5f;
+			vtx.p.y -= eye_sign * 0.5f;
 		}
 		else
 		{
-			vtx.p.y *= 0.5f;
-			vtx.p.y -= sign(StereoParams.x) * 0.5f;
+			vtx.p.x *= 0.5f;
+			vtx.p.x += eye_sign * 0.5f;
 		}
 	}
 
@@ -254,6 +285,13 @@ void main()
 	vsOut.t = vtx.t;
 	vsOut.ti = vtx.ti;
 	vsOut.c = vtx.c;
+	{
+		int stereo_mode = int(StereoParams.w + 0.5f);
+		int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+		vsOut.stereo_pos = vtx.p.xy;
+		vsOut.stereo_eye = (base_mode >= 3) ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
+		vsOut.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+	}
 }
 
 #endif // VS_EXPAND
@@ -359,6 +397,12 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	mat4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	vec4 StereoRemap;
+	vec4 StereoClipParams;
+	vec4 StereoScissorLeft;
+	vec4 StereoScissorRight;
+	vec4 StereoDrawLeft;
+	vec4 StereoDrawRight;
 };
 
 layout(location = 0) in VSOutput
@@ -370,6 +414,9 @@ layout(location = 0) in VSOutput
 	#else
 		flat vec4 c;
 	#endif
+	noperspective vec2 stereo_pos;
+	flat float stereo_eye;
+	flat float stereo_axis;
 } vsIn;
 
 #if !PS_NO_COLOR && !PS_NO_COLOR1
@@ -426,6 +473,16 @@ vec4 sample_c(vec2 uv)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || vsIn.stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (vsIn.stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return texture(Texture, uv);
@@ -1273,6 +1330,35 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 void main()
 {
+	if (vsIn.stereo_eye != 0.0f)
+	{
+		if (StereoClipParams.x > 0.5f)
+		{
+			vec2 frag = gl_FragCoord.xy;
+			vec4 sc = (vsIn.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			vec4 da = (vsIn.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
+				discard;
+		}
+		else
+		{
+			if (vsIn.stereo_axis > 0.5f)
+			{
+				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.y < 0.0f) ||
+					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.x > 0.0f) ||
+					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.x < 0.0f))
+					discard;
+			}
+		}
+	}
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))

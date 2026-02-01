@@ -677,6 +677,12 @@ const char* Pcsx2Config::GSOptions::StereoModeNames[(size_t)GSStereoMode::Count 
 	"Top and Bottom",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::StereoDominantEyeNames[(size_t)GSStereoDominantEye::Count + 1] = {
+	"No (default)",
+	"Left",
+	"Right",
+	nullptr};
+
 const char* Pcsx2Config::AchievementsOptions::OverlayPositionNames[(size_t)AchievementOverlayPosition::MaxCount + 1] = {
 	"TopLeft",
 	"TopCenter",
@@ -888,19 +894,42 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(StereoMode) &&
+		OpEqu(StereoDominantEye) &&
 		OpEqu(StereoSeparation) &&
 		OpEqu(StereoConvergence) &&
-		OpEqu(StereoDepthFactor) &&
 		OpEqu(StereoUiDepth) &&
+		OpEqu(StereoUiSecondLayerDepth) &&
+		OpEqu(StereoUiDetectMode) &&
+		OpEqu(StereoUiDetectThreshold) &&
 		OpEqu(StereoSwapEyes) &&
 		OpEqu(StereoFlipRendering) &&
-		OpEqu(StereoDontRenderMonoObjects) &&
-		OpEqu(StereoRequireDisplayBuffer) &&
+		OpEqu(StereoDisableCorrectSbsFramebufferSize) &&
+		OpEqu(StereoDontRenderCheckedObjects) &&
+		OpEqu(StereoRenderCheckedObjectsMono) &&
+		OpEqu(StereoRenderCheckedObjectsStereo) &&
+		OpEqu(StereoRejectNonPositiveZ) &&
+		OpEqu(StereoRejectSmallZRange) &&
+		OpEqu(StereoCloseDepthFix) &&
+		OpEqu(StereoRejectSpriteBlit) &&
+		OpEqu(StereoRejectConstantColor) &&
+		OpEqu(StereoRejectScalingDraw) &&
+		OpEqu(StereoRejectSbsInput) &&
+		OpEqu(StereoRejectTabInput) &&
+		OpEqu(StereoMasterFixTest) &&
+		OpEqu(StereoMasterFix1) &&
+		OpEqu(StereoMasterFix2) &&
+		OpEqu(StereoMasterFix3) &&
+		OpEqu(StereoMasterFix4) &&
+		OpEqu(StereoMasterFix5) &&
+		OpEqu(StereoMasterFixMovies) &&
+		OpEqu(StereoRequireDisplayBuffer1) &&
+		OpEqu(StereoRequireDisplayBuffer2) &&
+		OpEqu(StereoFixStencilShadows1) &&
+		OpEqu(StereoFixStencilShadows2) &&
 		OpEqu(StereoRequirePerspectiveUV) &&
 		OpEqu(StereoRequireZVaries) &&
 		OpEqu(StereoRequireDepthActive) &&
 		OpEqu(StereoRejectSprites) &&
-		OpEqu(StereoRejectUiLike) &&
 		OpEqu(StereoRequireTextureMapping) &&
 		OpEqu(StereoRequireAlphaBlend) &&
 		OpEqu(StereoRequireAlphaTest) &&
@@ -920,10 +949,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoStencilRequireTexIsFb) &&
 		OpEqu(StereoRejectFullscreenDraw) &&
 		OpEqu(StereoRejectFullscreenScissor) &&
-		OpEqu(StereoRejectFullscreenDrawArea) &&
 		OpEqu(StereoRejectFullCover) &&
 		OpEqu(StereoRejectSpriteNoGaps) &&
-		OpEqu(StereoRejectTexIsRt) &&
 		OpEqu(StereoRejectTexIsFb) &&
 		OpEqu(StereoRejectChannelShuffle) &&
 		OpEqu(StereoRejectTextureShuffle) &&
@@ -936,6 +963,139 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectFeedbackLoop) &&
 		OpEqu(StereoRejectColclip) &&
 		OpEqu(StereoRejectRtaCorrection) &&
+		OpEqu(StereoUniversalRejectRtaSourceCorrection) &&
+		OpEqu(StereoUniversalRejectColclipHw) &&
+		OpEqu(StereoUniversalRejectColclip) &&
+		OpEqu(StereoUniversalRejectBlendMix) &&
+		OpEqu(StereoUniversalRejectPabe) &&
+		OpEqu(StereoUniversalRejectFbMask) &&
+		OpEqu(StereoUniversalRejectTexIsFb) &&
+		OpEqu(StereoUniversalRejectNoColor) &&
+		OpEqu(StereoUniversalRejectNoColor1) &&
+		OpEqu(StereoUniversalRejectAemFmt) &&
+		OpEqu(StereoUniversalRejectPalFmt) &&
+		OpEqu(StereoUniversalRejectDstFmt) &&
+		OpEqu(StereoUniversalRejectDepthFmt) &&
+		OpEqu(StereoUniversalRejectAem) &&
+		OpEqu(StereoUniversalRejectFba) &&
+		OpEqu(StereoUniversalRejectFog) &&
+		OpEqu(StereoUniversalRejectIip) &&
+		OpEqu(StereoUniversalRejectDate) &&
+		OpEqu(StereoUniversalRejectAtst) &&
+		OpEqu(StereoUniversalRejectAfail) &&
+		OpEqu(StereoUniversalRejectFst) &&
+		OpEqu(StereoUniversalRejectTfx) &&
+		OpEqu(StereoUniversalRejectTcc) &&
+		OpEqu(StereoUniversalRejectWms) &&
+		OpEqu(StereoUniversalRejectWmt) &&
+		OpEqu(StereoUniversalRejectAdjs) &&
+		OpEqu(StereoUniversalRejectAdjt) &&
+		OpEqu(StereoUniversalRejectLtf) &&
+		OpEqu(StereoUniversalRejectShuffle) &&
+		OpEqu(StereoUniversalRejectShuffleSame) &&
+		OpEqu(StereoUniversalRejectReal16Src) &&
+		OpEqu(StereoUniversalRejectProcessBa) &&
+		OpEqu(StereoUniversalRejectProcessRg) &&
+		OpEqu(StereoUniversalRejectShuffleAcross) &&
+		OpEqu(StereoUniversalRejectWriteRg) &&
+		OpEqu(StereoUniversalRejectBlendA) &&
+		OpEqu(StereoUniversalRejectBlendB) &&
+		OpEqu(StereoUniversalRejectBlendC) &&
+		OpEqu(StereoUniversalRejectBlendD) &&
+		OpEqu(StereoUniversalRejectFixedOneA) &&
+		OpEqu(StereoUniversalRejectBlendHw) &&
+		OpEqu(StereoUniversalRejectAMasked) &&
+		OpEqu(StereoUniversalRejectRoundInv) &&
+		OpEqu(StereoUniversalRejectChannel) &&
+		OpEqu(StereoUniversalRejectChannelFb) &&
+		OpEqu(StereoUniversalRejectDither) &&
+		OpEqu(StereoUniversalRejectDitherAdjust) &&
+		OpEqu(StereoUniversalRejectZClamp) &&
+		OpEqu(StereoUniversalRejectZFloor) &&
+		OpEqu(StereoUniversalRejectTCOffsetHack) &&
+		OpEqu(StereoUniversalRejectUrbanChaosHle) &&
+		OpEqu(StereoUniversalRejectTalesOfAbyssHle) &&
+		OpEqu(StereoUniversalRejectAutomaticLod) &&
+		OpEqu(StereoUniversalRejectManualLod) &&
+		OpEqu(StereoUniversalRejectPointSampler) &&
+		OpEqu(StereoUniversalRejectRegionRect) &&
+		OpEqu(StereoUniversalRejectScanmask) &&
+		OpEqu(StereoRequireRtaCorrection) &&
+		OpEqu(StereoUniversalRequireRtaSourceCorrection) &&
+		OpEqu(StereoUniversalRequireColclipHw) &&
+		OpEqu(StereoUniversalRequireColclip) &&
+		OpEqu(StereoUniversalRequireBlendMix) &&
+		OpEqu(StereoUniversalRequirePabe) &&
+		OpEqu(StereoUniversalRequireFbMask) &&
+		OpEqu(StereoUniversalRequireTexIsFb) &&
+		OpEqu(StereoUniversalRequireNoColor) &&
+		OpEqu(StereoUniversalRequireNoColor1) &&
+		OpEqu(StereoUniversalRequireAemFmt) &&
+		OpEqu(StereoUniversalRequirePalFmt) &&
+		OpEqu(StereoUniversalRequireDstFmt) &&
+		OpEqu(StereoUniversalRequireDepthFmt) &&
+		OpEqu(StereoUniversalRequireAem) &&
+		OpEqu(StereoUniversalRequireFba) &&
+		OpEqu(StereoUniversalRequireFog) &&
+		OpEqu(StereoUniversalRequireIip) &&
+		OpEqu(StereoUniversalRequireDate) &&
+		OpEqu(StereoUniversalRequireAtst) &&
+		OpEqu(StereoUniversalRequireAfail) &&
+		OpEqu(StereoUniversalRequireFst) &&
+		OpEqu(StereoUniversalRequireTfx) &&
+		OpEqu(StereoUniversalRequireTcc) &&
+		OpEqu(StereoUniversalRequireWms) &&
+		OpEqu(StereoUniversalRequireWmt) &&
+		OpEqu(StereoUniversalRequireAdjs) &&
+		OpEqu(StereoUniversalRequireAdjt) &&
+		OpEqu(StereoUniversalRequireLtf) &&
+		OpEqu(StereoUniversalRequireShuffle) &&
+		OpEqu(StereoUniversalRequireShuffleSame) &&
+		OpEqu(StereoUniversalRequireReal16Src) &&
+		OpEqu(StereoUniversalRequireProcessBa) &&
+		OpEqu(StereoUniversalRequireProcessRg) &&
+		OpEqu(StereoUniversalRequireShuffleAcross) &&
+		OpEqu(StereoUniversalRequireWriteRg) &&
+		OpEqu(StereoUniversalRequireBlendA) &&
+		OpEqu(StereoUniversalRequireBlendB) &&
+		OpEqu(StereoUniversalRequireBlendC) &&
+		OpEqu(StereoUniversalRequireBlendD) &&
+		OpEqu(StereoUniversalRequireFixedOneA) &&
+		OpEqu(StereoUniversalRequireBlendHw) &&
+		OpEqu(StereoUniversalRequireAMasked) &&
+		OpEqu(StereoUniversalRequireRoundInv) &&
+		OpEqu(StereoUniversalRequireChannel) &&
+		OpEqu(StereoUniversalRequireChannelFb) &&
+		OpEqu(StereoUniversalRequireDither) &&
+		OpEqu(StereoUniversalRequireDitherAdjust) &&
+		OpEqu(StereoUniversalRequireZClamp) &&
+		OpEqu(StereoUniversalRequireZFloor) &&
+		OpEqu(StereoUniversalRequireTCOffsetHack) &&
+		OpEqu(StereoUniversalRequireUrbanChaosHle) &&
+		OpEqu(StereoUniversalRequireTalesOfAbyssHle) &&
+		OpEqu(StereoUniversalRequireAutomaticLod) &&
+		OpEqu(StereoUniversalRequireManualLod) &&
+		OpEqu(StereoUniversalRequirePointSampler) &&
+		OpEqu(StereoUniversalRequireRegionRect) &&
+		OpEqu(StereoUniversalRequireScanmask) &&
+		OpEqu(StereoUniversalRequireAlphaBlend) &&
+		OpEqu(StereoUniversalRequireAlphaTest) &&
+		OpEqu(StereoUniversalRequireDatm) &&
+		OpEqu(StereoUniversalRequireZTest) &&
+		OpEqu(StereoUniversalRequireZWrite) &&
+		OpEqu(StereoUniversalRequireZTestAlways) &&
+		OpEqu(StereoUniversalRequireZTestNever) &&
+		OpEqu(StereoUniversalRequireAa1) &&
+		OpEqu(StereoUniversalRequireChannelShuffle) &&
+		OpEqu(StereoUniversalRequireTextureShuffle) &&
+		OpEqu(StereoUniversalRequireFullscreenShuffle) &&
+		OpEqu(StereoUniversalRequirePoints) &&
+		OpEqu(StereoUniversalRequireLines) &&
+		OpEqu(StereoUniversalRequireTriangles) &&
+		OpEqu(StereoUniversalRequireSprites) &&
+		OpEqu(StereoUniversalRequireFixedQ) &&
+		OpEqu(StereoUniversalRequireFixedZ) &&
+		OpEqu(StereoUniversalRequireConstantColor) &&
 		OpEqu(StereoRejectBlendMix) &&
 		OpEqu(StereoRejectPabe) &&
 		OpEqu(StereoRejectDither) &&
@@ -953,6 +1113,15 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectNoZTest) &&
 		OpEqu(StereoRejectNoZWrite) &&
 		OpEqu(StereoRejectZTestAlways) &&
+		OpEqu(StereoUiDetectSkyDepth) &&
+		OpEqu(StereoUiDetectFst) &&
+		OpEqu(StereoUiDetectFullscreenDrawArea) &&
+		OpEqu(StereoUiDetectFullscreenSprite) &&
+		OpEqu(StereoUiSecondLayerSelector1) &&
+		OpEqu(StereoUiSecondLayerSelector2) &&
+		OpEqu(StereoUiSecondLayerSelector3) &&
+		OpEqu(StereoUiSecondLayerSelector4) &&
+		OpEqu(StereoUiSecondLayerSelector5) &&
 		OpEqu(StereoRejectZTestNever) &&
 		OpEqu(StereoRejectAlphaTestOff) &&
 		OpEqu(StereoRejectAlphaTestAlways) &&
@@ -961,6 +1130,124 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectTfxDecal) &&
 		OpEqu(StereoRejectTfxHighlight) &&
 		OpEqu(StereoRejectTfxHighlight2) &&
+		OpEqu(StereoRejectSmallDrawArea) &&
+		OpEqu(StereoRejectWideDrawBand) &&
+		OpEqu(StereoRejectTopDrawBand) &&
+		OpEqu(StereoRejectRtSpriteNoDepth) &&
+		OpEqu(StereoRejectRtSpriteAlphaBlend) &&
+		OpEqu(StereoRequireProcessTexture) &&
+		OpEqu(StereoRejectProcessTexture) &&
+		OpEqu(StereoRequireSourceFromTarget) &&
+		OpEqu(StereoRejectSourceFromTarget) &&
+		OpEqu(StereoRequireDrawUsesTarget) &&
+		OpEqu(StereoRejectDrawUsesTarget) &&
+		OpEqu(StereoRequireTexIsRt) &&
+		OpEqu(StereoRejectTexIsRt) &&
+		OpEqu(StereoRequireInTargetDraw) &&
+		OpEqu(StereoRejectInTargetDraw) &&
+		OpEqu(StereoRequireTempZ) &&
+		OpEqu(StereoRejectTempZ) &&
+		OpEqu(StereoRequireOneBarrier) &&
+		OpEqu(StereoRejectOneBarrier) &&
+		OpEqu(StereoRequireFullBarrier) &&
+		OpEqu(StereoRejectFullBarrier) &&
+		OpEqu(StereoRequireSinglePass) &&
+		OpEqu(StereoRejectSinglePass) &&
+		OpEqu(StereoRequireFullscreenDrawArea) &&
+		OpEqu(StereoRejectFullscreenDrawArea) &&
+		OpEqu(StereoRequireFullscreenSprite) &&
+		OpEqu(StereoRejectFullscreenSprite) &&
+		OpEqu(StereoRequireTexturedSprite) &&
+		OpEqu(StereoRejectTexturedSprite) &&
+		OpEqu(StereoRequireRtOutput) &&
+		OpEqu(StereoRejectRtOutput) &&
+		OpEqu(StereoRequireDepthOutput) &&
+		OpEqu(StereoRejectDepthOutput) &&
+		OpEqu(StereoRequireDepthRead) &&
+		OpEqu(StereoRejectDepthRead) &&
+		OpEqu(StereoRequireDepthWrite) &&
+		OpEqu(StereoRejectDepthWrite) &&
+		OpEqu(StereoRequirePalettedTexture) &&
+		OpEqu(StereoRejectPalettedTexture) &&
+		OpEqu(StereoRequireDepthTexture) &&
+		OpEqu(StereoRejectDepthTexture) &&
+		OpEqu(StereoRequireMipmap) &&
+		OpEqu(StereoRejectMipmap) &&
+		OpEqu(StereoRequireLinearSampling) &&
+		OpEqu(StereoRejectLinearSampling) &&
+		OpEqu(StereoRequireFmvActive) &&
+		OpEqu(StereoRejectFmvActive) &&
+		OpEqu(StereoRequireFmvHeuristic) &&
+		OpEqu(StereoRejectFmvHeuristic) &&
+		OpEqu(StereoRequireFmvSprite) &&
+		OpEqu(StereoRejectFmvSprite) &&
+		OpEqu(StereoRequireFmvSingleSprite) &&
+		OpEqu(StereoRejectFmvSingleSprite) &&
+		OpEqu(StereoRequireFmvTextureMapping) &&
+		OpEqu(StereoRejectFmvTextureMapping) &&
+		OpEqu(StereoRequireFmvProcessTexture) &&
+		OpEqu(StereoRejectFmvProcessTexture) &&
+		OpEqu(StereoRequireFmvFullscreenDrawArea) &&
+		OpEqu(StereoRejectFmvFullscreenDrawArea) &&
+		OpEqu(StereoRequireFmvFullscreenScissor) &&
+		OpEqu(StereoRejectFmvFullscreenScissor) &&
+		OpEqu(StereoRequireFmvNoAlphaBlend) &&
+		OpEqu(StereoRejectFmvNoAlphaBlend) &&
+		OpEqu(StereoRequireFmvNoAlphaTest) &&
+		OpEqu(StereoRejectFmvNoAlphaTest) &&
+		OpEqu(StereoRequireFmvNoDepthTest) &&
+		OpEqu(StereoRejectFmvNoDepthTest) &&
+		OpEqu(StereoRequireFmvNoDepthWrite) &&
+		OpEqu(StereoRejectFmvNoDepthWrite) &&
+		OpEqu(StereoRequireFmvNoDepthOutput) &&
+		OpEqu(StereoRejectFmvNoDepthOutput) &&
+		OpEqu(StereoRequireFmvNoDepthRead) &&
+		OpEqu(StereoRejectFmvNoDepthRead) &&
+		OpEqu(StereoRequireFmvNoFbMask) &&
+		OpEqu(StereoRejectFmvNoFbMask) &&
+		OpEqu(StereoRequireFmvColorOutput) &&
+		OpEqu(StereoRejectFmvColorOutput) &&
+		OpEqu(StereoRequireFmvSourceNotFromTarget) &&
+		OpEqu(StereoRejectFmvSourceNotFromTarget) &&
+		OpEqu(StereoRequireFmvDrawMatchesTex) &&
+		OpEqu(StereoRejectFmvDrawMatchesTex) &&
+		OpEqu(StereoRequireFmvNoShuffle) &&
+		OpEqu(StereoRejectFmvNoShuffle) &&
+		OpEqu(StereoRequireFmvNoMipmap) &&
+		OpEqu(StereoRejectFmvNoMipmap) &&
+		OpEqu(StereoRequireFmvLinearSampling) &&
+		OpEqu(StereoRejectFmvLinearSampling) &&
+		OpEqu(StereoRequireFmvEeUpload) &&
+		OpEqu(StereoRejectFmvEeUpload) &&
+		OpEqu(StereoRequireFmvDisplayMatch) &&
+		OpEqu(StereoRejectFmvDisplayMatch) &&
+		OpEqu(StereoRequireFmvRecentEeUpload) &&
+		OpEqu(StereoRejectFmvRecentEeUpload) &&
+		OpEqu(StereoRequireFmvRecentTransferDraw) &&
+		OpEqu(StereoRejectFmvRecentTransferDraw) &&
+		OpEqu(StereoRequireFeedbackLoopAny) &&
+		OpEqu(StereoRejectFeedbackLoopAny) &&
+		OpEqu(StereoRequireFeedbackLoopShader) &&
+		OpEqu(StereoRejectFeedbackLoopShader) &&
+		OpEqu(StereoRequireFeedbackLoopDrawUsesTarget) &&
+		OpEqu(StereoRejectFeedbackLoopDrawUsesTarget) &&
+		OpEqu(StereoRequireFeedbackLoopTexIsRt) &&
+		OpEqu(StereoRejectFeedbackLoopTexIsRt) &&
+		OpEqu(StereoRequireFeedbackLoopSourceFromTarget) &&
+		OpEqu(StereoRejectFeedbackLoopSourceFromTarget) &&
+		OpEqu(StereoRequireFeedbackLoopInTargetDraw) &&
+		OpEqu(StereoRejectFeedbackLoopInTargetDraw) &&
+		OpEqu(StereoRequireFeedbackLoopTempZ) &&
+		OpEqu(StereoRejectFeedbackLoopTempZ) &&
+		OpEqu(StereoRequireFeedbackLoopOverlapDrawRange) &&
+		OpEqu(StereoRejectFeedbackLoopOverlapDrawRange) &&
+		OpEqu(StereoFeedbackLoopDisableStereo) &&
+		OpEqu(StereoFeedbackLoopClampToDominantEye) &&
+		OpEqu(StereoFeedbackLoopSourceFromTargetOnly) &&
+		OpEqu(StereoSbsRemapMono) &&
+		OpEqu(StereoDisableInstancedRendering) &&
+		OpEqu(StereoSbsRemapFix) &&
+		OpEqu(StereoFeedbackLoopFix) &&
 
 		OpEqu(Adapter) &&
 
@@ -1166,19 +1453,42 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
 
 	SettingsWrapEnumEx(StereoMode, "StereoMode", StereoModeNames);
+	SettingsWrapEnumEx(StereoDominantEye, "StereoDominantEye", StereoDominantEyeNames);
 	SettingsWrapEntry(StereoSeparation);
 	SettingsWrapEntry(StereoConvergence);
-	SettingsWrapEntry(StereoDepthFactor);
 	SettingsWrapEntry(StereoUiDepth);
+	SettingsWrapEntry(StereoUiSecondLayerDepth);
+	SettingsWrapEntry(StereoUiDetectMode);
+	SettingsWrapEntry(StereoUiDetectThreshold);
 	SettingsWrapEntry(StereoSwapEyes);
 	SettingsWrapEntry(StereoFlipRendering);
-	SettingsWrapEntry(StereoDontRenderMonoObjects);
-	SettingsWrapEntry(StereoRequireDisplayBuffer);
+	SettingsWrapEntry(StereoDisableCorrectSbsFramebufferSize);
+	SettingsWrapEntry(StereoDontRenderCheckedObjects);
+	SettingsWrapEntry(StereoRenderCheckedObjectsMono);
+	SettingsWrapEntry(StereoRenderCheckedObjectsStereo);
+	SettingsWrapEntry(StereoRejectNonPositiveZ);
+	SettingsWrapEntry(StereoRejectSmallZRange);
+	SettingsWrapEntry(StereoCloseDepthFix);
+	SettingsWrapEntry(StereoRejectSpriteBlit);
+	SettingsWrapEntry(StereoRejectConstantColor);
+	SettingsWrapEntry(StereoRejectScalingDraw);
+	SettingsWrapEntry(StereoRejectSbsInput);
+	SettingsWrapEntry(StereoRejectTabInput);
+	SettingsWrapEntry(StereoMasterFixTest);
+	SettingsWrapEntry(StereoMasterFix1);
+	SettingsWrapEntry(StereoMasterFix2);
+	SettingsWrapEntry(StereoMasterFix3);
+	SettingsWrapEntry(StereoMasterFix4);
+	SettingsWrapEntry(StereoMasterFix5);
+	SettingsWrapEntry(StereoMasterFixMovies);
+	SettingsWrapEntry(StereoRequireDisplayBuffer1);
+	SettingsWrapEntry(StereoRequireDisplayBuffer2);
+	SettingsWrapEntry(StereoFixStencilShadows1);
+	SettingsWrapEntry(StereoFixStencilShadows2);
 	SettingsWrapEntry(StereoRequirePerspectiveUV);
 	SettingsWrapEntry(StereoRequireZVaries);
 	SettingsWrapEntry(StereoRequireDepthActive);
 	SettingsWrapEntry(StereoRejectSprites);
-	SettingsWrapEntry(StereoRejectUiLike);
 	SettingsWrapEntry(StereoRequireTextureMapping);
 	SettingsWrapEntry(StereoRequireAlphaBlend);
 	SettingsWrapEntry(StereoRequireAlphaTest);
@@ -1198,10 +1508,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoStencilRequireTexIsFb);
 	SettingsWrapEntry(StereoRejectFullscreenDraw);
 	SettingsWrapEntry(StereoRejectFullscreenScissor);
-	SettingsWrapEntry(StereoRejectFullscreenDrawArea);
 	SettingsWrapEntry(StereoRejectFullCover);
 	SettingsWrapEntry(StereoRejectSpriteNoGaps);
-	SettingsWrapEntry(StereoRejectTexIsRt);
 	SettingsWrapEntry(StereoRejectTexIsFb);
 	SettingsWrapEntry(StereoRejectChannelShuffle);
 	SettingsWrapEntry(StereoRejectTextureShuffle);
@@ -1214,6 +1522,139 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectFeedbackLoop);
 	SettingsWrapEntry(StereoRejectColclip);
 	SettingsWrapEntry(StereoRejectRtaCorrection);
+	SettingsWrapEntry(StereoUniversalRejectRtaSourceCorrection);
+	SettingsWrapEntry(StereoUniversalRejectColclipHw);
+	SettingsWrapEntry(StereoUniversalRejectColclip);
+	SettingsWrapEntry(StereoUniversalRejectBlendMix);
+	SettingsWrapEntry(StereoUniversalRejectPabe);
+	SettingsWrapEntry(StereoUniversalRejectFbMask);
+	SettingsWrapEntry(StereoUniversalRejectTexIsFb);
+	SettingsWrapEntry(StereoUniversalRejectNoColor);
+	SettingsWrapEntry(StereoUniversalRejectNoColor1);
+	SettingsWrapEntry(StereoUniversalRejectAemFmt);
+	SettingsWrapEntry(StereoUniversalRejectPalFmt);
+	SettingsWrapEntry(StereoUniversalRejectDstFmt);
+	SettingsWrapEntry(StereoUniversalRejectDepthFmt);
+	SettingsWrapEntry(StereoUniversalRejectAem);
+	SettingsWrapEntry(StereoUniversalRejectFba);
+	SettingsWrapEntry(StereoUniversalRejectFog);
+	SettingsWrapEntry(StereoUniversalRejectIip);
+	SettingsWrapEntry(StereoUniversalRejectDate);
+	SettingsWrapEntry(StereoUniversalRejectAtst);
+	SettingsWrapEntry(StereoUniversalRejectAfail);
+	SettingsWrapEntry(StereoUniversalRejectFst);
+	SettingsWrapEntry(StereoUniversalRejectTfx);
+	SettingsWrapEntry(StereoUniversalRejectTcc);
+	SettingsWrapEntry(StereoUniversalRejectWms);
+	SettingsWrapEntry(StereoUniversalRejectWmt);
+	SettingsWrapEntry(StereoUniversalRejectAdjs);
+	SettingsWrapEntry(StereoUniversalRejectAdjt);
+	SettingsWrapEntry(StereoUniversalRejectLtf);
+	SettingsWrapEntry(StereoUniversalRejectShuffle);
+	SettingsWrapEntry(StereoUniversalRejectShuffleSame);
+	SettingsWrapEntry(StereoUniversalRejectReal16Src);
+	SettingsWrapEntry(StereoUniversalRejectProcessBa);
+	SettingsWrapEntry(StereoUniversalRejectProcessRg);
+	SettingsWrapEntry(StereoUniversalRejectShuffleAcross);
+	SettingsWrapEntry(StereoUniversalRejectWriteRg);
+	SettingsWrapEntry(StereoUniversalRejectBlendA);
+	SettingsWrapEntry(StereoUniversalRejectBlendB);
+	SettingsWrapEntry(StereoUniversalRejectBlendC);
+	SettingsWrapEntry(StereoUniversalRejectBlendD);
+	SettingsWrapEntry(StereoUniversalRejectFixedOneA);
+	SettingsWrapEntry(StereoUniversalRejectBlendHw);
+	SettingsWrapEntry(StereoUniversalRejectAMasked);
+	SettingsWrapEntry(StereoUniversalRejectRoundInv);
+	SettingsWrapEntry(StereoUniversalRejectChannel);
+	SettingsWrapEntry(StereoUniversalRejectChannelFb);
+	SettingsWrapEntry(StereoUniversalRejectDither);
+	SettingsWrapEntry(StereoUniversalRejectDitherAdjust);
+	SettingsWrapEntry(StereoUniversalRejectZClamp);
+	SettingsWrapEntry(StereoUniversalRejectZFloor);
+	SettingsWrapEntry(StereoUniversalRejectTCOffsetHack);
+	SettingsWrapEntry(StereoUniversalRejectUrbanChaosHle);
+	SettingsWrapEntry(StereoUniversalRejectTalesOfAbyssHle);
+	SettingsWrapEntry(StereoUniversalRejectAutomaticLod);
+	SettingsWrapEntry(StereoUniversalRejectManualLod);
+	SettingsWrapEntry(StereoUniversalRejectPointSampler);
+	SettingsWrapEntry(StereoUniversalRejectRegionRect);
+	SettingsWrapEntry(StereoUniversalRejectScanmask);
+	SettingsWrapEntry(StereoRequireRtaCorrection);
+	SettingsWrapEntry(StereoUniversalRequireRtaSourceCorrection);
+	SettingsWrapEntry(StereoUniversalRequireColclipHw);
+	SettingsWrapEntry(StereoUniversalRequireColclip);
+	SettingsWrapEntry(StereoUniversalRequireBlendMix);
+	SettingsWrapEntry(StereoUniversalRequirePabe);
+	SettingsWrapEntry(StereoUniversalRequireFbMask);
+	SettingsWrapEntry(StereoUniversalRequireTexIsFb);
+	SettingsWrapEntry(StereoUniversalRequireNoColor);
+	SettingsWrapEntry(StereoUniversalRequireNoColor1);
+	SettingsWrapEntry(StereoUniversalRequireAemFmt);
+	SettingsWrapEntry(StereoUniversalRequirePalFmt);
+	SettingsWrapEntry(StereoUniversalRequireDstFmt);
+	SettingsWrapEntry(StereoUniversalRequireDepthFmt);
+	SettingsWrapEntry(StereoUniversalRequireAem);
+	SettingsWrapEntry(StereoUniversalRequireFba);
+	SettingsWrapEntry(StereoUniversalRequireFog);
+	SettingsWrapEntry(StereoUniversalRequireIip);
+	SettingsWrapEntry(StereoUniversalRequireDate);
+	SettingsWrapEntry(StereoUniversalRequireAtst);
+	SettingsWrapEntry(StereoUniversalRequireAfail);
+	SettingsWrapEntry(StereoUniversalRequireFst);
+	SettingsWrapEntry(StereoUniversalRequireTfx);
+	SettingsWrapEntry(StereoUniversalRequireTcc);
+	SettingsWrapEntry(StereoUniversalRequireWms);
+	SettingsWrapEntry(StereoUniversalRequireWmt);
+	SettingsWrapEntry(StereoUniversalRequireAdjs);
+	SettingsWrapEntry(StereoUniversalRequireAdjt);
+	SettingsWrapEntry(StereoUniversalRequireLtf);
+	SettingsWrapEntry(StereoUniversalRequireShuffle);
+	SettingsWrapEntry(StereoUniversalRequireShuffleSame);
+	SettingsWrapEntry(StereoUniversalRequireReal16Src);
+	SettingsWrapEntry(StereoUniversalRequireProcessBa);
+	SettingsWrapEntry(StereoUniversalRequireProcessRg);
+	SettingsWrapEntry(StereoUniversalRequireShuffleAcross);
+	SettingsWrapEntry(StereoUniversalRequireWriteRg);
+	SettingsWrapEntry(StereoUniversalRequireBlendA);
+	SettingsWrapEntry(StereoUniversalRequireBlendB);
+	SettingsWrapEntry(StereoUniversalRequireBlendC);
+	SettingsWrapEntry(StereoUniversalRequireBlendD);
+	SettingsWrapEntry(StereoUniversalRequireFixedOneA);
+	SettingsWrapEntry(StereoUniversalRequireBlendHw);
+	SettingsWrapEntry(StereoUniversalRequireAMasked);
+	SettingsWrapEntry(StereoUniversalRequireRoundInv);
+	SettingsWrapEntry(StereoUniversalRequireChannel);
+	SettingsWrapEntry(StereoUniversalRequireChannelFb);
+	SettingsWrapEntry(StereoUniversalRequireDither);
+	SettingsWrapEntry(StereoUniversalRequireDitherAdjust);
+	SettingsWrapEntry(StereoUniversalRequireZClamp);
+	SettingsWrapEntry(StereoUniversalRequireZFloor);
+	SettingsWrapEntry(StereoUniversalRequireTCOffsetHack);
+	SettingsWrapEntry(StereoUniversalRequireUrbanChaosHle);
+	SettingsWrapEntry(StereoUniversalRequireTalesOfAbyssHle);
+	SettingsWrapEntry(StereoUniversalRequireAutomaticLod);
+	SettingsWrapEntry(StereoUniversalRequireManualLod);
+	SettingsWrapEntry(StereoUniversalRequirePointSampler);
+	SettingsWrapEntry(StereoUniversalRequireRegionRect);
+	SettingsWrapEntry(StereoUniversalRequireScanmask);
+	SettingsWrapEntry(StereoUniversalRequireAlphaBlend);
+	SettingsWrapEntry(StereoUniversalRequireAlphaTest);
+	SettingsWrapEntry(StereoUniversalRequireDatm);
+	SettingsWrapEntry(StereoUniversalRequireZTest);
+	SettingsWrapEntry(StereoUniversalRequireZWrite);
+	SettingsWrapEntry(StereoUniversalRequireZTestAlways);
+	SettingsWrapEntry(StereoUniversalRequireZTestNever);
+	SettingsWrapEntry(StereoUniversalRequireAa1);
+	SettingsWrapEntry(StereoUniversalRequireChannelShuffle);
+	SettingsWrapEntry(StereoUniversalRequireTextureShuffle);
+	SettingsWrapEntry(StereoUniversalRequireFullscreenShuffle);
+	SettingsWrapEntry(StereoUniversalRequirePoints);
+	SettingsWrapEntry(StereoUniversalRequireLines);
+	SettingsWrapEntry(StereoUniversalRequireTriangles);
+	SettingsWrapEntry(StereoUniversalRequireSprites);
+	SettingsWrapEntry(StereoUniversalRequireFixedQ);
+	SettingsWrapEntry(StereoUniversalRequireFixedZ);
+	SettingsWrapEntry(StereoUniversalRequireConstantColor);
 	SettingsWrapEntry(StereoRejectBlendMix);
 	SettingsWrapEntry(StereoRejectPabe);
 	SettingsWrapEntry(StereoRejectDither);
@@ -1231,6 +1672,15 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectNoZTest);
 	SettingsWrapEntry(StereoRejectNoZWrite);
 	SettingsWrapEntry(StereoRejectZTestAlways);
+	SettingsWrapEntry(StereoUiDetectSkyDepth);
+	SettingsWrapEntry(StereoUiDetectFst);
+	SettingsWrapEntry(StereoUiDetectFullscreenDrawArea);
+	SettingsWrapEntry(StereoUiDetectFullscreenSprite);
+	SettingsWrapEntry(StereoUiSecondLayerSelector1);
+	SettingsWrapEntry(StereoUiSecondLayerSelector2);
+	SettingsWrapEntry(StereoUiSecondLayerSelector3);
+	SettingsWrapEntry(StereoUiSecondLayerSelector4);
+	SettingsWrapEntry(StereoUiSecondLayerSelector5);
 	SettingsWrapEntry(StereoRejectZTestNever);
 	SettingsWrapEntry(StereoRejectAlphaTestOff);
 	SettingsWrapEntry(StereoRejectAlphaTestAlways);
@@ -1239,6 +1689,124 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectTfxDecal);
 	SettingsWrapEntry(StereoRejectTfxHighlight);
 	SettingsWrapEntry(StereoRejectTfxHighlight2);
+	SettingsWrapEntry(StereoRejectSmallDrawArea);
+	SettingsWrapEntry(StereoRejectWideDrawBand);
+	SettingsWrapEntry(StereoRejectTopDrawBand);
+	SettingsWrapEntry(StereoRejectRtSpriteNoDepth);
+	SettingsWrapEntry(StereoRejectRtSpriteAlphaBlend);
+	SettingsWrapEntry(StereoRequireProcessTexture);
+	SettingsWrapEntry(StereoRejectProcessTexture);
+	SettingsWrapEntry(StereoRequireSourceFromTarget);
+	SettingsWrapEntry(StereoRejectSourceFromTarget);
+	SettingsWrapEntry(StereoRequireDrawUsesTarget);
+	SettingsWrapEntry(StereoRejectDrawUsesTarget);
+	SettingsWrapEntry(StereoRequireTexIsRt);
+	SettingsWrapEntry(StereoRejectTexIsRt);
+	SettingsWrapEntry(StereoRequireInTargetDraw);
+	SettingsWrapEntry(StereoRejectInTargetDraw);
+	SettingsWrapEntry(StereoRequireTempZ);
+	SettingsWrapEntry(StereoRejectTempZ);
+	SettingsWrapEntry(StereoRequireOneBarrier);
+	SettingsWrapEntry(StereoRejectOneBarrier);
+	SettingsWrapEntry(StereoRequireFullBarrier);
+	SettingsWrapEntry(StereoRejectFullBarrier);
+	SettingsWrapEntry(StereoRequireSinglePass);
+	SettingsWrapEntry(StereoRejectSinglePass);
+	SettingsWrapEntry(StereoRequireFullscreenDrawArea);
+	SettingsWrapEntry(StereoRejectFullscreenDrawArea);
+	SettingsWrapEntry(StereoRequireFullscreenSprite);
+	SettingsWrapEntry(StereoRejectFullscreenSprite);
+	SettingsWrapEntry(StereoRequireTexturedSprite);
+	SettingsWrapEntry(StereoRejectTexturedSprite);
+	SettingsWrapEntry(StereoRequireRtOutput);
+	SettingsWrapEntry(StereoRejectRtOutput);
+	SettingsWrapEntry(StereoRequireDepthOutput);
+	SettingsWrapEntry(StereoRejectDepthOutput);
+	SettingsWrapEntry(StereoRequireDepthRead);
+	SettingsWrapEntry(StereoRejectDepthRead);
+	SettingsWrapEntry(StereoRequireDepthWrite);
+	SettingsWrapEntry(StereoRejectDepthWrite);
+	SettingsWrapEntry(StereoRequirePalettedTexture);
+	SettingsWrapEntry(StereoRejectPalettedTexture);
+	SettingsWrapEntry(StereoRequireDepthTexture);
+	SettingsWrapEntry(StereoRejectDepthTexture);
+	SettingsWrapEntry(StereoRequireMipmap);
+	SettingsWrapEntry(StereoRejectMipmap);
+	SettingsWrapEntry(StereoRequireLinearSampling);
+	SettingsWrapEntry(StereoRejectLinearSampling);
+	SettingsWrapEntry(StereoRequireFmvActive);
+	SettingsWrapEntry(StereoRejectFmvActive);
+	SettingsWrapEntry(StereoRequireFmvHeuristic);
+	SettingsWrapEntry(StereoRejectFmvHeuristic);
+	SettingsWrapEntry(StereoRequireFmvSprite);
+	SettingsWrapEntry(StereoRejectFmvSprite);
+	SettingsWrapEntry(StereoRequireFmvSingleSprite);
+	SettingsWrapEntry(StereoRejectFmvSingleSprite);
+	SettingsWrapEntry(StereoRequireFmvTextureMapping);
+	SettingsWrapEntry(StereoRejectFmvTextureMapping);
+	SettingsWrapEntry(StereoRequireFmvProcessTexture);
+	SettingsWrapEntry(StereoRejectFmvProcessTexture);
+	SettingsWrapEntry(StereoRequireFmvFullscreenDrawArea);
+	SettingsWrapEntry(StereoRejectFmvFullscreenDrawArea);
+	SettingsWrapEntry(StereoRequireFmvFullscreenScissor);
+	SettingsWrapEntry(StereoRejectFmvFullscreenScissor);
+	SettingsWrapEntry(StereoRequireFmvNoAlphaBlend);
+	SettingsWrapEntry(StereoRejectFmvNoAlphaBlend);
+	SettingsWrapEntry(StereoRequireFmvNoAlphaTest);
+	SettingsWrapEntry(StereoRejectFmvNoAlphaTest);
+	SettingsWrapEntry(StereoRequireFmvNoDepthTest);
+	SettingsWrapEntry(StereoRejectFmvNoDepthTest);
+	SettingsWrapEntry(StereoRequireFmvNoDepthWrite);
+	SettingsWrapEntry(StereoRejectFmvNoDepthWrite);
+	SettingsWrapEntry(StereoRequireFmvNoDepthOutput);
+	SettingsWrapEntry(StereoRejectFmvNoDepthOutput);
+	SettingsWrapEntry(StereoRequireFmvNoDepthRead);
+	SettingsWrapEntry(StereoRejectFmvNoDepthRead);
+	SettingsWrapEntry(StereoRequireFmvNoFbMask);
+	SettingsWrapEntry(StereoRejectFmvNoFbMask);
+	SettingsWrapEntry(StereoRequireFmvColorOutput);
+	SettingsWrapEntry(StereoRejectFmvColorOutput);
+	SettingsWrapEntry(StereoRequireFmvSourceNotFromTarget);
+	SettingsWrapEntry(StereoRejectFmvSourceNotFromTarget);
+	SettingsWrapEntry(StereoRequireFmvDrawMatchesTex);
+	SettingsWrapEntry(StereoRejectFmvDrawMatchesTex);
+	SettingsWrapEntry(StereoRequireFmvNoShuffle);
+	SettingsWrapEntry(StereoRejectFmvNoShuffle);
+	SettingsWrapEntry(StereoRequireFmvNoMipmap);
+	SettingsWrapEntry(StereoRejectFmvNoMipmap);
+	SettingsWrapEntry(StereoRequireFmvLinearSampling);
+	SettingsWrapEntry(StereoRejectFmvLinearSampling);
+	SettingsWrapEntry(StereoRequireFmvEeUpload);
+	SettingsWrapEntry(StereoRejectFmvEeUpload);
+	SettingsWrapEntry(StereoRequireFmvDisplayMatch);
+	SettingsWrapEntry(StereoRejectFmvDisplayMatch);
+	SettingsWrapEntry(StereoRequireFmvRecentEeUpload);
+	SettingsWrapEntry(StereoRejectFmvRecentEeUpload);
+	SettingsWrapEntry(StereoRequireFmvRecentTransferDraw);
+	SettingsWrapEntry(StereoRejectFmvRecentTransferDraw);
+	SettingsWrapEntry(StereoRequireFeedbackLoopAny);
+	SettingsWrapEntry(StereoRejectFeedbackLoopAny);
+	SettingsWrapEntry(StereoRequireFeedbackLoopShader);
+	SettingsWrapEntry(StereoRejectFeedbackLoopShader);
+	SettingsWrapEntry(StereoRequireFeedbackLoopDrawUsesTarget);
+	SettingsWrapEntry(StereoRejectFeedbackLoopDrawUsesTarget);
+	SettingsWrapEntry(StereoRequireFeedbackLoopTexIsRt);
+	SettingsWrapEntry(StereoRejectFeedbackLoopTexIsRt);
+	SettingsWrapEntry(StereoRequireFeedbackLoopSourceFromTarget);
+	SettingsWrapEntry(StereoRejectFeedbackLoopSourceFromTarget);
+	SettingsWrapEntry(StereoRequireFeedbackLoopInTargetDraw);
+	SettingsWrapEntry(StereoRejectFeedbackLoopInTargetDraw);
+	SettingsWrapEntry(StereoRequireFeedbackLoopTempZ);
+	SettingsWrapEntry(StereoRejectFeedbackLoopTempZ);
+	SettingsWrapEntry(StereoRequireFeedbackLoopOverlapDrawRange);
+	SettingsWrapEntry(StereoRejectFeedbackLoopOverlapDrawRange);
+	SettingsWrapEntry(StereoFeedbackLoopDisableStereo);
+	SettingsWrapEntry(StereoFeedbackLoopClampToDominantEye);
+	SettingsWrapEntry(StereoFeedbackLoopSourceFromTargetOnly);
+	SettingsWrapEntry(StereoSbsRemapMono);
+	SettingsWrapEntry(StereoDisableInstancedRendering);
+	SettingsWrapEntry(StereoSbsRemapFix);
+	SettingsWrapEntry(StereoFeedbackLoopFix);
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))

@@ -169,7 +169,7 @@ bool GSRenderer::Merge(int field)
 		if (!curCircuit.enabled || !tex[i])
 			continue;
 
-		const GSVector4 scale = GSVector4(tex_scale[i]);
+		const GSVector4 scale = GetStereoScaleVector4(tex_scale[i]);
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * GSVector4(curCircuit.displayRect);
@@ -201,7 +201,7 @@ bool GSRenderer::Merge(int field)
 
 	if (feedback_merge && tex[2])
 	{
-		const GSVector4 scale = GSVector4(tex_scale[2]);
+		const GSVector4 scale = GetStereoScaleVector4(tex_scale[2]);
 		GSVector4i feedback_rect;
 
 		feedback_rect.left = m_regs->EXTBUF.WDX;
@@ -213,8 +213,9 @@ bool GSRenderer::Merge(int field)
 	}
 
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
-	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
-		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
+	const GSVector2 stereo_scale = GetStereoScaleVector2(GetUpscaleMultiplier());
+	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * stereo_scale.x),
+		static_cast<int>(static_cast<float>(resolution.y) * stereo_scale.y));
 
 	m_real_size = GSVector2i(fs.x, fs.y);
 
@@ -232,7 +233,7 @@ bool GSRenderer::Merge(int field)
 
 	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 	{
-		const float offset = is_bob ? (tex[1] ? tex_scale[1] : tex_scale[0]) : 0.0f;
+		const float offset = is_bob ? ((tex[1] ? tex_scale[1] : tex_scale[0]) * stereo_scale.y) : 0.0f;
 
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
@@ -357,7 +358,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		{
 			const GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
 			const GSVector2i fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * g_gs_renderer->GetUpscaleMultiplier()),
-				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier()));
+				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier())); // TODO works incorrect in stereoscopic rendering
 
 			if (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y)
 			{
@@ -713,7 +714,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
                 const GSVector4 src_uv_l = GSVector4(src_rect_left) / GSVector4(current->GetSize()).xyxy();
                 const GSVector4 src_uv_r = GSVector4(src_rect_right) / GSVector4(current->GetSize()).xyxy();
 
-				// Stereoscopic 3D rendering (Dolphin-style: single render pass + presentation split)
+				// Stereoscopic 3D rendering (single render pass + presentation split)
 				if (GSConfig.StereoMode == GSStereoMode::SideBySide)
 				{
     				const float half_width = static_cast<float>(window_width) * 0.5f;

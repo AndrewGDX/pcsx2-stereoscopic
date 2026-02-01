@@ -102,6 +102,9 @@ struct VS_OUTPUT
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+	noperspective float2 stereo_pos : TEXCOORD3;
+	nointerpolation float stereo_eye : TEXCOORD4;
+	nointerpolation float stereo_axis : TEXCOORD5;
 
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
@@ -115,6 +118,9 @@ struct PS_INPUT
 	noperspective centroid float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+	noperspective float2 stereo_pos : TEXCOORD3;
+	nointerpolation float stereo_eye : TEXCOORD4;
+	nointerpolation float stereo_axis : TEXCOORD5;
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
 #else
@@ -174,9 +180,15 @@ cbuffer cb1
 	float4x4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float4 StereoRemap;
+	float4 StereoClipParams;
+	float4 StereoScissorLeft;
+	float4 StereoScissorRight;
+	float4 StereoDrawLeft;
+	float4 StereoDrawRight;
 };
 
-float4 sample_c(float2 uv, float uv_w, int2 xy)
+float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(int2(xy), 0));
@@ -207,6 +219,16 @@ float4 sample_c(float2 uv, float uv_w, int2 xy)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return Texture.Sample(TextureSampler, uv);
@@ -318,26 +340,26 @@ float4 clamp_wrap_uv(float4 uv)
 	return uv;
 }
 
-float4x4 sample_4c(float4 uv, float uv_w, int2 xy)
+float4x4 sample_4c(float4 uv, float uv_w, int2 xy, float stereo_eye)
 {
 	float4x4 c;
 
-	c[0] = sample_c(uv.xy, uv_w, xy);
-	c[1] = sample_c(uv.zy, uv_w, xy);
-	c[2] = sample_c(uv.xw, uv_w, xy);
-	c[3] = sample_c(uv.zw, uv_w, xy);
+	c[0] = sample_c(uv.xy, uv_w, xy, stereo_eye);
+	c[1] = sample_c(uv.zy, uv_w, xy, stereo_eye);
+	c[2] = sample_c(uv.xw, uv_w, xy, stereo_eye);
+	c[3] = sample_c(uv.zw, uv_w, xy, stereo_eye);
 
 	return c;
 }
 
-uint4 sample_4_index(float4 uv, float uv_w, int2 xy)
+uint4 sample_4_index(float4 uv, float uv_w, int2 xy, float stereo_eye)
 {
 	float4 c;
 
-	c.x = sample_c(uv.xy, uv_w, xy).a;
-	c.y = sample_c(uv.zy, uv_w, xy).a;
-	c.z = sample_c(uv.xw, uv_w, xy).a;
-	c.w = sample_c(uv.zw, uv_w, xy).a;
+	c.x = sample_c(uv.xy, uv_w, xy, stereo_eye).a;
+	c.y = sample_c(uv.zy, uv_w, xy, stereo_eye).a;
+	c.z = sample_c(uv.xw, uv_w, xy, stereo_eye).a;
+	c.w = sample_c(uv.zw, uv_w, xy, stereo_eye).a;
 
 	// Denormalize value
 	uint4 i;
@@ -609,7 +631,7 @@ float4 fetch_gXbY(int2 xy)
 	}
 }
 
-float4 sample_color(float2 st, float uv_w, int2 xy)
+float4 sample_color(float2 st, float uv_w, int2 xy, float stereo_eye)
 {
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -621,7 +643,7 @@ float4 sample_color(float2 st, float uv_w, int2 xy)
 
 	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
-		c[0] = sample_c(st, uv_w, xy);
+		c[0] = sample_c(st, uv_w, xy, stereo_eye);
 	}
 	else
 	{
@@ -645,9 +667,9 @@ float4 sample_color(float2 st, float uv_w, int2 xy)
 		uv = clamp_wrap_uv(uv);
 
 #if PS_PAL_FMT != 0
-			c = sample_4p(sample_4_index(uv, uv_w, xy));
+			c = sample_4p(sample_4_index(uv, uv_w, xy, stereo_eye));
 #else
-			c = sample_4c(uv, uv_w, xy);
+			c = sample_4c(uv, uv_w, xy, stereo_eye);
 #endif
 	}
 
@@ -772,7 +794,7 @@ float4 ps_color(PS_INPUT input)
 #elif PS_DEPTH_FMT > 0
 	float4 T = sample_depth(st_int, input.p.xy);
 #else
-	float4 T = sample_color(st, input.t.w, int2(input.p.xy));
+	float4 T = sample_color(st, input.t.w, int2(input.p.xy), input.stereo_eye);
 #endif
 
 	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
@@ -1019,6 +1041,35 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 PS_OUTPUT ps_main(PS_INPUT input)
 {
+	if (input.stereo_eye != 0.0f)
+	{
+		if (StereoClipParams.x > 0.5f)
+		{
+			float2 frag = input.p.xy;
+			float4 sc = (input.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			float4 da = (input.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
+				discard;
+		}
+		else
+		{
+			if (input.stereo_axis > 0.5f)
+			{
+				if ((input.stereo_eye < 0.0f && input.stereo_pos.y < 0.0f) ||
+					(input.stereo_eye > 0.0f && input.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((input.stereo_eye < 0.0f && input.stereo_pos.x > 0.0f) ||
+					(input.stereo_eye > 0.0f && input.stereo_pos.x < 0.0f))
+					discard;
+			}
+		}
+	}
+
 	float4 C = ps_color(input);
 	bool atst_pass = atst(C);
 
@@ -1250,7 +1301,7 @@ cbuffer cb0
 	float4 StereoParams;
 };
 
-VS_OUTPUT vs_main(VS_INPUT input)
+VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 {
 	// Clamp to max depth, gs doesn't wrap
 	input.z = min(input.z, MaxDepth);
@@ -1269,22 +1320,37 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
-	if (StereoParams.w > 0.5f && input.z > 0)
+	int stereo_mode = int(StereoParams.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0)
 	{
-		float depth = output.p.z * StereoParams.z;
-		output.p.x -= StereoParams.x * (depth - StereoParams.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((instance_id & 1u) ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
+		float depth = 1.0f - (float(input.z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		output.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (StereoParams.w < 1.5f)
+		if (base_mode == 2 || base_mode == 4)
 		{
-			output.p.x *= 0.5f;
-			output.p.x += sign(StereoParams.x) * 0.5f;
+			output.p.y *= 0.5f;
+			output.p.y -= eye_sign * 0.5f;
 		}
 		else
 		{
-			output.p.y *= 0.5f;
-			output.p.y -= sign(StereoParams.x) * 0.5f;
+			output.p.x *= 0.5f;
+			output.p.x += eye_sign * 0.5f;
 		}
 	}
+
+	output.stereo_pos = output.p.xy;
+	output.stereo_eye = (base_mode >= 3) ? ((instance_id & 1u) ? 1.0f : -1.0f) : 0.0f;
+	output.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
 
 	if(VS_TME)
 	{
@@ -1355,11 +1421,11 @@ VS_INPUT load_vertex(uint index)
 	return vert;
 }
 
-VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
+VS_OUTPUT vs_main_expand(uint vid : SV_VertexID, uint instance_id : SV_InstanceID)
 {
 #if VS_EXPAND == 1 // Point
 
-	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2));
+	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2), instance_id);
 
 	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
 	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
@@ -1372,8 +1438,8 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	bool is_bottom = vid & 2;
 	bool is_right = vid & 1;
 	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
-	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
-	VS_OUTPUT other = vs_main(load_vertex(vid_other));
+	VS_OUTPUT vtx = vs_main(load_vertex(vid_base), instance_id);
+	VS_OUTPUT other = vs_main(load_vertex(vid_other), instance_id);
 
 	float2 line_vector = normalize(vtx.p.xy - other.p.xy);
 	float2 line_normal = float2(line_vector.y, -line_vector.x);
@@ -1395,8 +1461,8 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	uint vid_lt = vid_base & ~1u;
 	uint vid_rb = vid_base | 1u;
 
-	VS_OUTPUT lt = vs_main(load_vertex(vid_lt));
-	VS_OUTPUT rb = vs_main(load_vertex(vid_rb));
+	VS_OUTPUT lt = vs_main(load_vertex(vid_lt), instance_id);
+	VS_OUTPUT rb = vs_main(load_vertex(vid_rb), instance_id);
 	VS_OUTPUT vtx = rb;
 
 	bool is_right = ((vid & 1u) != 0u);

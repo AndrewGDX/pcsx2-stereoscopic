@@ -1425,21 +1425,36 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 
 void GSDevice12::DrawPrimitive()
 {
+	DrawPrimitive(1);
+}
+
+void GSDevice12::DrawPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	GetCommandList().list4->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
+	GetCommandList().list4->DrawInstanced(m_vertex.count, instance_count, m_vertex.start, 0);
 }
 
 void GSDevice12::DrawIndexedPrimitive()
 {
+	DrawIndexedPrimitive(1);
+}
+
+void GSDevice12::DrawIndexedPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	GetCommandList().list4->DrawIndexedInstanced(m_index.count, 1, m_index.start, m_vertex.start, 0);
+	GetCommandList().list4->DrawIndexedInstanced(m_index.count, instance_count, m_index.start, m_vertex.start, 0);
 }
 
 void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 {
+	DrawIndexedPrimitive(offset, count, 1);
+}
+
+void GSDevice12::DrawIndexedPrimitive(int offset, int count, u32 instance_count)
+{
 	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
+	GetCommandList().list4->DrawIndexedInstanced(count, instance_count, m_index.start + offset, m_vertex.start, 0);
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
@@ -3990,7 +4005,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.ps.no_color = false;
 	init_pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 
 	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
 	EndRenderPass();
@@ -4306,7 +4321,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		pipe.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
-			DrawIndexedPrimitive();
+			DrawIndexedPrimitive(config.instance_count);
 	}
 
 	// and the alpha pass
@@ -4370,7 +4385,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 {
 	if (BindDrawPipeline(pipe) && !m_features.texture_barrier) [[unlikely]]
 	{
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 		return;
 	}
 
@@ -4401,7 +4416,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 				FeedbackBarrier(draw_rt);
 
 				if (BindDrawPipeline(pipe))
-					DrawIndexedPrimitive(p, count);
+					DrawIndexedPrimitive(p, count, config.instance_count);
 				p += count;
 			}
 
@@ -4417,7 +4432,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 	}
 
 	if (BindDrawPipeline(pipe))
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 }
 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)

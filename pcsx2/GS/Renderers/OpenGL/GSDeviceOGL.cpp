@@ -1043,25 +1043,60 @@ float GSDeviceOGL::GetAndResetAccumulatedGPUTime()
 
 void GSDeviceOGL::DrawPrimitive()
 {
+	DrawPrimitive(1);
+}
+
+void GSDeviceOGL::DrawPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	glDrawArrays(m_draw_topology, m_vertex.start, m_vertex.count);
+	if (instance_count > 1)
+		glDrawArraysInstanced(m_draw_topology, m_vertex.start, m_vertex.count, instance_count);
+	else
+		glDrawArrays(m_draw_topology, m_vertex.start, m_vertex.count);
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
+	DrawIndexedPrimitive(1);
+}
+
+void GSDeviceOGL::DrawIndexedPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_SHORT,
-		reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u16)), static_cast<GLint>(m_vertex.start));
+	if (instance_count > 1)
+	{
+		glDrawElementsInstancedBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_SHORT,
+			reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u16)), instance_count, static_cast<GLint>(m_vertex.start));
+	}
+	else
+	{
+		glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_SHORT,
+			reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u16)), static_cast<GLint>(m_vertex.start));
+	}
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 {
+	DrawIndexedPrimitive(offset, count, 1);
+}
+
+void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count, u32 instance_count)
+{
 	//ASSERT(offset + count <= (int)m_index.count);
 
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_SHORT,
-		reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u16)),
-		static_cast<GLint>(m_vertex.start));
+	if (instance_count > 1)
+	{
+		glDrawElementsInstancedBaseVertex(m_draw_topology, count, GL_UNSIGNED_SHORT,
+			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u16)),
+			instance_count, static_cast<GLint>(m_vertex.start));
+	}
+	else
+	{
+		glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_SHORT,
+			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u16)),
+			static_cast<GLint>(m_vertex.start));
+	}
 }
 
 void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
@@ -2621,7 +2656,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupOM(dss);
 
 		// Compute primitiveID max that pass the date test (Draw without barrier)
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 
 		psel.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
@@ -2716,7 +2751,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		psel.ps.dither = config.blend_multi_pass.dither;
 		SetupPipeline(psel);
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -2774,7 +2809,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 {
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 		return;
 	}
 
@@ -2811,7 +2846,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 		{
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 			glTextureBarrier();
-			DrawIndexedPrimitive(p, count);
+			DrawIndexedPrimitive(p, count, config.instance_count);
 			p += count;
 		}
 
@@ -2824,7 +2859,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 		glTextureBarrier();
 	}
 
-	DrawIndexedPrimitive();
+	DrawIndexedPrimitive(config.instance_count);
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

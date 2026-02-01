@@ -288,8 +288,11 @@ public:
 	float GetAndResetAccumulatedGPUTime() override;
 
 	void DrawPrimitive();
+	void DrawPrimitive(u32 instance_count);
 	void DrawIndexedPrimitive();
+	void DrawIndexedPrimitive(u32 instance_count);
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawIndexedPrimitive(int offset, int count, u32 instance_count);
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;

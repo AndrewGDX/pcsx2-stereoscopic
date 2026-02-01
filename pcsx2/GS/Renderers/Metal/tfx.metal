@@ -121,6 +121,9 @@ struct MainVSOut
 	float4 p [[position]];
 	float4 t;
 	float4 ti;
+	float2 stereo_pos [[center_no_perspective]];
+	float stereo_eye [[flat]];
+	float stereo_axis [[flat]];
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float point_size [[point_size, function_constant(VS_POINT_SIZE)]];
@@ -131,6 +134,9 @@ struct MainPSIn
 	float4 p [[position]];
 	float4 t;
 	float4 ti;
+	float2 stereo_pos [[center_no_perspective]];
+	float stereo_eye [[flat]];
+	float stereo_axis [[flat]];
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 };
@@ -168,7 +174,7 @@ static void texture_coord(thread const MainVSIn& v, thread MainVSOut& out, const
 	}
 }
 
-static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUniform& cb)
+static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUniform& cb, uint instance_id)
 {
 	constexpr float exp_min32 = 0x1p-32;
 	MainVSOut out;
@@ -181,23 +187,38 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
-	if (cb.stereo_params.w > 0.5f && v.z > 0)
+	int stereo_mode = int(cb.stereo_params.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0)
 	{
-        // float depth = (float(v.z) / float(cb.max_depth)) * cb.stereo_params.z;
-        float depth = out.p.z * cb.stereo_params.z;
-        out.p.x -= cb.stereo_params.x * (depth - cb.stereo_params.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((instance_id & 1u) != 0u ? 1.0f : -1.0f) : (cb.stereo_params.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(cb.stereo_params.x) * eye_scale * eye_sign;
 
-        if (cb.stereo_params.w < 1.5f)
-        {
-            out.p.x *= 0.5f;
-            out.p.x += sign(cb.stereo_params.x) * 0.5f;
-        }
-        else
-        {
-            out.p.y *= 0.5f;
-            out.p.y -= sign(cb.stereo_params.x) * 0.5f;
-        }
+		float depth = 1.0f - (float(z) * 0.00000000006f - cb.stereo_params.z * 0.0005f) * cb.stereo_params.y;
+		out.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
+
+		if (base_mode == 2 || base_mode == 4)
+		{
+			out.p.y *= 0.5f;
+			out.p.y -= eye_sign * 0.5f;
+		}
+		else
+		{
+			out.p.x *= 0.5f;
+			out.p.x += eye_sign * 0.5f;
+		}
 	}
+
+	out.stereo_pos = out.p.xy;
+	out.stereo_eye = (base_mode >= 3) ? ((instance_id & 1u) != 0u ? 1.0f : -1.0f) : 0.0f;
+	out.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
 
 	texture_coord(v, out, cb);
 
@@ -214,9 +235,11 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	return out;
 }
 
-vertex MainVSOut vs_main(MainVSIn v [[stage_in]], constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+vertex MainVSOut vs_main(MainVSIn v [[stage_in]],
+	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]],
+	uint instance_id [[instance_id]])
 {
-	return vs_main_run(v, cb);
+	return vs_main_run(v, cb, instance_id);
 }
 
 static MainVSIn load_vertex(GSMTLMainVertex base)
@@ -235,15 +258,16 @@ static MainVSIn load_vertex(GSMTLMainVertex base)
 vertex MainVSOut vs_main_expand(
 	uint vid [[vertex_id]],
 	device const GSMTLMainVertex* vertices [[buffer(GSMTLBufferIndexHWVertices)]],
-	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]],
+	uint instance_id [[instance_id]])
 {
 	switch (VS_EXPAND_TYPE)
 	{
 		case GSMTLExpandType::None:
-			return vs_main_run(load_vertex(vertices[vid]), cb);
+			return vs_main_run(load_vertex(vertices[vid]), cb, instance_id);
 		case GSMTLExpandType::Point:
 		{
-			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb);
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb, instance_id);
 			if (vid & 1)
 				point.p.x += cb.point_size.x;
 			if (vid & 2)
@@ -256,8 +280,8 @@ vertex MainVSOut vs_main_expand(
 			bool is_bottom = vid & 2;
 			bool is_right = vid & 1;
 			uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
-			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb);
-			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb);
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb, instance_id);
+			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb, instance_id);
 
 			float2 line_vector = normalize(point.p.xy - other.p.xy);
 			float2 line_normal = float2(line_vector.y, -line_vector.x);
@@ -281,8 +305,8 @@ vertex MainVSOut vs_main_expand(
 			uint vid_lt = vid_base & ~1;
 			uint vid_rb = vid_base | 1;
 
-			MainVSOut lt = vs_main_run(load_vertex(vertices[vid_lt]), cb);
-			MainVSOut rb = vs_main_run(load_vertex(vertices[vid_rb]), cb);
+			MainVSOut lt = vs_main_run(load_vertex(vertices[vid_lt]), cb, instance_id);
+			MainVSOut rb = vs_main_run(load_vertex(vertices[vid_rb]), cb, instance_id);
 			MainVSOut out = rb;
 
 			if (!is_right)
@@ -337,6 +361,20 @@ struct PSMain
 			return tex.read(pos, lod);
 	}
 
+	float2 stereo_remap_uv(float2 uv)
+	{
+		const bool use_forced_eye = (cb.stereo_remap.z >= 0.0f);
+		if (cb.stereo_remap.x > 0.5f && (use_forced_eye || in.stereo_eye != 0.0f))
+		{
+			float eye_index = use_forced_eye ? cb.stereo_remap.z : (in.stereo_eye > 0.0f ? 1.0f : 0.0f);
+			if (cb.stereo_remap.y < 0.5f)
+				uv.x = uv.x * 0.5f + eye_index * 0.5f;
+			else
+				uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		}
+		return uv;
+	}
+
 	float4 sample_c(float2 uv)
 	{
 		if (PS_TEX_IS_FB)
@@ -359,6 +397,8 @@ struct PSMain
 			else
 				uv.y = uv.y * cb.st_scale.y;
 		}
+
+		uv = stereo_remap_uv(uv);
 
 		if (PS_AUTOMATIC_LOD)
 		{
@@ -1076,6 +1116,32 @@ struct PSMain
 	MainPSOut ps_main()
 	{
 		MainPSOut out = {};
+		if (in.stereo_eye != 0.0f)
+		{
+			if (cb.stereo_clip_params.x > 0.5f)
+			{
+				float2 frag = in.p.xy;
+				float4 sc = (in.stereo_eye > 0.0f) ? cb.stereo_scissor_right : cb.stereo_scissor_left;
+				float4 da = (in.stereo_eye > 0.0f) ? cb.stereo_draw_right : cb.stereo_draw_left;
+				if (cb.stereo_clip_params.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+					discard_fragment();
+				if (cb.stereo_clip_params.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
+					discard_fragment();
+			}
+			else
+			{
+				if (in.stereo_axis > 0.5f)
+				{
+					if (in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f)
+						discard_fragment();
+				}
+				else
+				{
+					if (in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f)
+						discard_fragment();
+				}
+			}
+		}
 
 		if (PS_SCANMSK & 2)
 		{
