@@ -318,6 +318,14 @@ enum class GSStereoMode : u8
 	Count
 };
 
+enum class GSStereoDominantEye : u8
+{
+	None,
+	Left,
+	Right,
+	Count
+};
+
 // Ordering was done to keep compatibility with older ini file.
 enum class BiFiltering : u8
 {
@@ -704,6 +712,7 @@ struct Pcsx2Config
 		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 		static const char* StereoModeNames[];
+		static const char* StereoDominantEyeNames[];
 
 		static const char* GetRendererName(GSRendererType type);
 
@@ -873,6 +882,7 @@ struct Pcsx2Config
 		u8 PNGCompressionLevel = 1;
 
 		GSStereoMode StereoMode = GSStereoMode::Off;
+		GSStereoDominantEye StereoDominantEye = GSStereoDominantEye::None;
 		float StereoSeparation = 0.0f;
 		float StereoConvergence = 0.0f;
 		float StereoDepthFactor = 1.0f;
@@ -880,7 +890,8 @@ struct Pcsx2Config
 		bool StereoSwapEyes = false;
 		bool StereoFlipRendering = false;
 		bool StereoDontRenderMonoObjects = false;
-		bool StereoRequireDisplayBuffer = true;
+		bool StereoRequireDisplayBuffer1 = true;
+		bool StereoRequireDisplayBuffer2 = true;
 		bool StereoRequirePerspectiveUV = true;
 		bool StereoRequireZVaries = true;
 		bool StereoRequireDepthActive = true;
@@ -933,6 +944,7 @@ struct Pcsx2Config
 		bool StereoRejectLines = false;
 		bool StereoRejectFlatShading = false;
 		bool StereoRejectFst = false;
+		bool StereoFixStencilShadows = false;
 		bool StereoRejectFixedQ = false;
 		bool StereoRejectAa1 = false;
 		bool StereoRejectNoZTest = false;

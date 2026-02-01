@@ -2335,7 +2335,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		                indexCount:config.nindices
 		                 indexType:MTLIndexTypeUInt16
 		               indexBuffer:buffer
-		         indexBufferOffset:off];
+		         indexBufferOffset:off
+                 instanceCount:config.instance_count];
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		
@@ -2377,7 +2378,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			                indexCount:count
 			                 indexType:MTLIndexTypeUInt16
 			               indexBuffer:buffer
-			         indexBufferOffset:off + p * sizeof(*config.indices)];
+			         indexBufferOffset:off + p * sizeof(*config.indices)
+                     instanceCount:config.instance_count];
 			p += count;
 		}
 
@@ -2395,7 +2397,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 	                indexCount:config.nindices
 	                 indexType:MTLIndexTypeUInt16
 	               indexBuffer:buffer
-	         indexBufferOffset:off];
+	         indexBufferOffset:off
+             instanceCount:config.instance_count];
 
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }

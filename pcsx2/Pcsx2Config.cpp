@@ -677,6 +677,12 @@ const char* Pcsx2Config::GSOptions::StereoModeNames[(size_t)GSStereoMode::Count 
 	"Top and Bottom",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::StereoDominantEyeNames[(size_t)GSStereoDominantEye::Count + 1] = {
+	"No (recommended)",
+	"Left",
+	"Right",
+	nullptr};
+
 const char* Pcsx2Config::AchievementsOptions::OverlayPositionNames[(size_t)AchievementOverlayPosition::MaxCount + 1] = {
 	"TopLeft",
 	"TopCenter",
@@ -888,6 +894,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(StereoMode) &&
+		OpEqu(StereoDominantEye) &&
 		OpEqu(StereoSeparation) &&
 		OpEqu(StereoConvergence) &&
 		OpEqu(StereoDepthFactor) &&
@@ -895,7 +902,9 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoSwapEyes) &&
 		OpEqu(StereoFlipRendering) &&
 		OpEqu(StereoDontRenderMonoObjects) &&
-		OpEqu(StereoRequireDisplayBuffer) &&
+		OpEqu(StereoRequireDisplayBuffer1) &&
+		OpEqu(StereoRequireDisplayBuffer2) &&
+		OpEqu(StereoFixStencilShadows) &&
 		OpEqu(StereoRequirePerspectiveUV) &&
 		OpEqu(StereoRequireZVaries) &&
 		OpEqu(StereoRequireDepthActive) &&
@@ -1166,6 +1175,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
 
 	SettingsWrapEnumEx(StereoMode, "StereoMode", StereoModeNames);
+	SettingsWrapEnumEx(StereoDominantEye, "StereoDominantEye", StereoDominantEyeNames);
 	SettingsWrapEntry(StereoSeparation);
 	SettingsWrapEntry(StereoConvergence);
 	SettingsWrapEntry(StereoDepthFactor);
@@ -1173,7 +1183,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoSwapEyes);
 	SettingsWrapEntry(StereoFlipRendering);
 	SettingsWrapEntry(StereoDontRenderMonoObjects);
-	SettingsWrapEntry(StereoRequireDisplayBuffer);
+	SettingsWrapEntry(StereoRequireDisplayBuffer1);
+	SettingsWrapEntry(StereoRequireDisplayBuffer2);
+	SettingsWrapEntry(StereoFixStencilShadows);
 	SettingsWrapEntry(StereoRequirePerspectiveUV);
 	SettingsWrapEntry(StereoRequireZVaries);
 	SettingsWrapEntry(StereoRequireDepthActive);

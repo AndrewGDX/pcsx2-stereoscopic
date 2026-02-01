@@ -2722,21 +2722,36 @@ bool GSDeviceVK::CheckFeatures()
 
 void GSDeviceVK::DrawPrimitive()
 {
+	DrawPrimitive(1);
+}
+
+void GSDeviceVK::DrawPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	vkCmdDraw(GetCurrentCommandBuffer(), m_vertex.count, 1, m_vertex.start, 0);
+	vkCmdDraw(GetCurrentCommandBuffer(), m_vertex.count, instance_count, m_vertex.start, 0);
 }
 
 void GSDeviceVK::DrawIndexedPrimitive()
 {
+	DrawIndexedPrimitive(1);
+}
+
+void GSDeviceVK::DrawIndexedPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	vkCmdDrawIndexed(GetCurrentCommandBuffer(), m_index.count, 1, m_index.start, m_vertex.start, 0);
+	vkCmdDrawIndexed(GetCurrentCommandBuffer(), m_index.count, instance_count, m_index.start, m_vertex.start, 0);
 }
 
 void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 {
+	DrawIndexedPrimitive(offset, count, 1);
+}
+
+void GSDeviceVK::DrawIndexedPrimitive(int offset, int count, u32 instance_count)
+{
 	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	vkCmdDrawIndexed(GetCurrentCommandBuffer(), count, 1, m_index.start + offset, m_vertex.start, 0);
+	vkCmdDrawIndexed(GetCurrentCommandBuffer(), count, instance_count, m_index.start + offset, m_vertex.start, 0);
 }
 
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
@@ -5564,7 +5579,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	pipe.ps.no_color = false;
 	pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(pipe))
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 
 	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
 	EndRenderPass();
@@ -6069,7 +6084,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 {
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 		return;
 	}
 
@@ -6096,7 +6111,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 		if (skip_first_barrier)
 		{
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			DrawIndexedPrimitive(p, count);
+			DrawIndexedPrimitive(p, count, config.instance_count);
 			p += count;
 			++n;
 		}
@@ -6107,7 +6122,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
 
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			DrawIndexedPrimitive(p, count);
+			DrawIndexedPrimitive(p, count, config.instance_count);
 			p += count;
 		}
 
@@ -6123,5 +6138,5 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
 	}
 
-	DrawIndexedPrimitive();
+	DrawIndexedPrimitive(config.instance_count);
 }

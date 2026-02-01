@@ -70,6 +70,9 @@ in SHADER
 	#else
 		flat vec4 c;
 	#endif
+	noperspective vec2 stereo_pos;
+	flat float stereo_eye;
+	flat float stereo_axis;
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -974,6 +977,22 @@ float As = As_rgba.a;
 
 void ps_main()
 {
+	if (PSin.stereo_eye != 0.0f)
+	{
+		if (PSin.stereo_axis > 0.5f)
+		{
+			if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y < 0.0f) ||
+				(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y > 0.0f))
+				discard;
+		}
+		else
+		{
+			if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.x > 0.0f) ||
+				(PSin.stereo_eye > 0.0f && PSin.stereo_pos.x < 0.0f))
+				discard;
+		}
+	}
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))

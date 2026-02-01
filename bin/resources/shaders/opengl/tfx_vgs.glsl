@@ -28,6 +28,9 @@ out SHADER
 	#else
 		flat vec4 c;
 	#endif
+	noperspective vec2 stereo_pos;
+	flat float stereo_eye;
+	flat float stereo_axis;
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
@@ -78,22 +81,37 @@ void vs_main()
 
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
-	if (StereoParams.w > 0.5f && i_z > 0u)
+	int stereo_mode = int(StereoParams.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0 && i_z > 0u)
 	{
 		float depth = gl_Position.z * StereoParams.z;
-		gl_Position.x -= StereoParams.x * (depth - StereoParams.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
+		gl_Position.x -= eye_sep * (depth - StereoParams.y);
 
-		if (StereoParams.w < 1.5f)
+		if (base_mode == 2 || base_mode == 4)
 		{
-			gl_Position.x *= 0.5f;
-			gl_Position.x += sign(StereoParams.x) * 0.5f;
+			gl_Position.y *= 0.5f;
+			gl_Position.y -= eye_sign * 0.5f;
 		}
 		else
 		{
-			gl_Position.y *= 0.5f;
-			gl_Position.y -= sign(StereoParams.x) * 0.5f;
+			gl_Position.x *= 0.5f;
+			gl_Position.x += eye_sign * 0.5f;
 		}
 	}
+
+	VSout.stereo_pos = gl_Position.xy;
+	VSout.stereo_eye = (base_mode >= 3) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
+	VSout.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
 
 	texture_coord();
 
@@ -153,20 +171,31 @@ ProcessedVertex load_vertex(uint index)
 
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
-	if (StereoParams.w > 0.5f && i_z > 0u)
+	int stereo_mode = int(StereoParams.w + 0.5f);
+	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
+	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+	if (base_mode > 0 && i_z > 0u)
 	{
 		float depth = vtx.p.z * StereoParams.z;
-		vtx.p.x -= StereoParams.x * (depth - StereoParams.y);
+		bool stereo_instanced = (base_mode >= 3);
+		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_scale = 1.0f;
+		if (dominant_mode == 1)
+			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
+		else if (dominant_mode == 2)
+			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
+		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
+		vtx.p.x -= eye_sep * (depth - StereoParams.y);
 
-		if (StereoParams.w < 1.5f)
+		if (base_mode == 2 || base_mode == 4)
 		{
-			vtx.p.x *= 0.5f;
-			vtx.p.x += sign(StereoParams.x) * 0.5f;
+			vtx.p.y *= 0.5f;
+			vtx.p.y -= eye_sign * 0.5f;
 		}
 		else
 		{
-			vtx.p.y *= 0.5f;
-			vtx.p.y -= sign(StereoParams.x) * 0.5f;
+			vtx.p.x *= 0.5f;
+			vtx.p.x += eye_sign * 0.5f;
 		}
 	}
 
@@ -249,6 +278,13 @@ void main()
 	VSout.t_float = vtx.t_float;
 	VSout.t_int = vtx.t_int;
 	VSout.c = vtx.c;
+	{
+		int stereo_mode = int(StereoParams.w + 0.5f);
+		int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
+		VSout.stereo_pos = vtx.p.xy;
+		VSout.stereo_eye = (base_mode >= 3) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
+		VSout.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+	}
 }
 
 #endif // VS_EXPAND

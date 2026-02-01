@@ -1103,24 +1103,48 @@ float GSDevice11::GetAndResetAccumulatedGPUTime()
 
 void GSDevice11::DrawPrimitive()
 {
+	DrawPrimitive(1);
+}
+
+void GSDevice11::DrawPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
-	m_ctx->Draw(m_vertex.count, m_vertex.start);
+	if (instance_count > 1)
+		m_ctx->DrawInstanced(m_vertex.count, instance_count, m_vertex.start, 0);
+	else
+		m_ctx->Draw(m_vertex.count, m_vertex.start);
 }
 
 void GSDevice11::DrawIndexedPrimitive()
 {
+	DrawIndexedPrimitive(1);
+}
+
+void GSDevice11::DrawIndexedPrimitive(u32 instance_count)
+{
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
-	m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
+	if (instance_count > 1)
+		m_ctx->DrawIndexedInstanced(m_index.count, instance_count, m_index.start, m_vertex.start, 0);
+	else
+		m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
 }
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
+	DrawIndexedPrimitive(offset, count, 1);
+}
+
+void GSDevice11::DrawIndexedPrimitive(int offset, int count, u32 instance_count)
+{
 	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
-	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
+	if (instance_count > 1)
+		m_ctx->DrawIndexedInstanced(count, instance_count, m_index.start + offset, m_vertex.start, 0);
+	else
+		m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -2729,7 +2753,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_texture, config.ds, &config.scissor, read_only_dsv);
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
@@ -2782,7 +2806,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.dither = config.blend_multi_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
-		DrawIndexedPrimitive();
+		DrawIndexedPrimitive(config.instance_count);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -2860,7 +2884,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 				// Copy only the part needed by the draw.
 				CopyAndBind(bbox);
 
-				DrawIndexedPrimitive(p, count);
+				DrawIndexedPrimitive(p, count, config.instance_count);
 				p += count;
 			}
 
@@ -2872,5 +2896,5 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			CopyAndBind(config.drawarea);
 	}
 
-	DrawIndexedPrimitive();
+	DrawIndexedPrimitive(config.instance_count);
 }

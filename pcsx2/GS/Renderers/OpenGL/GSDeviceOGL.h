@@ -311,8 +311,11 @@ public:
 	float GetAndResetAccumulatedGPUTime() override;
 
 	void DrawPrimitive();
+	void DrawPrimitive(u32 instance_count);
 	void DrawIndexedPrimitive();
+	void DrawIndexedPrimitive(u32 instance_count);
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawIndexedPrimitive(int offset, int count, u32 instance_count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 

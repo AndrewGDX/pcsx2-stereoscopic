@@ -116,6 +116,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.enableHWFixes, "EmuCore/GS", "UserHacks", false);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_hw.stereoscopicMode, "EmuCore/GS", "StereoMode",
 		Pcsx2Config::GSOptions::StereoModeNames, GSStereoMode::Off);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_hw.stereoDominantEye, "EmuCore/GS", "StereoDominantEye",
+		Pcsx2Config::GSOptions::StereoDominantEyeNames, GSStereoDominantEye::None);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoSeparation, "EmuCore/GS", "StereoSeparation", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoConvergence, "EmuCore/GS", "StereoConvergence", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoDepthFactor, "EmuCore/GS", "StereoDepthFactor", 0.0f);
@@ -123,7 +125,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSwapEyes, "EmuCore/GS", "StereoSwapEyes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFlipRendering, "EmuCore/GS", "StereoFlipRendering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderMonoObjects, "EmuCore/GS", "StereoDontRenderMonoObjects", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer, "EmuCore/GS", "StereoRequireDisplayBuffer", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer1, "EmuCore/GS", "StereoRequireDisplayBuffer1", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer2, "EmuCore/GS", "StereoRequireDisplayBuffer2", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFixStencilShadows, "EmuCore/GS", "StereoFixStencilShadows", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePerspectiveUV, "EmuCore/GS", "StereoRequirePerspectiveUV", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireZVaries, "EmuCore/GS", "StereoRequireZVaries", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDepthActive, "EmuCore/GS", "StereoRequireDepthActive", true);
@@ -621,8 +625,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be."));
 
-		dialog()->registerWidgetHelp(m_hw.stereoRequireDisplayBuffer, tr("Require Display Buffer"), tr("Checked"),
+		dialog()->registerWidgetHelp(m_hw.stereoRequireDisplayBuffer1, tr("Require Display Buffer"), tr("Checked"),
 			tr("Only apply stereoscopy to draws which match the active display framebuffer. Disabling this can include offscreen effects."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireDisplayBuffer2, tr("Require Display Buffer"), tr("Checked"),
+        			tr("Only apply stereoscopy to draws which match the active display framebuffer. Disabling this can include offscreen effects."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequirePerspectiveUV, tr("Require Perspective UV"), tr("Checked"),
 			tr("Require perspective-correct UVs for stereoscopic rendering. Useful for excluding flat UI draws."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireZVaries, tr("Require Varying Z"), tr("Checked"),
@@ -633,6 +639,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy for sprite/rect draws, which are commonly used for UI and 2D effects."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectUiLike, tr("Reject UI-like Sprites"), tr("Checked"),
 			tr("Exclude sprite draws that look like UI (fixed UV, constant Q/Z, no depth)."));
+		dialog()->registerWidgetHelp(m_hw.stereoDominantEye, tr("Dominant Eye"), tr("No (recommended)"),
+			tr("Biases stereo parallax toward the selected eye. Useful for FPS weapon alignment."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiDepth, tr("UI Depth"), tr("0.0"),
 			tr("Depth offset applied to UI elements when stereoscopy is active. Negative values push UI back, positive values pull UI forward."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireTextureMapping, tr("Require Texture Mapping"), tr("Unchecked"),
@@ -729,6 +737,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy when flat shading is used."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFst, tr("Reject Fixed ST"), tr("Unchecked"),
 			tr("Disable stereoscopy when fixed texture coordinates are used."));
+		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows, tr("Fix Stencil Shadows"), tr("Unchecked"),
+			tr("Disable stereoscopy for stencil shadow passes to reduce post-processing artifacts (Tekken 5, Soul Calibur 3)"));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFixedQ, tr("Reject Fixed Q"), tr("Unchecked"),
 			tr("Disable stereoscopy when Q is constant across the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectAa1, tr("Reject AA1"), tr("Unchecked"),
@@ -1159,14 +1169,22 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 {
 	const std::string effective_mode = dialog()->getEffectiveStringValue("EmuCore/GS", "StereoMode", "Off");
 	const bool stereo_enabled = (effective_mode != "Off");
+	m_hw.stereoDominantEyeLabel->setEnabled(stereo_enabled);
+	m_hw.stereoDominantEye->setEnabled(stereo_enabled);
+	m_hw.stereoSeparationLabel->setEnabled(stereo_enabled);
 	m_hw.stereoSeparation->setEnabled(stereo_enabled);
+	m_hw.stereoConvergenceLabel->setEnabled(stereo_enabled);
 	m_hw.stereoConvergence->setEnabled(stereo_enabled);
+	m_hw.stereoDepthFactorLabel->setEnabled(stereo_enabled);
 	m_hw.stereoDepthFactor->setEnabled(stereo_enabled);
+	m_hw.stereoUiDepthLabel->setEnabled(stereo_enabled);
 	m_hw.stereoUiDepth->setEnabled(stereo_enabled);
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoDontRenderMonoObjects->setEnabled(stereo_enabled);
-	m_hw.stereoRequireDisplayBuffer->setEnabled(stereo_enabled);
+	m_hw.stereoRequireDisplayBuffer1->setEnabled(stereo_enabled);
+	m_hw.stereoRequireDisplayBuffer2->setEnabled(stereo_enabled);
+    m_hw.stereoFixStencilShadows->setEnabled(stereo_enabled);
 	m_hw.stereoRequirePerspectiveUV->setEnabled(stereo_enabled);
 	m_hw.stereoRequireZVaries->setEnabled(stereo_enabled);
 	m_hw.stereoRequireDepthActive->setEnabled(stereo_enabled);
