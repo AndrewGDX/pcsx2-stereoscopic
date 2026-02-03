@@ -84,7 +84,7 @@ void vs_main()
 	int stereo_mode = int(StereoParams.w + 0.5f);
 	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
 	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0 && i_z > 0u)
+	if (base_mode > 0)
 	{
 		float depth = gl_Position.z * StereoParams.z;
 		bool stereo_instanced = (base_mode >= 3);

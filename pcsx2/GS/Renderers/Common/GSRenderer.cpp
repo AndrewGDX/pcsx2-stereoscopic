@@ -713,7 +713,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
                 const GSVector4 src_uv_l = GSVector4(src_rect_left) / GSVector4(current->GetSize()).xyxy();
                 const GSVector4 src_uv_r = GSVector4(src_rect_right) / GSVector4(current->GetSize()).xyxy();
 
-				// Stereoscopic 3D rendering (Dolphin-style: single render pass + presentation split)
+				// Stereoscopic 3D rendering (single render pass + presentation split)
 				if (GSConfig.StereoMode == GSStereoMode::SideBySide)
 				{
     				const float half_width = static_cast<float>(window_width) * 0.5f;

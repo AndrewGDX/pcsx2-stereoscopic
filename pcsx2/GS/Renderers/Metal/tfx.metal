@@ -190,7 +190,7 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	int stereo_mode = int(cb.stereo_params.w + 0.5f);
 	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
 	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0 && v.z > 0)
+	if (base_mode > 0)
 	{
 		// float depth = (float(v.z) / float(cb.max_depth)) * cb.stereo_params.z;
 		float depth = out.p.z * cb.stereo_params.z;
@@ -1104,14 +1104,12 @@ struct PSMain
 		{
 			if (in.stereo_axis > 0.5f)
 			{
-				if ((in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f) ||
-					(in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f))
+				if (in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f)
 					discard_fragment();
 			}
 			else
 			{
-				if ((in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f) ||
-					(in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f))
+				if (in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f)
 					discard_fragment();
 			}
 		}

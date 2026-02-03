@@ -125,6 +125,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSwapEyes, "EmuCore/GS", "StereoSwapEyes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFlipRendering, "EmuCore/GS", "StereoFlipRendering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderMonoObjects, "EmuCore/GS", "StereoDontRenderMonoObjects", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNonPositiveZ, "EmuCore/GS", "StereoRejectNonPositiveZ", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallZRange, "EmuCore/GS", "StereoRejectSmallZRange", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteBlit, "EmuCore/GS", "StereoRejectSpriteBlit", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTextureNoGapsMismatch, "EmuCore/GS", "StereoRejectTextureNoGapsMismatch", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectConstantColor, "EmuCore/GS", "StereoRejectConstantColor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectScalingDraw, "EmuCore/GS", "StereoRejectScalingDraw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSbsInput, "EmuCore/GS", "StereoRejectSbsInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTabInput, "EmuCore/GS", "StereoRejectTabInput", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer1, "EmuCore/GS", "StereoRequireDisplayBuffer1", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer2, "EmuCore/GS", "StereoRequireDisplayBuffer2", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFixStencilShadows, "EmuCore/GS", "StereoFixStencilShadows", false);
@@ -152,10 +160,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireTexIsFb, "EmuCore/GS", "StereoStencilRequireTexIsFb", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFullscreenDraw, "EmuCore/GS", "StereoRejectFullscreenDraw", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFullscreenScissor, "EmuCore/GS", "StereoRejectFullscreenScissor", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFullscreenDrawArea, "EmuCore/GS", "StereoRejectFullscreenDrawArea", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFullCover, "EmuCore/GS", "StereoRejectFullCover", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteNoGaps, "EmuCore/GS", "StereoRejectSpriteNoGaps", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTexIsRt, "EmuCore/GS", "StereoRejectTexIsRt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTexIsFb, "EmuCore/GS", "StereoRejectTexIsFb", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectChannelShuffle, "EmuCore/GS", "StereoRejectChannelShuffle", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTextureShuffle, "EmuCore/GS", "StereoRejectTextureShuffle", false);
@@ -168,6 +174,139 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoop, "EmuCore/GS", "StereoRejectFeedbackLoop", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectColclip, "EmuCore/GS", "StereoRejectColclip", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectRtaCorrection, "EmuCore/GS", "StereoRejectRtaCorrection", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectRtaSourceCorrection, "EmuCore/GS", "StereoUniversalRejectRtaSourceCorrection", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectColclipHw, "EmuCore/GS", "StereoUniversalRejectColclipHw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectColclip, "EmuCore/GS", "StereoUniversalRejectColclip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendMix, "EmuCore/GS", "StereoUniversalRejectBlendMix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectPabe, "EmuCore/GS", "StereoUniversalRejectPabe", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectFbMask, "EmuCore/GS", "StereoUniversalRejectFbMask", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectTexIsFb, "EmuCore/GS", "StereoUniversalRejectTexIsFb", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectNoColor, "EmuCore/GS", "StereoUniversalRejectNoColor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectNoColor1, "EmuCore/GS", "StereoUniversalRejectNoColor1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAemFmt, "EmuCore/GS", "StereoUniversalRejectAemFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectPalFmt, "EmuCore/GS", "StereoUniversalRejectPalFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectDstFmt, "EmuCore/GS", "StereoUniversalRejectDstFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectDepthFmt, "EmuCore/GS", "StereoUniversalRejectDepthFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAem, "EmuCore/GS", "StereoUniversalRejectAem", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectFba, "EmuCore/GS", "StereoUniversalRejectFba", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectFog, "EmuCore/GS", "StereoUniversalRejectFog", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectIip, "EmuCore/GS", "StereoUniversalRejectIip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectDate, "EmuCore/GS", "StereoUniversalRejectDate", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAtst, "EmuCore/GS", "StereoUniversalRejectAtst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAfail, "EmuCore/GS", "StereoUniversalRejectAfail", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectFst, "EmuCore/GS", "StereoUniversalRejectFst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectTfx, "EmuCore/GS", "StereoUniversalRejectTfx", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectTcc, "EmuCore/GS", "StereoUniversalRejectTcc", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectWms, "EmuCore/GS", "StereoUniversalRejectWms", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectWmt, "EmuCore/GS", "StereoUniversalRejectWmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAdjs, "EmuCore/GS", "StereoUniversalRejectAdjs", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAdjt, "EmuCore/GS", "StereoUniversalRejectAdjt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectLtf, "EmuCore/GS", "StereoUniversalRejectLtf", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectShuffle, "EmuCore/GS", "StereoUniversalRejectShuffle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectShuffleSame, "EmuCore/GS", "StereoUniversalRejectShuffleSame", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectReal16Src, "EmuCore/GS", "StereoUniversalRejectReal16Src", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectProcessBa, "EmuCore/GS", "StereoUniversalRejectProcessBa", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectProcessRg, "EmuCore/GS", "StereoUniversalRejectProcessRg", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectShuffleAcross, "EmuCore/GS", "StereoUniversalRejectShuffleAcross", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectWriteRg, "EmuCore/GS", "StereoUniversalRejectWriteRg", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendA, "EmuCore/GS", "StereoUniversalRejectBlendA", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendB, "EmuCore/GS", "StereoUniversalRejectBlendB", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendC, "EmuCore/GS", "StereoUniversalRejectBlendC", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendD, "EmuCore/GS", "StereoUniversalRejectBlendD", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectFixedOneA, "EmuCore/GS", "StereoUniversalRejectFixedOneA", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectBlendHw, "EmuCore/GS", "StereoUniversalRejectBlendHw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAMasked, "EmuCore/GS", "StereoUniversalRejectAMasked", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectRoundInv, "EmuCore/GS", "StereoUniversalRejectRoundInv", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectChannel, "EmuCore/GS", "StereoUniversalRejectChannel", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectChannelFb, "EmuCore/GS", "StereoUniversalRejectChannelFb", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectDither, "EmuCore/GS", "StereoUniversalRejectDither", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectDitherAdjust, "EmuCore/GS", "StereoUniversalRejectDitherAdjust", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectZClamp, "EmuCore/GS", "StereoUniversalRejectZClamp", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectZFloor, "EmuCore/GS", "StereoUniversalRejectZFloor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectTCOffsetHack, "EmuCore/GS", "StereoUniversalRejectTCOffsetHack", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectUrbanChaosHle, "EmuCore/GS", "StereoUniversalRejectUrbanChaosHle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectTalesOfAbyssHle, "EmuCore/GS", "StereoUniversalRejectTalesOfAbyssHle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectAutomaticLod, "EmuCore/GS", "StereoUniversalRejectAutomaticLod", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectManualLod, "EmuCore/GS", "StereoUniversalRejectManualLod", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectPointSampler, "EmuCore/GS", "StereoUniversalRejectPointSampler", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectRegionRect, "EmuCore/GS", "StereoUniversalRejectRegionRect", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectScanmask, "EmuCore/GS", "StereoUniversalRejectScanmask", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireRtaCorrection, "EmuCore/GS", "StereoUniversalRequireRtaCorrection", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireRtaSourceCorrection, "EmuCore/GS", "StereoUniversalRequireRtaSourceCorrection", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireColclipHw, "EmuCore/GS", "StereoUniversalRequireColclipHw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireColclip, "EmuCore/GS", "StereoUniversalRequireColclip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendMix, "EmuCore/GS", "StereoUniversalRequireBlendMix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequirePabe, "EmuCore/GS", "StereoUniversalRequirePabe", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFbMask, "EmuCore/GS", "StereoUniversalRequireFbMask", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTexIsFb, "EmuCore/GS", "StereoUniversalRequireTexIsFb", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireNoColor, "EmuCore/GS", "StereoUniversalRequireNoColor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireNoColor1, "EmuCore/GS", "StereoUniversalRequireNoColor1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAemFmt, "EmuCore/GS", "StereoUniversalRequireAemFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequirePalFmt, "EmuCore/GS", "StereoUniversalRequirePalFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDstFmt, "EmuCore/GS", "StereoUniversalRequireDstFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDepthFmt, "EmuCore/GS", "StereoUniversalRequireDepthFmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAem, "EmuCore/GS", "StereoUniversalRequireAem", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFba, "EmuCore/GS", "StereoUniversalRequireFba", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFog, "EmuCore/GS", "StereoUniversalRequireFog", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireIip, "EmuCore/GS", "StereoUniversalRequireIip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDate, "EmuCore/GS", "StereoUniversalRequireDate", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAtst, "EmuCore/GS", "StereoUniversalRequireAtst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAfail, "EmuCore/GS", "StereoUniversalRequireAfail", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFst, "EmuCore/GS", "StereoUniversalRequireFst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTfx, "EmuCore/GS", "StereoUniversalRequireTfx", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTcc, "EmuCore/GS", "StereoUniversalRequireTcc", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireWms, "EmuCore/GS", "StereoUniversalRequireWms", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireWmt, "EmuCore/GS", "StereoUniversalRequireWmt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAdjs, "EmuCore/GS", "StereoUniversalRequireAdjs", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAdjt, "EmuCore/GS", "StereoUniversalRequireAdjt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireLtf, "EmuCore/GS", "StereoUniversalRequireLtf", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireShuffle, "EmuCore/GS", "StereoUniversalRequireShuffle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireShuffleSame, "EmuCore/GS", "StereoUniversalRequireShuffleSame", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireReal16Src, "EmuCore/GS", "StereoUniversalRequireReal16Src", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireProcessBa, "EmuCore/GS", "StereoUniversalRequireProcessBa", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireProcessRg, "EmuCore/GS", "StereoUniversalRequireProcessRg", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireShuffleAcross, "EmuCore/GS", "StereoUniversalRequireShuffleAcross", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireWriteRg, "EmuCore/GS", "StereoUniversalRequireWriteRg", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendA, "EmuCore/GS", "StereoUniversalRequireBlendA", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendB, "EmuCore/GS", "StereoUniversalRequireBlendB", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendC, "EmuCore/GS", "StereoUniversalRequireBlendC", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendD, "EmuCore/GS", "StereoUniversalRequireBlendD", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFixedOneA, "EmuCore/GS", "StereoUniversalRequireFixedOneA", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireBlendHw, "EmuCore/GS", "StereoUniversalRequireBlendHw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAMasked, "EmuCore/GS", "StereoUniversalRequireAMasked", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireRoundInv, "EmuCore/GS", "StereoUniversalRequireRoundInv", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireChannel, "EmuCore/GS", "StereoUniversalRequireChannel", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireChannelFb, "EmuCore/GS", "StereoUniversalRequireChannelFb", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDither, "EmuCore/GS", "StereoUniversalRequireDither", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDitherAdjust, "EmuCore/GS", "StereoUniversalRequireDitherAdjust", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZClamp, "EmuCore/GS", "StereoUniversalRequireZClamp", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZFloor, "EmuCore/GS", "StereoUniversalRequireZFloor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTCOffsetHack, "EmuCore/GS", "StereoUniversalRequireTCOffsetHack", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireUrbanChaosHle, "EmuCore/GS", "StereoUniversalRequireUrbanChaosHle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTalesOfAbyssHle, "EmuCore/GS", "StereoUniversalRequireTalesOfAbyssHle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAutomaticLod, "EmuCore/GS", "StereoUniversalRequireAutomaticLod", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireManualLod, "EmuCore/GS", "StereoUniversalRequireManualLod", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequirePointSampler, "EmuCore/GS", "StereoUniversalRequirePointSampler", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireRegionRect, "EmuCore/GS", "StereoUniversalRequireRegionRect", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireScanmask, "EmuCore/GS", "StereoUniversalRequireScanmask", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAlphaBlend, "EmuCore/GS", "StereoUniversalRequireAlphaBlend", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAlphaTest, "EmuCore/GS", "StereoUniversalRequireAlphaTest", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireDatm, "EmuCore/GS", "StereoUniversalRequireDatm", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZTest, "EmuCore/GS", "StereoUniversalRequireZTest", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZWrite, "EmuCore/GS", "StereoUniversalRequireZWrite", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZTestAlways, "EmuCore/GS", "StereoUniversalRequireZTestAlways", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireZTestNever, "EmuCore/GS", "StereoUniversalRequireZTestNever", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireAa1, "EmuCore/GS", "StereoUniversalRequireAa1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireChannelShuffle, "EmuCore/GS", "StereoUniversalRequireChannelShuffle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTextureShuffle, "EmuCore/GS", "StereoUniversalRequireTextureShuffle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFullscreenShuffle, "EmuCore/GS", "StereoUniversalRequireFullscreenShuffle", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequirePoints, "EmuCore/GS", "StereoUniversalRequirePoints", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireLines, "EmuCore/GS", "StereoUniversalRequireLines", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireTriangles, "EmuCore/GS", "StereoUniversalRequireTriangles", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireSprites, "EmuCore/GS", "StereoUniversalRequireSprites", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFixedQ, "EmuCore/GS", "StereoUniversalRequireFixedQ", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireFixedZ, "EmuCore/GS", "StereoUniversalRequireFixedZ", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRequireConstantColor, "EmuCore/GS", "StereoUniversalRequireConstantColor", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectBlendMix, "EmuCore/GS", "StereoRejectBlendMix", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPabe, "EmuCore/GS", "StereoRejectPabe", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectDither, "EmuCore/GS", "StereoRejectDither", false);
@@ -180,6 +319,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectLines, "EmuCore/GS", "StereoRejectLines", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFlatShading, "EmuCore/GS", "StereoRejectFlatShading", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFst, "EmuCore/GS", "StereoRejectFst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoEnableOptions, "EmuCore/GS", "StereoEnableOptions", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRemoveFixedSt, "EmuCore/GS", "StereoRemoveFixedSt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFixedQ, "EmuCore/GS", "StereoRejectFixedQ", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectAa1, "EmuCore/GS", "StereoRejectAa1", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNoZTest, "EmuCore/GS", "StereoRejectNoZTest", false);
@@ -193,6 +334,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTfxDecal, "EmuCore/GS", "StereoRejectTfxDecal", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTfxHighlight, "EmuCore/GS", "StereoRejectTfxHighlight", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTfxHighlight2, "EmuCore/GS", "StereoRejectTfxHighlight2", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallDrawArea, "EmuCore/GS", "StereoRejectSmallDrawArea", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectWideDrawBand, "EmuCore/GS", "StereoRejectWideDrawBand", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTopDrawBand, "EmuCore/GS", "StereoRejectTopDrawBand", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectRtSpriteNoDepth, "EmuCore/GS", "StereoRejectRtSpriteNoDepth", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectRtSpriteAlphaBlend, "EmuCore/GS", "StereoRejectRtSpriteAlphaBlend", false);
 	connect(m_hw.upscaleMultiplier, &QComboBox::currentIndexChanged, this,
 		&GraphicsSettingsWidget::onUpscaleMultiplierChanged);
 	connect(m_hw.trilinearFiltering, &QComboBox::currentIndexChanged, this,
@@ -641,6 +787,22 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Exclude sprite draws that look like UI (fixed UV, constant Q/Z, no depth)."));
 		dialog()->registerWidgetHelp(m_hw.stereoDominantEye, tr("Dominant Eye"), tr("No (recommended)"),
 			tr("Biases stereo parallax toward the selected eye. Useful for FPS weapon alignment."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectNonPositiveZ, tr("Reject Z <= 0"), tr("Unchecked"),
+			tr("Treat draws with non-positive Z as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectSmallZRange, tr("Reject Small Z Range"), tr("Unchecked"),
+			tr("Treat draws with a near-constant Z range as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectSpriteBlit, tr("Reject Sprite Blit"), tr("Unchecked"),
+			tr("Treat 1:1 sprite blits (UI-style) as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectTextureNoGapsMismatch, tr("Reject Sprite UV Mismatch"), tr("Unchecked"),
+			tr("Treat sprite draws with mismatched UV coverage as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectConstantColor, tr("Reject Constant Color"), tr("Unchecked"),
+			tr("Treat constant-color draws as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectScalingDraw, tr("Reject Scaling Draw"), tr("Unchecked"),
+			tr("Disable stereoscopy for post-processing scaling draws."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectSbsInput, tr("Reject SBS Input"), tr("Unchecked"),
+			tr("Disable stereoscopy when the source texture already looks like SBS."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectTabInput, tr("Reject TAB Input"), tr("Unchecked"),
+			tr("Disable stereoscopy when the source texture already looks like TAB."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiDepth, tr("UI Depth"), tr("0.0"),
 			tr("Depth offset applied to UI elements when stereoscopy is active. Negative values push UI back, positive values pull UI forward."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireTextureMapping, tr("Require Texture Mapping"), tr("Unchecked"),
@@ -681,14 +843,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy when the draw rectangle covers the full render target."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFullscreenScissor, tr("Reject Fullscreen Scissor"), tr("Unchecked"),
 			tr("Disable stereoscopy when the scissor matches the full render target."));
-		dialog()->registerWidgetHelp(m_hw.stereoRejectFullscreenDrawArea, tr("Reject Fullscreen Draw Area"), tr("Unchecked"),
-			tr("Disable stereoscopy when the draw area matches the full render target."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFullCover, tr("Reject Full Cover"), tr("Unchecked"),
 			tr("Disable stereoscopy when the primitive covers the target without gaps."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectSpriteNoGaps, tr("Reject Sprite No Gaps"), tr("Unchecked"),
 			tr("Disable stereoscopy for sprite draws that cover without gaps."));
-		dialog()->registerWidgetHelp(m_hw.stereoRejectTexIsRt, tr("Reject Tex-is-RT"), tr("Unchecked"),
-			tr("Disable stereoscopy when the texture source is inside the render target."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectTexIsFb, tr("Reject Tex-is-FB"), tr("Unchecked"),
 			tr("Disable stereoscopy when the shader samples from the framebuffer."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectChannelShuffle, tr("Reject Channel Shuffle"), tr("Unchecked"),
@@ -713,6 +871,272 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy when color clipping is active."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectRtaCorrection, tr("Reject RTA Correction"), tr("Unchecked"),
 			tr("Disable stereoscopy when render target alpha correction is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectRtaSourceCorrection, tr("Reject RTA Source Correction"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when RTA source correction is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectColclipHw, tr("Reject Colclip HW"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when colclip HW emulation is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectColclip, tr("Reject Colclip"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when colclip is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendMix, tr("Reject Blend Mix"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend mix paths are active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectPabe, tr("Reject PABE"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when PABE is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectFbMask, tr("Reject FB Mask"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when framebuffer masking is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectTexIsFb, tr("Reject Tex-is-FB"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when sampling the framebuffer."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectNoColor, tr("Reject No Color Output"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy for depth-only draws."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectNoColor1, tr("Reject No Color Output 1"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when secondary color output is disabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAemFmt, tr("Reject AEM Format"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when AEM format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectPalFmt, tr("Reject PAL Format"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when PAL format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectDstFmt, tr("Reject DST Format"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when destination format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectDepthFmt, tr("Reject Depth Format"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when depth format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAem, tr("Reject AEM"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when AEM is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectFba, tr("Reject FBA"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when FBA is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectFog, tr("Reject Fog"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when fog is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectIip, tr("Reject IIP"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when IIP (Gouraud) is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectDate, tr("Reject DATE"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when DATE is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAtst, tr("Reject ATST"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when ATST is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAfail, tr("Reject AFAIL"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when AFAIL is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectFst, tr("Reject FST"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when FST is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectTfx, tr("Reject TFX"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when TFX is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectTcc, tr("Reject TCC"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when TCC is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectWms, tr("Reject WMS"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when WMS is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectWmt, tr("Reject WMT"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when WMT is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAdjs, tr("Reject ADJS"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when ADJS is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAdjt, tr("Reject ADJT"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when ADJT is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectLtf, tr("Reject LTF"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when LTF is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectShuffle, tr("Reject Shuffle"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when shuffle is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectShuffleSame, tr("Reject Shuffle Same"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when shuffle same is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectReal16Src, tr("Reject Real16 Src"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when real16 source is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectProcessBa, tr("Reject Process BA"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when process BA is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectProcessRg, tr("Reject Process RG"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when process RG is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectShuffleAcross, tr("Reject Shuffle Across"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when shuffle across is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectWriteRg, tr("Reject Write RG"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when write RG is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendA, tr("Reject Blend A"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend A is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendB, tr("Reject Blend B"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend B is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendC, tr("Reject Blend C"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend C is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendD, tr("Reject Blend D"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend D is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectFixedOneA, tr("Reject Fixed One A"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when fixed-one-A is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectBlendHw, tr("Reject Blend HW"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when blend HW is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAMasked, tr("Reject A Masked"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when alpha is masked."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectRoundInv, tr("Reject Round Inv"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when round inversion is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectChannel, tr("Reject Channel"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when channel fetch is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectChannelFb, tr("Reject Channel FB"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when channel fetch from FB is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectDither, tr("Reject Dither"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when dither is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectDitherAdjust, tr("Reject Dither Adjust"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when dither adjust is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectZClamp, tr("Reject Z Clamp"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when Z clamp is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectZFloor, tr("Reject Z Floor"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when Z floor is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectTCOffsetHack, tr("Reject TC Offset Hack"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when TC offset hack is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectUrbanChaosHle, tr("Reject Urban Chaos HLE"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when Urban Chaos HLE path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectTalesOfAbyssHle, tr("Reject Tales of Abyss HLE"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when Tales of Abyss HLE path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectAutomaticLod, tr("Reject Automatic LOD"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when automatic LOD is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectManualLod, tr("Reject Manual LOD"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when manual LOD is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectPointSampler, tr("Reject Point Sampler"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when point sampling is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectRegionRect, tr("Reject Region Rect"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when region rect path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectScanmask, tr("Reject Scanmask"), tr("Unchecked"),
+			tr("Universal fix: disable stereoscopy when scanmask is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireRtaCorrection, tr("Require RTA Correction"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when RTA correction is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireRtaSourceCorrection, tr("Require RTA Source Correction"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when RTA source correction is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireColclipHw, tr("Require Colclip HW"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when colclip HW emulation is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireColclip, tr("Require Colclip"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when colclip is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendMix, tr("Require Blend Mix"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend mix paths are active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequirePabe, tr("Require PABE"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when PABE is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFbMask, tr("Require FB Mask"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when framebuffer masking is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTexIsFb, tr("Require Tex-is-FB"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when sampling the framebuffer."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireNoColor, tr("Require No Color Output"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy for depth-only draws."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireNoColor1, tr("Require No Color Output 1"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when secondary color output is disabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAemFmt, tr("Require AEM Format"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when AEM format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequirePalFmt, tr("Require PAL Format"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when PAL format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDstFmt, tr("Require DST Format"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when destination format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDepthFmt, tr("Require Depth Format"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when depth format is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAem, tr("Require AEM"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when AEM is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFba, tr("Require FBA"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when FBA is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFog, tr("Require Fog"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when fog is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireIip, tr("Require IIP"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when IIP (Gouraud) is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDate, tr("Require DATE"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when DATE is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAtst, tr("Require ATST"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when ATST is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAfail, tr("Require AFAIL"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when AFAIL is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFst, tr("Require FST"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when FST is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTfx, tr("Require TFX"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when TFX is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTcc, tr("Require TCC"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when TCC is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireWms, tr("Require WMS"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when WMS is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireWmt, tr("Require WMT"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when WMT is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAdjs, tr("Require ADJS"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when ADJS is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAdjt, tr("Require ADJT"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when ADJT is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireLtf, tr("Require LTF"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when LTF is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireShuffle, tr("Require Shuffle"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when shuffle is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireShuffleSame, tr("Require Shuffle Same"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when shuffle same is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireReal16Src, tr("Require Real16 Src"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when real16 source is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireProcessBa, tr("Require Process BA"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when process BA is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireProcessRg, tr("Require Process RG"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when process RG is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireShuffleAcross, tr("Require Shuffle Across"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when shuffle across is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireWriteRg, tr("Require Write RG"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when write RG is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendA, tr("Require Blend A"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend A is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendB, tr("Require Blend B"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend B is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendC, tr("Require Blend C"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend C is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendD, tr("Require Blend D"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend D is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFixedOneA, tr("Require Fixed One A"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when fixed-one-A is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireBlendHw, tr("Require Blend HW"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when blend HW is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAMasked, tr("Require A Masked"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when alpha is masked."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireRoundInv, tr("Require Round Inv"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when round inversion is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireChannel, tr("Require Channel"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when channel fetch is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireChannelFb, tr("Require Channel FB"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when channel fetch from FB is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDither, tr("Require Dither"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when dither is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDitherAdjust, tr("Require Dither Adjust"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when dither adjust is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZClamp, tr("Require Z Clamp"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z clamp is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZFloor, tr("Require Z Floor"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z floor is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTCOffsetHack, tr("Require TC Offset Hack"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when TC offset hack is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireUrbanChaosHle, tr("Require Urban Chaos HLE"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Urban Chaos HLE path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTalesOfAbyssHle, tr("Require Tales of Abyss HLE"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Tales of Abyss HLE path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAutomaticLod, tr("Require Automatic LOD"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when automatic LOD is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireManualLod, tr("Require Manual LOD"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when manual LOD is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequirePointSampler, tr("Require Point Sampler"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when point sampling is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireRegionRect, tr("Require Region Rect"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when region rect path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireScanmask, tr("Require Scanmask"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when scanmask is non-zero."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAlphaBlend, tr("Require Alpha Blend"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when alpha blending is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAlphaTest, tr("Require Alpha Test"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when alpha test is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireDatm, tr("Require DATM"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when DATM is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZTest, tr("Require Z Test"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z testing is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZWrite, tr("Require Z Write"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z writes are enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZTestAlways, tr("Require Z Test Always"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z test is set to ALWAYS."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireZTestNever, tr("Require Z Test Never"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z test is set to NEVER."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireAa1, tr("Require AA1"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when AA1 is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireChannelShuffle, tr("Require Channel Shuffle"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when channel shuffle is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTextureShuffle, tr("Require Texture Shuffle"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when texture shuffle is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFullscreenShuffle, tr("Require Fullscreen Shuffle"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when fullscreen shuffle is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequirePoints, tr("Require Points"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when point primitives are used."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireLines, tr("Require Lines"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when line primitives are used."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireTriangles, tr("Require Triangles"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when triangle primitives are used."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireSprites, tr("Require Sprites"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when sprite primitives are used."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFixedQ, tr("Require Fixed Q"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Q is constant across the draw."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireFixedZ, tr("Require Fixed Z"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when Z is constant across the draw."));
+		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireConstantColor, tr("Require Constant Color"), tr("Unchecked"),
+			tr("Universal fix: only allow stereoscopy when color is constant across the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectBlendMix, tr("Reject Blend Mix"), tr("Unchecked"),
 			tr("Disable stereoscopy when blend mix paths are active."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectPabe, tr("Reject PABE"), tr("Unchecked"),
@@ -736,7 +1160,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFlatShading, tr("Reject Flat Shading"), tr("Unchecked"),
 			tr("Disable stereoscopy when flat shading is used."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFst, tr("Reject Fixed ST"), tr("Unchecked"),
-			tr("Disable stereoscopy when fixed texture coordinates are used."));
+			tr("Disable stereoscopy when fixed texture coordinates are used (Gran Turismo 4, Need for Speed series)"));
+		dialog()->registerWidgetHelp(m_hw.stereoEnableOptions, tr("Enable options"), tr("Unchecked"),
+			tr("Enable additional stereoscopy options."));
+		dialog()->registerWidgetHelp(m_hw.stereoRemoveFixedSt, tr("Remove Fixed ST"), tr("Unchecked"),
+			tr("Force remove when fixed texture coordinates are used."));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows, tr("Fix Stencil Shadows"), tr("Unchecked"),
 			tr("Disable stereoscopy for stencil shadow passes to reduce post-processing artifacts (Tekken 5, Soul Calibur 3)"));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFixedQ, tr("Reject Fixed Q"), tr("Unchecked"),
@@ -760,11 +1188,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoRejectTfxModulate, tr("Reject TFX Modulate"), tr("Unchecked"),
 			tr("Disable stereoscopy when TFX is MODULATE."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectTfxDecal, tr("Reject TFX Decal"), tr("Unchecked"),
-			tr("Disable stereoscopy when TFX is DECAL."));
+			tr("Disable stereoscopy when TFX is DECAL (Tekken 5)"));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectTfxHighlight, tr("Reject TFX Highlight"), tr("Unchecked"),
 			tr("Disable stereoscopy when TFX is HIGHLIGHT."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectTfxHighlight2, tr("Reject TFX Highlight2"), tr("Unchecked"),
 			tr("Disable stereoscopy when TFX is HIGHLIGHT2."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectSmallDrawArea, tr("Reject Small Draw Area"), tr("Unchecked"),
+			tr("Disable stereoscopy for small draw rectangles (useful for overlay debugging)."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectWideDrawBand, tr("Reject Wide Draw Band"), tr("Unchecked"),
+			tr("Disable stereoscopy for wide, short draw bands (mirror-style overlays)."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectTopDrawBand, tr("Reject Top Draw Band"), tr("Unchecked"),
+			tr("Disable stereoscopy for top-of-screen draw bands."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectRtSpriteNoDepth, tr("Reject RT Sprite (No Z Test)"), tr("Unchecked"),
+			tr("Disable stereoscopy for RT-backed sprite draws without Z testing."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectRtSpriteAlphaBlend, tr("Reject RT Sprite (Alpha Blend)"), tr("Unchecked"),
+			tr("Disable stereoscopy for RT-backed sprite draws using alpha blending."));
 
 		dialog()->registerWidgetHelp(m_advanced.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of in small pieces, avoiding redundant uploads when possible. "
@@ -1182,6 +1620,14 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoDontRenderMonoObjects->setEnabled(stereo_enabled);
+	m_hw.stereoRejectNonPositiveZ->setEnabled(stereo_enabled);
+	m_hw.stereoRejectSmallZRange->setEnabled(stereo_enabled);
+	m_hw.stereoRejectSpriteBlit->setEnabled(stereo_enabled);
+	m_hw.stereoRejectTextureNoGapsMismatch->setEnabled(stereo_enabled);
+	m_hw.stereoRejectConstantColor->setEnabled(stereo_enabled);
+	m_hw.stereoRejectScalingDraw->setEnabled(stereo_enabled);
+	m_hw.stereoRejectSbsInput->setEnabled(stereo_enabled);
+	m_hw.stereoRejectTabInput->setEnabled(stereo_enabled);
 	m_hw.stereoRequireDisplayBuffer1->setEnabled(stereo_enabled);
 	m_hw.stereoRequireDisplayBuffer2->setEnabled(stereo_enabled);
     m_hw.stereoFixStencilShadows->setEnabled(stereo_enabled);
@@ -1209,10 +1655,8 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoStencilRequireTexIsFb->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFullscreenDraw->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFullscreenScissor->setEnabled(stereo_enabled);
-	m_hw.stereoRejectFullscreenDrawArea->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFullCover->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSpriteNoGaps->setEnabled(stereo_enabled);
-	m_hw.stereoRejectTexIsRt->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTexIsFb->setEnabled(stereo_enabled);
 	m_hw.stereoRejectChannelShuffle->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTextureShuffle->setEnabled(stereo_enabled);
@@ -1225,6 +1669,139 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectFeedbackLoop->setEnabled(stereo_enabled);
 	m_hw.stereoRejectColclip->setEnabled(stereo_enabled);
 	m_hw.stereoRejectRtaCorrection->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectRtaSourceCorrection->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectColclipHw->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectColclip->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendMix->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectPabe->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectFbMask->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectTexIsFb->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectNoColor->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectNoColor1->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAemFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectPalFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectDstFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectDepthFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAem->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectFba->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectFog->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectIip->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectDate->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAtst->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAfail->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectFst->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectTfx->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectTcc->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectWms->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectWmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAdjs->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAdjt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectLtf->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectShuffle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectShuffleSame->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectReal16Src->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectProcessBa->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectProcessRg->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectShuffleAcross->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectWriteRg->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendA->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendB->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendC->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendD->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectFixedOneA->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectBlendHw->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAMasked->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectRoundInv->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectChannel->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectChannelFb->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectDither->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectDitherAdjust->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectZClamp->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectZFloor->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectTCOffsetHack->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectUrbanChaosHle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectTalesOfAbyssHle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectAutomaticLod->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectManualLod->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectPointSampler->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectRegionRect->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRejectScanmask->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireRtaCorrection->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireRtaSourceCorrection->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireColclipHw->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireColclip->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendMix->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequirePabe->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFbMask->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTexIsFb->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireNoColor->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireNoColor1->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAemFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequirePalFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDstFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDepthFmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAem->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFba->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFog->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireIip->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDate->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAtst->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAfail->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFst->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTfx->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTcc->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireWms->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireWmt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAdjs->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAdjt->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireLtf->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireShuffle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireShuffleSame->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireReal16Src->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireProcessBa->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireProcessRg->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireShuffleAcross->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireWriteRg->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendA->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendB->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendC->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendD->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFixedOneA->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireBlendHw->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAMasked->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireRoundInv->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireChannel->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireChannelFb->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDither->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDitherAdjust->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZClamp->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZFloor->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTCOffsetHack->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireUrbanChaosHle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTalesOfAbyssHle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAutomaticLod->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireManualLod->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequirePointSampler->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireRegionRect->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireScanmask->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAlphaBlend->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAlphaTest->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireDatm->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZTest->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZWrite->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZTestAlways->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireZTestNever->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireAa1->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireChannelShuffle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTextureShuffle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFullscreenShuffle->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequirePoints->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireLines->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireTriangles->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireSprites->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFixedQ->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireFixedZ->setEnabled(stereo_enabled);
+	m_hw.stereoUniversalRequireConstantColor->setEnabled(stereo_enabled);
 	m_hw.stereoRejectBlendMix->setEnabled(stereo_enabled);
 	m_hw.stereoRejectPabe->setEnabled(stereo_enabled);
 	m_hw.stereoRejectDither->setEnabled(stereo_enabled);
@@ -1237,6 +1814,8 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectLines->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFlatShading->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFst->setEnabled(stereo_enabled);
+	m_hw.stereoEnableOptions->setEnabled(stereo_enabled);
+	m_hw.stereoRemoveFixedSt->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFixedQ->setEnabled(stereo_enabled);
 	m_hw.stereoRejectAa1->setEnabled(stereo_enabled);
 	m_hw.stereoRejectNoZTest->setEnabled(stereo_enabled);
@@ -1250,6 +1829,11 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectTfxDecal->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTfxHighlight->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTfxHighlight2->setEnabled(stereo_enabled);
+	m_hw.stereoRejectSmallDrawArea->setEnabled(stereo_enabled);
+	m_hw.stereoRejectWideDrawBand->setEnabled(stereo_enabled);
+	m_hw.stereoRejectTopDrawBand->setEnabled(stereo_enabled);
+	m_hw.stereoRejectRtSpriteNoDepth->setEnabled(stereo_enabled);
+	m_hw.stereoRejectRtSpriteAlphaBlend->setEnabled(stereo_enabled);
 }
 
 void GraphicsSettingsWidget::onMessagesPosChanged()

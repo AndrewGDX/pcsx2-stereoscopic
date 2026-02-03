@@ -65,7 +65,7 @@ void main()
 	int stereo_mode = int(StereoParams.w + 0.5f);
 	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
 	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0 && a_z > 0)
+	if (base_mode > 0)
 	{
 		float depth = float(gl_Position.z) * StereoParams.z;
 		bool stereo_instanced = (base_mode >= 3);
@@ -175,7 +175,7 @@ ProcessedVertex load_vertex(uint index)
 	int stereo_mode = int(StereoParams.w + 0.5f);
 	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
 	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0 && a_z > 0)
+	if (base_mode > 0)
 	{
 		float depth = float(vtx.p.z) * StereoParams.z;
 		bool stereo_instanced = (base_mode >= 3);
