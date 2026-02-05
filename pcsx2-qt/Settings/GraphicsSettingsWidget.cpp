@@ -70,6 +70,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	setupTab(m_osd, tr("OSD"));
 	setupTab(m_capture, tr("Media Capture"));
 	m_advanced_tab = setupTab(m_advanced, tr("Advanced"));
+	setCurrentTab(m_hardware_rendering_tab); // TODO REMOVE rendering tab change
 
 	//////////////////////////////////////////////////////////////////////////
 	// Display Settings
@@ -121,7 +122,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoSeparation, "EmuCore/GS", "StereoSeparation", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoConvergence, "EmuCore/GS", "StereoConvergence", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoDepthFactor, "EmuCore/GS", "StereoDepthFactor", 0.0f);
-	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_hw.stereoUiDepth, "EmuCore/GS", "StereoUiDepth", 0.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, m_hw.stereoUiDepth, "EmuCore/GS", "StereoUiDepth", 1.0f, 0.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, m_hw.stereoUiSecondLayerDepth, "EmuCore/GS", "StereoUiSecondLayerDepth", 1.0f, 0.0f);
+	connect(m_hw.stereoUiDepth, &QSlider::valueChanged, this, &GraphicsSettingsWidget::onUiDepthChanged);
+	connect(m_hw.stereoUiSecondLayerDepth, &QSlider::valueChanged, this, &GraphicsSettingsWidget::onUiSecondLayerDepthChanged);
+	onUiDepthChanged();
+	onUiSecondLayerDepthChanged();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSwapEyes, "EmuCore/GS", "StereoSwapEyes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFlipRendering, "EmuCore/GS", "StereoFlipRendering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderMonoObjects, "EmuCore/GS", "StereoDontRenderMonoObjects", false);
@@ -141,6 +147,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDepthActive, "EmuCore/GS", "StereoRequireDepthActive", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSprites, "EmuCore/GS", "StereoRejectSprites", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectUiLike, "EmuCore/GS", "StereoRejectUiLike", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUiSafeDetect, "EmuCore/GS", "StereoUiSafeDetect", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUiAdvancedDetect, "EmuCore/GS", "StereoUiAdvancedDetect", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUiBackgroundDepth, "EmuCore/GS", "StereoUiBackgroundDepth", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix, "EmuCore/GS", "StereoMasterFix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFixTest, "EmuCore/GS", "StereoMasterFixTest", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireTextureMapping, "EmuCore/GS", "StereoRequireTextureMapping", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireAlphaBlend, "EmuCore/GS", "StereoRequireAlphaBlend", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireAlphaTest, "EmuCore/GS", "StereoRequireAlphaTest", false);
@@ -785,6 +796,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy for sprite/rect draws, which are commonly used for UI and 2D effects."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectUiLike, tr("Reject UI-like Sprites"), tr("Checked"),
 			tr("Exclude sprite draws that look like UI (fixed UV, constant Q/Z, no depth)."));
+		dialog()->registerWidgetHelp(m_hw.stereoUiSafeDetect, tr("UI Safe Detect"), tr("Unchecked"),
+			tr("Safe UI detection mode for common overlays."));
+		dialog()->registerWidgetHelp(m_hw.stereoUiAdvancedDetect, tr("UI Advanced Detect"), tr("Unchecked"),
+			tr("Stricter UI detection mode for complex overlays."));
+		dialog()->registerWidgetHelp(m_hw.stereoUiBackgroundDepth, tr("Background Depth"), tr("Unchecked"),
+			tr("Only treat UI-like draws as UI when depth testing is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix, tr("Master FIX"), tr("Unchecked"),
+			tr("Master toggle for additional stereo fixes."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFixTest, tr("Master FIX Test"), tr("Unchecked"),
+			tr("Experimental test toggle for stereo fixes."));
 		dialog()->registerWidgetHelp(m_hw.stereoDominantEye, tr("Dominant Eye"), tr("No (recommended)"),
 			tr("Biases stereo parallax toward the selected eye. Useful for FPS weapon alignment."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectNonPositiveZ, tr("Reject Z <= 0"), tr("Unchecked"),
@@ -805,6 +826,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy when the source texture already looks like TAB."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiDepth, tr("UI Depth"), tr("0.0"),
 			tr("Depth offset applied to UI elements when stereoscopy is active. Negative values push UI back, positive values pull UI forward."));
+		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerDepth, tr("UI Second Layer Depth Offset"), tr("0.0"),
+			tr("Additional depth offset applied when background depth detection is active."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireTextureMapping, tr("Require Texture Mapping"), tr("Unchecked"),
 			tr("Only apply stereoscopy when texturing is enabled for the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireAlphaBlend, tr("Require Alpha Blending"), tr("Unchecked"),
@@ -1615,8 +1638,12 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoConvergence->setEnabled(stereo_enabled);
 	m_hw.stereoDepthFactorLabel->setEnabled(stereo_enabled);
 	m_hw.stereoDepthFactor->setEnabled(stereo_enabled);
-	m_hw.stereoUiDepthLabel->setEnabled(stereo_enabled);
 	m_hw.stereoUiDepth->setEnabled(stereo_enabled);
+	m_hw.stereoUiDepthLabel->setEnabled(stereo_enabled);
+	m_hw.stereoUiDepthValue->setEnabled(stereo_enabled);
+	m_hw.stereoUiSecondLayerDepth->setEnabled(stereo_enabled);
+	m_hw.stereoUiSecondLayerDepthLabel->setEnabled(stereo_enabled);
+	m_hw.stereoUiSecondLayerDepthValue->setEnabled(stereo_enabled);
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoDontRenderMonoObjects->setEnabled(stereo_enabled);
@@ -1636,6 +1663,11 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRequireDepthActive->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSprites->setEnabled(stereo_enabled);
 	m_hw.stereoRejectUiLike->setEnabled(stereo_enabled);
+	m_hw.stereoUiSafeDetect->setEnabled(stereo_enabled);
+	m_hw.stereoUiAdvancedDetect->setEnabled(stereo_enabled);
+	m_hw.stereoUiBackgroundDepth->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFixTest->setEnabled(stereo_enabled);
 	m_hw.stereoRequireTextureMapping->setEnabled(stereo_enabled);
 	m_hw.stereoRequireAlphaBlend->setEnabled(stereo_enabled);
 	m_hw.stereoRequireAlphaTest->setEnabled(stereo_enabled);
@@ -2208,4 +2240,14 @@ void GraphicsSettingsWidget::onUpscaleMultiplierChanged()
 	const QVariant data = m_hw.upscaleMultiplier->currentData();
 	dialog()->setFloatSettingValue("EmuCore/GS", "upscale_multiplier",
 		data.isValid() ? std::optional<float>(data.toFloat()) : std::optional<float>());
+}
+
+void GraphicsSettingsWidget::onUiDepthChanged()
+{
+    m_hw.stereoUiDepthValue->setText(QString::number(static_cast<int>(m_hw.stereoUiDepth->value())));
+}
+
+void GraphicsSettingsWidget::onUiSecondLayerDepthChanged()
+{
+	m_hw.stereoUiSecondLayerDepthValue->setText(QString::number(static_cast<int>(m_hw.stereoUiSecondLayerDepth->value())));
 }

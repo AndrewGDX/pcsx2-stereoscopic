@@ -899,6 +899,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoConvergence) &&
 		OpEqu(StereoDepthFactor) &&
 		OpEqu(StereoUiDepth) &&
+		OpEqu(StereoUiSecondLayerDepth) &&
 		OpEqu(StereoSwapEyes) &&
 		OpEqu(StereoFlipRendering) &&
 		OpEqu(StereoDontRenderMonoObjects) &&
@@ -910,6 +911,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectScalingDraw) &&
 		OpEqu(StereoRejectSbsInput) &&
 		OpEqu(StereoRejectTabInput) &&
+		OpEqu(StereoMasterFix) &&
+		OpEqu(StereoMasterFixTest) &&
 		OpEqu(StereoRequireDisplayBuffer1) &&
 		OpEqu(StereoRequireDisplayBuffer2) &&
 		OpEqu(StereoFixStencilShadows) &&
@@ -1103,6 +1106,9 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectNoZTest) &&
 		OpEqu(StereoRejectNoZWrite) &&
 		OpEqu(StereoRejectZTestAlways) &&
+		OpEqu(StereoUiSafeDetect) &&
+		OpEqu(StereoUiAdvancedDetect) &&
+		OpEqu(StereoUiBackgroundDepth) &&
 		OpEqu(StereoRejectZTestNever) &&
 		OpEqu(StereoRejectAlphaTestOff) &&
 		OpEqu(StereoRejectAlphaTestAlways) &&
@@ -1326,6 +1332,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoConvergence);
 	SettingsWrapEntry(StereoDepthFactor);
 	SettingsWrapEntry(StereoUiDepth);
+	SettingsWrapEntry(StereoUiSecondLayerDepth);
 	SettingsWrapEntry(StereoSwapEyes);
 	SettingsWrapEntry(StereoFlipRendering);
 	SettingsWrapEntry(StereoDontRenderMonoObjects);
@@ -1337,6 +1344,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectScalingDraw);
 	SettingsWrapEntry(StereoRejectSbsInput);
 	SettingsWrapEntry(StereoRejectTabInput);
+	SettingsWrapEntry(StereoMasterFix);
+	SettingsWrapEntry(StereoMasterFixTest);
 	SettingsWrapEntry(StereoRequireDisplayBuffer1);
 	SettingsWrapEntry(StereoRequireDisplayBuffer2);
 	SettingsWrapEntry(StereoFixStencilShadows);
@@ -1530,6 +1539,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectNoZTest);
 	SettingsWrapEntry(StereoRejectNoZWrite);
 	SettingsWrapEntry(StereoRejectZTestAlways);
+	SettingsWrapEntry(StereoUiSafeDetect);
+	SettingsWrapEntry(StereoUiAdvancedDetect);
+	SettingsWrapEntry(StereoUiBackgroundDepth);
 	SettingsWrapEntry(StereoRejectZTestNever);
 	SettingsWrapEntry(StereoRejectAlphaTestOff);
 	SettingsWrapEntry(StereoRejectAlphaTestAlways);

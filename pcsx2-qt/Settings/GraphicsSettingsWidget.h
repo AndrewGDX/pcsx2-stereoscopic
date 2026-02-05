@@ -56,6 +56,8 @@ private Q_SLOTS:
 	void onEnableAudioCaptureArgumentsChanged();
 	void onOsdShowSettingsToggled();
 	void onStereoscopicModeChanged();
+	void onUiDepthChanged();
+	void onUiSecondLayerDepthChanged();
 
 private:
 	GSRendererType getEffectiveRenderer() const;

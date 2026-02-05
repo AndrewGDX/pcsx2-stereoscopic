@@ -279,45 +279,49 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="stereoSeparation">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>0.0</double>
-        </property>
-        <property name="maximum">
-         <double>200.0</double>
-        </property>
-        <property name="value">
-         <double>20.0</double>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="stereoSeparationConvergenceLayout" stretch="1,0,1">
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoSeparation">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0.0</double>
+          </property>
+          <property name="maximum">
+           <double>200.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoConvergenceLabel">
+          <property name="text">
+           <string>Convergence:</string>
+          </property>
+          <property name="buddy">
+           <cstring>stereoConvergence</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoConvergence">
+          <property name="minimum">
+           <double>0.0</double>
+          </property>
+          <property name="maximum">
+           <double>200.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="stereoConvergenceLabel">
-        <property name="text">
-         <string>Convergence:</string>
-        </property>
-        <property name="buddy">
-         <cstring>stereoConvergence</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="stereoConvergence">
-        <property name="minimum">
-         <double>0.0</double>
-        </property>
-        <property name="maximum">
-         <double>200.0</double>
-        </property>
-        <property name="value">
-         <double>20.0</double>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
        <widget class="QLabel" name="stereoDepthFactorLabel">
         <property name="text">
          <string>Depth Factor:</string>
@@ -327,7 +331,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="3" column="1">
        <widget class="QDoubleSpinBox" name="stereoDepthFactor">
         <property name="minimum">
          <double>0.0</double>
@@ -340,7 +344,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="stereoUiDepthLabel">
         <property name="text">
          <string>UI Depth:</string>
@@ -350,23 +354,76 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QDoubleSpinBox" name="stereoUiDepth">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>-50.0</double>
-        </property>
-        <property name="maximum">
-         <double>50.0</double>
-        </property>
-        <property name="value">
-         <double>0.0</double>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="stereoUiDepthLayout" stretch="1,0,0,1,0">
+         <item>
+          <widget class="QSlider" name="stereoUiDepth">
+          <property name="minimum">
+           <number>-50</number>
+          </property>
+          <property name="maximum">
+           <number>50</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TickPosition::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>25</number>
+          </property>
+         </widget>
+        </item>
+         <item>
+          <widget class="QLabel" name="stereoUiDepthValue">
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="stereoUiSecondLayerDepthLabel">
+           <property name="text">
+            <string>Second Layer Offset:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="stereoUiSecondLayerDepth">
+           <property name="minimum">
+            <number>-25</number>
+           </property>
+           <property name="maximum">
+            <number>25</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TickPosition::TicksBelow</enum>
+           </property>
+           <property name="tickInterval">
+            <number>12.5</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="stereoUiSecondLayerDepthValue">
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      <item row="5" column="0" colspan="2">
        <layout class="QVBoxLayout" name="stereoMonoObjectLayout">
         <item>
          <widget class="QCheckBox" name="stereoSwapEyes">
@@ -383,12 +440,16 @@
          </widget>
         </item>
         <item>
-         <widget class="QFrame" name="stereoUiDetectSeparator">
-          <property name="frameShape">
-           <enum>QFrame::HLine</enum>
+         <widget class="QCheckBox" name="stereoUiSafeDetect">
+          <property name="text">
+           <string>UI Safe Detect</string>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiAdvancedDetect">
+          <property name="text">
+           <string>UI Advanced Detect</string>
           </property>
          </widget>
         </item>
@@ -423,7 +484,14 @@
         <item>
          <widget class="QCheckBox" name="stereoRejectUiLike">
           <property name="text">
-           <string>UI Detect 5: UI-like Sprites</string>
+           <string>UI Detect: Experimantal 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUiBackgroundDepth">
+          <property name="text">
+           <string>UI Detect: Experimantal 2</string>
           </property>
          </widget>
         </item>
@@ -434,6 +502,27 @@
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTextureNoGapsMismatch">
+          <property name="text">
+           <string>Mono Fix: Reject Sprite UV Mismatch</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix">
+          <property name="text">
+           <string>Master FIX</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFixTest">
+          <property name="text">
+           <string>Master FIX Test</string>
           </property>
          </widget>
         </item>
@@ -524,7 +613,7 @@
         <item>
          <widget class="QCheckBox" name="stereoFixStencilShadows">
           <property name="text">
-           <string>Fix Stencil Shadows (Tekken, MK, Soul Calibur)</string>
+           <string>Fix Stencil Shadows (Tekken 5, MK, Soul Calibur)</string>
           </property>
          </widget>
         </item>
@@ -532,13 +621,6 @@
          <widget class="QCheckBox" name="stereoDontRenderMonoObjects">
           <property name="text">
            <string>DON'T RENDER MONO OBJECTS</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectTextureNoGapsMismatch">
-          <property name="text">
-           <string>Mono Fix: Reject Sprite UV Mismatch</string>
           </property>
          </widget>
         </item>
@@ -578,7 +660,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QFrame" name="stereoUiDetectSeparator">
+         <widget class="QFrame" name="stereoUniversalFixSeparator">
           <property name="frameShape">
            <enum>QFrame::HLine</enum>
           </property>
@@ -611,7 +693,7 @@
         <item>
          <widget class="QCheckBox" name="stereoUniversalRequireRtaCorrection">
           <property name="text">
-           <string>Universal 3D Fix 3: Require RTA Correction (NFS reflections fix)</string>
+           <string>Universal 3D Fix 3: Require RTA Correction (NFS reflections, Tekken 4 shadows fix)</string>
           </property>
          </widget>
         </item>
@@ -709,7 +791,14 @@
         <item>
          <widget class="QCheckBox" name="stereoUniversalRequireShuffle">
           <property name="text">
-           <string>Universal 3D Fix: Require Shuffle (Gun shadows fix)</string>
+           <string>Universal 3D Fix: Require Shuffle (Gun, MGS 3 fix)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoUniversalRejectTcc">
+          <property name="text">
+           <string>Universal 3D Fix: Reject TCC (Tekken 4 fix)</string>
           </property>
          </widget>
         </item>
@@ -871,13 +960,6 @@
          <widget class="QCheckBox" name="stereoUniversalRejectTfx">
           <property name="text">
            <string>Universal 3D Fix: Reject TFX</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoUniversalRejectTcc">
-          <property name="text">
-           <string>Universal 3D Fix: Reject TCC</string>
           </property>
          </widget>
         </item>
@@ -1943,8 +2025,8 @@
    <tabstop>trilinearFiltering</tabstop>
    <tabstop>anisotropicFiltering</tabstop>
    <tabstop>dithering</tabstop>
-   <tabstop>mipmapping</tabstop>
    <tabstop>blending</tabstop>
+   <tabstop>mipmapping</tabstop>
    <tabstop>enableHWFixes</tabstop>
    <tabstop>stereoscopicMode</tabstop>
    <tabstop>stereoDominantEye</tabstop>
@@ -1952,62 +2034,65 @@
    <tabstop>stereoConvergence</tabstop>
    <tabstop>stereoDepthFactor</tabstop>
    <tabstop>stereoUiDepth</tabstop>
+   <tabstop>stereoUiSecondLayerDepth</tabstop>
    <tabstop>stereoSwapEyes</tabstop>
    <tabstop>stereoFlipRendering</tabstop>
-   <tabstop>stereoDontRenderMonoObjects</tabstop>
+   <tabstop>stereoUiSafeDetect</tabstop>
+   <tabstop>stereoUiAdvancedDetect</tabstop>
+   <tabstop>stereoRejectZTestAlways</tabstop>
+   <tabstop>stereoRequireZVaries</tabstop>
+   <tabstop>stereoRejectFixedQ</tabstop>
+   <tabstop>stereoStencilRequireZTestGequal</tabstop>
+   <tabstop>stereoRejectUiLike</tabstop>
+   <tabstop>stereoUiBackgroundDepth</tabstop>
+   <tabstop>stereoRejectTextureNoGapsMismatch</tabstop>
+   <tabstop>stereoMasterFix</tabstop>
+   <tabstop>stereoMasterFixTest</tabstop>
    <tabstop>stereoRejectNonPositiveZ</tabstop>
    <tabstop>stereoRejectSmallZRange</tabstop>
    <tabstop>stereoRejectSpriteBlit</tabstop>
-   <tabstop>stereoRejectTextureNoGapsMismatch</tabstop>
+   <tabstop>stereoRejectFullscreenScissor</tabstop>
+   <tabstop>stereoRejectFullscreenDraw</tabstop>
+   <tabstop>stereoRejectFullCover</tabstop>
+   <tabstop>stereoRejectScanmask</tabstop>
+   <tabstop>stereoRequireDisplayBuffer1</tabstop>
+   <tabstop>stereoRequireDisplayBuffer2</tabstop>
+   <tabstop>stereoRejectFeedbackLoop</tabstop>
+   <tabstop>stereoRejectRegionRect</tabstop>
+   <tabstop>stereoRejectTfxDecal</tabstop>
+   <tabstop>stereoFixStencilShadows</tabstop>
+   <tabstop>stereoDontRenderMonoObjects</tabstop>
    <tabstop>stereoRejectConstantColor</tabstop>
    <tabstop>stereoRejectScalingDraw</tabstop>
    <tabstop>stereoRejectSbsInput</tabstop>
    <tabstop>stereoRejectTabInput</tabstop>
-   <tabstop>stereoRequireDisplayBuffer1</tabstop>
-   <tabstop>stereoRequireDisplayBuffer2</tabstop>
-   <tabstop>stereoFixStencilShadows</tabstop>
-   <tabstop>stereoRequirePerspectiveUV</tabstop>
-   <tabstop>stereoRequireZVaries</tabstop>
-   <tabstop>stereoRequireDepthActive</tabstop>
-   <tabstop>stereoRejectSprites</tabstop>
-   <tabstop>stereoRejectUiLike</tabstop>
-   <tabstop>stereoRequireTextureMapping</tabstop>
-   <tabstop>stereoRequireAlphaBlend</tabstop>
-   <tabstop>stereoRequireAlphaTest</tabstop>
-   <tabstop>stereoRequireUvVaries</tabstop>
-   <tabstop>stereoRequireColorVaries</tabstop>
-   <tabstop>stereoRequireFog</tabstop>
-   <tabstop>stereoStencilRequireDate</tabstop>
-   <tabstop>stereoStencilRequireDatm</tabstop>
-   <tabstop>stereoStencilRequireAte</tabstop>
-   <tabstop>stereoStencilRequireAfailZbOnly</tabstop>
-   <tabstop>stereoStencilRequireAfailNotKeep</tabstop>
-   <tabstop>stereoStencilRequireZWrite</tabstop>
-   <tabstop>stereoStencilRequireZTest</tabstop>
-   <tabstop>stereoStencilRequireZTestGequal</tabstop>
-   <tabstop>stereoStencilRequireFbMask</tabstop>
-   <tabstop>stereoStencilRequireFbMaskFull</tabstop>
-   <tabstop>stereoStencilRequireTexIsFb</tabstop>
-   <tabstop>stereoRejectFullscreenDraw</tabstop>
-   <tabstop>stereoRejectFullscreenScissor</tabstop>
-   <tabstop>stereoRejectFullCover</tabstop>
    <tabstop>stereoRejectSpriteNoGaps</tabstop>
-   <tabstop>stereoRejectTexIsFb</tabstop>
-   <tabstop>stereoRejectChannelShuffle</tabstop>
-   <tabstop>stereoRejectTextureShuffle</tabstop>
-   <tabstop>stereoRejectFullscreenShuffle</tabstop>
-   <tabstop>stereoRejectShaderShuffle</tabstop>
-   <tabstop>stereoRejectShuffleAcross</tabstop>
-   <tabstop>stereoRejectShuffleSame</tabstop>
-   <tabstop>stereoRejectChannelFetch</tabstop>
-   <tabstop>stereoRejectChannelFetchFb</tabstop>
-   <tabstop>stereoRejectFeedbackLoop</tabstop>
-   <tabstop>stereoRejectColclip</tabstop>
+   <tabstop>stereoUniversalRequireRtaSourceCorrection</tabstop>
+   <tabstop>stereoRejectFst</tabstop>
+   <tabstop>stereoUniversalRejectAdjt</tabstop>
+   <tabstop>stereoUniversalRequireRtaCorrection</tabstop>
+   <tabstop>stereoUniversalRequireTfx</tabstop>
+   <tabstop>stereoEnableOptions</tabstop>
+   <tabstop>stereoUniversalRejectBlendMix</tabstop>
+   <tabstop>stereoRemoveFixedSt</tabstop>
    <tabstop>stereoRejectRtaCorrection</tabstop>
+   <tabstop>stereoUniversalRequireWms</tabstop>
+   <tabstop>stereoUniversalRequireWmt</tabstop>
+   <tabstop>stereoUniversalRequireLtf</tabstop>
+   <tabstop>stereoUniversalRejectIip</tabstop>
+   <tabstop>stereoUniversalRejectAutomaticLod</tabstop>
+   <tabstop>stereoUniversalRequireNoColor1</tabstop>
+   <tabstop>stereoUniversalRejectBlendB</tabstop>
+   <tabstop>stereoUniversalRejectAtst</tabstop>
+   <tabstop>stereoUniversalRequireShuffle</tabstop>
+   <tabstop>stereoUniversalRejectTcc</tabstop>
+   <tabstop>stereoUniversalRejectProcessBa</tabstop>
+   <tabstop>stereoUniversalRejectProcessRg</tabstop>
+   <tabstop>stereoUniversalRejectShuffleAcross</tabstop>
+   <tabstop>stereoUniversalRequireTextureShuffle</tabstop>
    <tabstop>stereoUniversalRejectRtaSourceCorrection</tabstop>
    <tabstop>stereoUniversalRejectColclipHw</tabstop>
    <tabstop>stereoUniversalRejectColclip</tabstop>
-   <tabstop>stereoUniversalRejectBlendMix</tabstop>
    <tabstop>stereoUniversalRejectPabe</tabstop>
    <tabstop>stereoUniversalRejectFbMask</tabstop>
    <tabstop>stereoUniversalRejectTexIsFb</tabstop>
@@ -2020,27 +2105,19 @@
    <tabstop>stereoUniversalRejectAem</tabstop>
    <tabstop>stereoUniversalRejectFba</tabstop>
    <tabstop>stereoUniversalRejectFog</tabstop>
-   <tabstop>stereoUniversalRejectIip</tabstop>
    <tabstop>stereoUniversalRejectDate</tabstop>
-   <tabstop>stereoUniversalRejectAtst</tabstop>
    <tabstop>stereoUniversalRejectAfail</tabstop>
    <tabstop>stereoUniversalRejectFst</tabstop>
    <tabstop>stereoUniversalRejectTfx</tabstop>
-   <tabstop>stereoUniversalRejectTcc</tabstop>
    <tabstop>stereoUniversalRejectWms</tabstop>
    <tabstop>stereoUniversalRejectWmt</tabstop>
    <tabstop>stereoUniversalRejectAdjs</tabstop>
-   <tabstop>stereoUniversalRejectAdjt</tabstop>
    <tabstop>stereoUniversalRejectLtf</tabstop>
    <tabstop>stereoUniversalRejectShuffle</tabstop>
    <tabstop>stereoUniversalRejectShuffleSame</tabstop>
    <tabstop>stereoUniversalRejectReal16Src</tabstop>
-   <tabstop>stereoUniversalRejectProcessBa</tabstop>
-   <tabstop>stereoUniversalRejectProcessRg</tabstop>
-   <tabstop>stereoUniversalRejectShuffleAcross</tabstop>
    <tabstop>stereoUniversalRejectWriteRg</tabstop>
    <tabstop>stereoUniversalRejectBlendA</tabstop>
-   <tabstop>stereoUniversalRejectBlendB</tabstop>
    <tabstop>stereoUniversalRejectBlendC</tabstop>
    <tabstop>stereoUniversalRejectBlendD</tabstop>
    <tabstop>stereoUniversalRejectFixedOneA</tabstop>
@@ -2056,13 +2133,10 @@
    <tabstop>stereoUniversalRejectTCOffsetHack</tabstop>
    <tabstop>stereoUniversalRejectUrbanChaosHle</tabstop>
    <tabstop>stereoUniversalRejectTalesOfAbyssHle</tabstop>
-   <tabstop>stereoUniversalRejectAutomaticLod</tabstop>
    <tabstop>stereoUniversalRejectManualLod</tabstop>
    <tabstop>stereoUniversalRejectPointSampler</tabstop>
    <tabstop>stereoUniversalRejectRegionRect</tabstop>
    <tabstop>stereoUniversalRejectScanmask</tabstop>
-   <tabstop>stereoUniversalRequireRtaCorrection</tabstop>
-   <tabstop>stereoUniversalRequireRtaSourceCorrection</tabstop>
    <tabstop>stereoUniversalRequireColclipHw</tabstop>
    <tabstop>stereoUniversalRequireColclip</tabstop>
    <tabstop>stereoUniversalRequireBlendMix</tabstop>
@@ -2070,7 +2144,6 @@
    <tabstop>stereoUniversalRequireFbMask</tabstop>
    <tabstop>stereoUniversalRequireTexIsFb</tabstop>
    <tabstop>stereoUniversalRequireNoColor</tabstop>
-   <tabstop>stereoUniversalRequireNoColor1</tabstop>
    <tabstop>stereoUniversalRequireAemFmt</tabstop>
    <tabstop>stereoUniversalRequirePalFmt</tabstop>
    <tabstop>stereoUniversalRequireDstFmt</tabstop>
@@ -2083,14 +2156,9 @@
    <tabstop>stereoUniversalRequireAtst</tabstop>
    <tabstop>stereoUniversalRequireAfail</tabstop>
    <tabstop>stereoUniversalRequireFst</tabstop>
-   <tabstop>stereoUniversalRequireTfx</tabstop>
    <tabstop>stereoUniversalRequireTcc</tabstop>
-   <tabstop>stereoUniversalRequireWms</tabstop>
-   <tabstop>stereoUniversalRequireWmt</tabstop>
    <tabstop>stereoUniversalRequireAdjs</tabstop>
    <tabstop>stereoUniversalRequireAdjt</tabstop>
-   <tabstop>stereoUniversalRequireLtf</tabstop>
-   <tabstop>stereoUniversalRequireShuffle</tabstop>
    <tabstop>stereoUniversalRequireShuffleSame</tabstop>
    <tabstop>stereoUniversalRequireReal16Src</tabstop>
    <tabstop>stereoUniversalRequireProcessBa</tabstop>
@@ -2128,7 +2196,6 @@
    <tabstop>stereoUniversalRequireZTestNever</tabstop>
    <tabstop>stereoUniversalRequireAa1</tabstop>
    <tabstop>stereoUniversalRequireChannelShuffle</tabstop>
-   <tabstop>stereoUniversalRequireTextureShuffle</tabstop>
    <tabstop>stereoUniversalRequireFullscreenShuffle</tabstop>
    <tabstop>stereoUniversalRequirePoints</tabstop>
    <tabstop>stereoUniversalRequireLines</tabstop>
@@ -2137,31 +2204,52 @@
    <tabstop>stereoUniversalRequireFixedQ</tabstop>
    <tabstop>stereoUniversalRequireFixedZ</tabstop>
    <tabstop>stereoUniversalRequireConstantColor</tabstop>
+   <tabstop>stereoStencilRequireTexIsFb</tabstop>
+   <tabstop>stereoRequirePerspectiveUV</tabstop>
+   <tabstop>stereoRequireDepthActive</tabstop>
+   <tabstop>stereoRejectSprites</tabstop>
+   <tabstop>stereoRequireTextureMapping</tabstop>
+   <tabstop>stereoRequireAlphaBlend</tabstop>
+   <tabstop>stereoRequireAlphaTest</tabstop>
+   <tabstop>stereoRequireUvVaries</tabstop>
+   <tabstop>stereoRequireColorVaries</tabstop>
+   <tabstop>stereoRequireFog</tabstop>
+   <tabstop>stereoStencilRequireDate</tabstop>
+   <tabstop>stereoStencilRequireDatm</tabstop>
+   <tabstop>stereoStencilRequireAte</tabstop>
+   <tabstop>stereoStencilRequireAfailZbOnly</tabstop>
+   <tabstop>stereoStencilRequireAfailNotKeep</tabstop>
+   <tabstop>stereoStencilRequireZWrite</tabstop>
+   <tabstop>stereoStencilRequireZTest</tabstop>
+   <tabstop>stereoStencilRequireFbMask</tabstop>
+   <tabstop>stereoStencilRequireFbMaskFull</tabstop>
+   <tabstop>stereoRejectTexIsFb</tabstop>
+   <tabstop>stereoRejectChannelShuffle</tabstop>
+   <tabstop>stereoRejectTextureShuffle</tabstop>
+   <tabstop>stereoRejectFullscreenShuffle</tabstop>
+   <tabstop>stereoRejectShaderShuffle</tabstop>
+   <tabstop>stereoRejectShuffleAcross</tabstop>
+   <tabstop>stereoRejectShuffleSame</tabstop>
+   <tabstop>stereoRejectChannelFetch</tabstop>
+   <tabstop>stereoRejectChannelFetchFb</tabstop>
+   <tabstop>stereoRejectColclip</tabstop>
    <tabstop>stereoRejectBlendMix</tabstop>
    <tabstop>stereoRejectPabe</tabstop>
    <tabstop>stereoRejectDither</tabstop>
-   <tabstop>stereoRejectScanmask</tabstop>
-   <tabstop>stereoRejectRegionRect</tabstop>
    <tabstop>stereoRejectNoColorOutput</tabstop>
    <tabstop>stereoRejectHleShuffle</tabstop>
    <tabstop>stereoRejectTCOffsetHack</tabstop>
    <tabstop>stereoRejectPoints</tabstop>
    <tabstop>stereoRejectLines</tabstop>
    <tabstop>stereoRejectFlatShading</tabstop>
-   <tabstop>stereoRejectFst</tabstop>
-   <tabstop>stereoEnableOptions</tabstop>
-   <tabstop>stereoRemoveFixedSt</tabstop>
-   <tabstop>stereoRejectFixedQ</tabstop>
    <tabstop>stereoRejectAa1</tabstop>
    <tabstop>stereoRejectNoZTest</tabstop>
    <tabstop>stereoRejectNoZWrite</tabstop>
-   <tabstop>stereoRejectZTestAlways</tabstop>
    <tabstop>stereoRejectZTestNever</tabstop>
    <tabstop>stereoRejectAlphaTestOff</tabstop>
    <tabstop>stereoRejectAlphaTestAlways</tabstop>
    <tabstop>stereoRejectAlphaTestNever</tabstop>
    <tabstop>stereoRejectTfxModulate</tabstop>
-   <tabstop>stereoRejectTfxDecal</tabstop>
    <tabstop>stereoRejectTfxHighlight</tabstop>
    <tabstop>stereoRejectTfxHighlight2</tabstop>
    <tabstop>stereoRejectSmallDrawArea</tabstop>
