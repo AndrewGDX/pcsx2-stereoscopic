@@ -8351,18 +8351,29 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
         if (GSConfig.StereoRejectUiLike) ui_fix &= ui_experimantal1;
         if (GSConfig.StereoUiBackgroundDepth) ui_fix &= ui_experimantal2;
 
-        // important stuff
-        const bool texture_no_gaps_mismatch = (m_vt.m_primclass == GS_SPRITE_CLASS &&
-            m_primitive_covers_without_gaps == NoGapsType::FullCover && !TextureCoversWithoutGapsNotEqual());
+        // important fix for every game
+        // TODO breaks MGS3 movies
+        const bool first_fix = m_vt.m_primclass == GS_SPRITE_CLASS &&
+            m_primitive_covers_without_gaps == NoGapsType::FullCover && !TextureCoversWithoutGapsNotEqual();
 
         // fixes for GTA, MGS, Midnight Club 3
-        const bool secondary_fix = m_conf.ps.rta_source_correction && !m_conf.ps.tcc && !m_conf.ps.zfloor;
+        const bool second_fix = m_conf.ps.rta_source_correction && m_conf.ps.rta_correction && !m_conf.ps.tcc && !m_conf.ps.zfloor && !m_conf.ps.fog;
+
         // fixes for Black, Bully, Gun, many more
         const bool third_fix = PRIM->FST && !m_conf.ps.adjt && !m_conf.ps.rta_correction && m_conf.ps.no_color1
                                 && m_cached_ctx.TEST.ZTST == ZTST_ALWAYS && m_vt.m_eq.z && !PRIM->FGE
-                                && (!GSConfig.StereoUiAdvancedDetect || m_cached_ctx.TEX0.TFX == TFX_DECAL); // TODO add new settings for this
+                                && m_cached_ctx.TEX0.TFX == TFX_DECAL;
 
-        bool master_fix_enabled = GSConfig.StereoMasterFix && (secondary_fix || third_fix);
+        // fixes MGS3, Tekken 4, Black, COD2, Killzone, Midnight Club 3
+        // TODO brakes GTA movies, MGS3 gun laster pointer
+        const bool fourth_fix = !m_conf.ps.iip && !m_conf.ps.adjs && m_vt.m_primclass == GS_SPRITE_CLASS
+                                && m_vt.m_eq.rgba && !PRIM->FGE && m_cached_ctx.ZBUF.ZMSK && m_cached_ctx.FRAME.FBMSK == 0
+                                && (m_conf.ps.no_color || m_conf.ps.no_color1);
+
+        const bool master_fix_enabled = GSConfig.StereoMasterFix && (GSConfig.StereoMasterFix1 && first_fix
+                                  || GSConfig.StereoMasterFix2 && second_fix
+                                  || GSConfig.StereoMasterFix3 && third_fix
+                                  || GSConfig.StereoMasterFix4 && fourth_fix);
 
         bool disable_stereo_pass = GSConfig.StereoMasterFixTest;
 //         (PRIM->FST && m_vt.m_max.p.z <= 0.0f);
@@ -8790,7 +8801,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 //                            GSConfig.StereoRejectNonPositiveZ && non_positive_z ||
 //                            GSConfig.StereoRejectSmallZRange && small_z_range ||
 //                            GSConfig.StereoRejectSpriteBlit && sprite_blit ||
-//                            GSConfig.StereoRejectTextureNoGapsMismatch && texture_no_gaps_mismatch ||
 //                            GSConfig.StereoRejectConstantColor && constant_color;
 
         const bool postfx_fix = false; // GSConfig.StereoRejectFeedbackLoop && m_conf.ps.IsFeedbackLoop();
@@ -8798,16 +8808,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
                                    //GSConfig.StereoRejectRegionRect && m_conf.ps.region_rect;
 
 
-        if (postfx_fix || GSConfig.StereoRemoveFixedSt && double_image_fix) // TODO make only if stereo mode is enabled, but consider disable_stereo_pass
-        {
-            m_last_rt = rt;
-            return;
-        }
-
-        const bool make_universal_stereo_pass = GSConfig.StereoRejectTextureNoGapsMismatch && texture_no_gaps_mismatch;
+//        if (postfx_fix || GSConfig.StereoRemoveFixedSt && double_image_fix) // TODO make only if stereo mode is enabled, but consider disable_stereo_pass
+//        {
+//            m_last_rt = rt;
+//            return;
+//        }
 
 		const bool stereo_enabled = GSConfig.StereoMode != GSStereoMode::Off
-		&& (!master_fix_enabled && !stereo_display_target_not_matched && !disable_stereo_pass && !mono_postfx && !make_universal_stereo_pass);
+		&& (!master_fix_enabled && !stereo_display_target_not_matched && !disable_stereo_pass && !mono_postfx);
 //		 || GSConfig.StereoRejectTfxDecal && m_cached_ctx.TEX0.TFX == TFX_DECAL && !m_conf.ps.region_rect);
 
 		if (stereo_enabled)
@@ -8822,65 +8830,66 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
                              GSConfig.StereoRejectUiLike && ui_experimantal1 ||
                              GSConfig.StereoUiBackgroundDepth && ui_experimantal2;
 
-            const bool mono_object = (GSConfig.StereoRequirePerspectiveUV && !perspective_uv) ||
-                             (GSConfig.StereoRequireDepthActive && !depth_active) ||
-                             (GSConfig.StereoRejectSprites && m_vt.m_primclass == GS_SPRITE_CLASS) ||
-                             (GSConfig.StereoRequireTextureMapping && !texture_mapping) ||
-                             (GSConfig.StereoRequireAlphaBlend && !alpha_blend) ||
-                             (GSConfig.StereoRequireAlphaTest && !alpha_test) ||
-                             (GSConfig.StereoRequireUvVaries && !uv_varies) ||
-                             (GSConfig.StereoRequireColorVaries && !color_varies) ||
-                             (GSConfig.StereoRequireFog && !fog_enabled) ||
-                             (GSConfig.StereoStencilRequireDate && !date_enabled) ||
-                             (GSConfig.StereoStencilRequireDatm && !datm_enabled) ||
-                             (GSConfig.StereoStencilRequireAte && !alpha_test) ||
-                             (GSConfig.StereoStencilRequireAfailZbOnly && !afail_zb_only) ||
-                             (GSConfig.StereoStencilRequireAfailNotKeep && !afail_not_keep) ||
-                             (GSConfig.StereoStencilRequireZWrite && !z_write) ||
-                             (GSConfig.StereoStencilRequireZTest && !z_test) ||
-                             (GSConfig.StereoStencilRequireFbMask && !fbmask_any) ||
-                             (GSConfig.StereoStencilRequireFbMaskFull && !fbmask_full) ||
-                             (GSConfig.StereoStencilRequireTexIsFb && !tex_is_fb) ||
-                             (GSConfig.StereoRejectTexIsFb && tex_is_fb) ||
-                             (GSConfig.StereoRejectChannelShuffle && channel_shuffle) ||
-                             (GSConfig.StereoRejectTextureShuffle && texture_shuffle) ||
-                             (GSConfig.StereoRejectFullscreenShuffle && full_screen_shuffle) ||
-                             (GSConfig.StereoRejectShaderShuffle && shader_shuffle) ||
-                             (GSConfig.StereoRejectShuffleAcross && shuffle_across) ||
-                             (GSConfig.StereoRejectShuffleSame && shuffle_same) ||
-                             (GSConfig.StereoRejectChannelFetch && channel_fetch) ||
-                             (GSConfig.StereoRejectChannelFetchFb && channel_fetch_fb) ||
-                             (GSConfig.StereoRejectColclip && colclip) ||
-                             (GSConfig.StereoRejectBlendMix && blend_mix) ||
-                             (GSConfig.StereoRejectPabe && pabe) ||
-                             (GSConfig.StereoRejectDither && dither) ||
-                             (GSConfig.StereoRejectNoColorOutput && no_color_output) ||
-                             (GSConfig.StereoRejectHleShuffle && hle_shuffle) ||
-                             (GSConfig.StereoRejectTCOffsetHack && tcoffset_hack) ||
-                             (GSConfig.StereoRejectPoints && prim_point) ||
-                             (GSConfig.StereoRejectLines && prim_line) ||
-                             (GSConfig.StereoRejectFlatShading && flat_shading) ||
-                             (GSConfig.StereoRejectAa1 && aa1) ||
-                             (GSConfig.StereoRejectNoZTest && z_test_off) ||
-                             (GSConfig.StereoRejectNoZWrite && z_write_off) ||
-                             (GSConfig.StereoRejectZTestNever && z_test_never) ||
-                             (GSConfig.StereoRejectAlphaTestOff && alpha_test_off) ||
-                             (GSConfig.StereoRejectAlphaTestAlways && alpha_test_always) ||
-                             (GSConfig.StereoRejectAlphaTestNever && alpha_test_never) ||
-                             (GSConfig.StereoRejectTfxModulate && tfx_modulate) ||
-						 (GSConfig.StereoRejectTfxHighlight && tfx_highlight) ||
-						 (GSConfig.StereoRejectTfxHighlight2 && tfx_highlight2) ||
-						 (GSConfig.StereoRejectSmallDrawArea && small_draw_area) ||
-						 (GSConfig.StereoRejectWideDrawBand && wide_draw_band) ||
-						 (GSConfig.StereoRejectTopDrawBand && top_draw_band) ||
-						 (GSConfig.StereoRejectRtSpriteNoDepth && rt_sprite_no_depth) ||
-						 (GSConfig.StereoRejectRtSpriteAlphaBlend && rt_sprite_alpha_blend);
+            const bool mono_object = false;
+//                             (GSConfig.StereoRequirePerspectiveUV && !perspective_uv) ||
+//                             (GSConfig.StereoRequireDepthActive && !depth_active) ||
+//                             (GSConfig.StereoRejectSprites && m_vt.m_primclass == GS_SPRITE_CLASS) ||
+//                             (GSConfig.StereoRequireTextureMapping && !texture_mapping) ||
+//                             (GSConfig.StereoRequireAlphaBlend && !alpha_blend) ||
+//                             (GSConfig.StereoRequireAlphaTest && !alpha_test) ||
+//                             (GSConfig.StereoRequireUvVaries && !uv_varies) ||
+//                             (GSConfig.StereoRequireColorVaries && !color_varies) ||
+//                             (GSConfig.StereoRequireFog && !fog_enabled) ||
+//                             (GSConfig.StereoStencilRequireDate && !date_enabled) ||
+//                             (GSConfig.StereoStencilRequireDatm && !datm_enabled) ||
+//                             (GSConfig.StereoStencilRequireAte && !alpha_test) ||
+//                             (GSConfig.StereoStencilRequireAfailZbOnly && !afail_zb_only) ||
+//                             (GSConfig.StereoStencilRequireAfailNotKeep && !afail_not_keep) ||
+//                             (GSConfig.StereoStencilRequireZWrite && !z_write) ||
+//                             (GSConfig.StereoStencilRequireZTest && !z_test) ||
+//                             (GSConfig.StereoStencilRequireFbMask && !fbmask_any) ||
+//                             (GSConfig.StereoStencilRequireFbMaskFull && !fbmask_full) ||
+//                             (GSConfig.StereoStencilRequireTexIsFb && !tex_is_fb) ||
+//                             (GSConfig.StereoRejectTexIsFb && tex_is_fb) ||
+//                             (GSConfig.StereoRejectChannelShuffle && channel_shuffle) ||
+//                             (GSConfig.StereoRejectTextureShuffle && texture_shuffle) ||
+//                             (GSConfig.StereoRejectFullscreenShuffle && full_screen_shuffle) ||
+//                             (GSConfig.StereoRejectShaderShuffle && shader_shuffle) ||
+//                             (GSConfig.StereoRejectShuffleAcross && shuffle_across) ||
+//                             (GSConfig.StereoRejectShuffleSame && shuffle_same) ||
+//                             (GSConfig.StereoRejectChannelFetch && channel_fetch) ||
+//                             (GSConfig.StereoRejectChannelFetchFb && channel_fetch_fb) ||
+//                             (GSConfig.StereoRejectColclip && colclip) ||
+//                             (GSConfig.StereoRejectBlendMix && blend_mix) ||
+//                             (GSConfig.StereoRejectPabe && pabe) ||
+//                             (GSConfig.StereoRejectDither && dither) ||
+//                             (GSConfig.StereoRejectNoColorOutput && no_color_output) ||
+//                             (GSConfig.StereoRejectHleShuffle && hle_shuffle) ||
+//                             (GSConfig.StereoRejectTCOffsetHack && tcoffset_hack) ||
+//                             (GSConfig.StereoRejectPoints && prim_point) ||
+//                             (GSConfig.StereoRejectLines && prim_line) ||
+//                             (GSConfig.StereoRejectFlatShading && flat_shading) ||
+//                             (GSConfig.StereoRejectAa1 && aa1) ||
+//                             (GSConfig.StereoRejectNoZTest && z_test_off) ||
+//                             (GSConfig.StereoRejectNoZWrite && z_write_off) ||
+//                             (GSConfig.StereoRejectZTestNever && z_test_never) ||
+//                             (GSConfig.StereoRejectAlphaTestOff && alpha_test_off) ||
+//                             (GSConfig.StereoRejectAlphaTestAlways && alpha_test_always) ||
+//                             (GSConfig.StereoRejectAlphaTestNever && alpha_test_never) ||
+//                             (GSConfig.StereoRejectTfxModulate && tfx_modulate) ||
+//						 (GSConfig.StereoRejectTfxHighlight && tfx_highlight) ||
+//						 (GSConfig.StereoRejectTfxHighlight2 && tfx_highlight2) ||
+//						 (GSConfig.StereoRejectSmallDrawArea && small_draw_area) ||
+//						 (GSConfig.StereoRejectWideDrawBand && wide_draw_band) ||
+//						 (GSConfig.StereoRejectTopDrawBand && top_draw_band) ||
+//						 (GSConfig.StereoRejectRtSpriteNoDepth && rt_sprite_no_depth) ||
+//						 (GSConfig.StereoRejectRtSpriteAlphaBlend && rt_sprite_alpha_blend);
 
-            if (GSConfig.StereoDontRenderMonoObjects && mono_object)
-            {
-                m_last_rt = rt;
-                return;
-            }
+//            if (GSConfig.StereoDontRenderMonoObjects && mono_object)
+//            {
+//                m_last_rt = rt;
+//                return;
+//            }
 
             const bool increase_depth = m_conf.ps.blend_mix == 0
                 || (GSConfig.StereoRejectUiLike && m_cached_ctx.TEST.ZTST != ZTST_ALWAYS && m_vt.m_eq.z && m_vt.m_eq.q)

@@ -134,7 +134,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNonPositiveZ, "EmuCore/GS", "StereoRejectNonPositiveZ", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallZRange, "EmuCore/GS", "StereoRejectSmallZRange", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteBlit, "EmuCore/GS", "StereoRejectSpriteBlit", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTextureNoGapsMismatch, "EmuCore/GS", "StereoRejectTextureNoGapsMismatch", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectConstantColor, "EmuCore/GS", "StereoRejectConstantColor", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectScalingDraw, "EmuCore/GS", "StereoRejectScalingDraw", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSbsInput, "EmuCore/GS", "StereoRejectSbsInput", false);
@@ -151,6 +150,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUiAdvancedDetect, "EmuCore/GS", "StereoUiAdvancedDetect", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUiBackgroundDepth, "EmuCore/GS", "StereoUiBackgroundDepth", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix, "EmuCore/GS", "StereoMasterFix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix1, "EmuCore/GS", "StereoMasterFix1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix2, "EmuCore/GS", "StereoMasterFix2", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix3, "EmuCore/GS", "StereoMasterFix3", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix4, "EmuCore/GS", "StereoMasterFix4", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix5, "EmuCore/GS", "StereoMasterFix5", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix6, "EmuCore/GS", "StereoMasterFix6", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix7, "EmuCore/GS", "StereoMasterFix7", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix8, "EmuCore/GS", "StereoMasterFix8", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix9, "EmuCore/GS", "StereoMasterFix9", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFix10, "EmuCore/GS", "StereoMasterFix10", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFixTest, "EmuCore/GS", "StereoMasterFixTest", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireTextureMapping, "EmuCore/GS", "StereoRequireTextureMapping", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireAlphaBlend, "EmuCore/GS", "StereoRequireAlphaBlend", false);
@@ -806,6 +815,26 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Master toggle for additional stereo fixes."));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFixTest, tr("Master FIX Test"), tr("Unchecked"),
 			tr("Experimental test toggle for stereo fixes."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix1, tr("Master FIX 1"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix2, tr("Master FIX 2"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix3, tr("Master FIX 3"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix4, tr("Master FIX 4"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix5, tr("Master FIX 5"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix6, tr("Master FIX 6"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix7, tr("Master FIX 7"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix8, tr("Master FIX 8"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix9, tr("Master FIX 9"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
+		dialog()->registerWidgetHelp(m_hw.stereoMasterFix10, tr("Master FIX 10"), tr("Unchecked"),
+			tr("Additional stereo fix toggle."));
 		dialog()->registerWidgetHelp(m_hw.stereoDominantEye, tr("Dominant Eye"), tr("No (recommended)"),
 			tr("Biases stereo parallax toward the selected eye. Useful for FPS weapon alignment."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectNonPositiveZ, tr("Reject Z <= 0"), tr("Unchecked"),
@@ -814,8 +843,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Treat draws with a near-constant Z range as mono."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectSpriteBlit, tr("Reject Sprite Blit"), tr("Unchecked"),
 			tr("Treat 1:1 sprite blits (UI-style) as mono."));
-		dialog()->registerWidgetHelp(m_hw.stereoRejectTextureNoGapsMismatch, tr("Reject Sprite UV Mismatch"), tr("Unchecked"),
-			tr("Treat sprite draws with mismatched UV coverage as mono."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectConstantColor, tr("Reject Constant Color"), tr("Unchecked"),
 			tr("Treat constant-color draws as mono."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectScalingDraw, tr("Reject Scaling Draw"), tr("Unchecked"),
@@ -1650,7 +1677,6 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectNonPositiveZ->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSmallZRange->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSpriteBlit->setEnabled(stereo_enabled);
-	m_hw.stereoRejectTextureNoGapsMismatch->setEnabled(stereo_enabled);
 	m_hw.stereoRejectConstantColor->setEnabled(stereo_enabled);
 	m_hw.stereoRejectScalingDraw->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSbsInput->setEnabled(stereo_enabled);
@@ -1668,6 +1694,16 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoUiBackgroundDepth->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFixTest->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix1->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix2->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix3->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix4->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix5->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix6->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix7->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix8->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix9->setEnabled(stereo_enabled);
+	m_hw.stereoMasterFix10->setEnabled(stereo_enabled);
 	m_hw.stereoRequireTextureMapping->setEnabled(stereo_enabled);
 	m_hw.stereoRequireAlphaBlend->setEnabled(stereo_enabled);
 	m_hw.stereoRequireAlphaTest->setEnabled(stereo_enabled);

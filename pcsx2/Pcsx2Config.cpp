@@ -906,13 +906,22 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectNonPositiveZ) &&
 		OpEqu(StereoRejectSmallZRange) &&
 		OpEqu(StereoRejectSpriteBlit) &&
-		OpEqu(StereoRejectTextureNoGapsMismatch) &&
 		OpEqu(StereoRejectConstantColor) &&
 		OpEqu(StereoRejectScalingDraw) &&
 		OpEqu(StereoRejectSbsInput) &&
 		OpEqu(StereoRejectTabInput) &&
 		OpEqu(StereoMasterFix) &&
 		OpEqu(StereoMasterFixTest) &&
+		OpEqu(StereoMasterFix1) &&
+		OpEqu(StereoMasterFix2) &&
+		OpEqu(StereoMasterFix3) &&
+		OpEqu(StereoMasterFix4) &&
+		OpEqu(StereoMasterFix5) &&
+		OpEqu(StereoMasterFix6) &&
+		OpEqu(StereoMasterFix7) &&
+		OpEqu(StereoMasterFix8) &&
+		OpEqu(StereoMasterFix9) &&
+		OpEqu(StereoMasterFix10) &&
 		OpEqu(StereoRequireDisplayBuffer1) &&
 		OpEqu(StereoRequireDisplayBuffer2) &&
 		OpEqu(StereoFixStencilShadows) &&
@@ -1339,13 +1348,22 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectNonPositiveZ);
 	SettingsWrapEntry(StereoRejectSmallZRange);
 	SettingsWrapEntry(StereoRejectSpriteBlit);
-	SettingsWrapEntry(StereoRejectTextureNoGapsMismatch);
 	SettingsWrapEntry(StereoRejectConstantColor);
 	SettingsWrapEntry(StereoRejectScalingDraw);
 	SettingsWrapEntry(StereoRejectSbsInput);
 	SettingsWrapEntry(StereoRejectTabInput);
 	SettingsWrapEntry(StereoMasterFix);
 	SettingsWrapEntry(StereoMasterFixTest);
+	SettingsWrapEntry(StereoMasterFix1);
+	SettingsWrapEntry(StereoMasterFix2);
+	SettingsWrapEntry(StereoMasterFix3);
+	SettingsWrapEntry(StereoMasterFix4);
+	SettingsWrapEntry(StereoMasterFix5);
+	SettingsWrapEntry(StereoMasterFix6);
+	SettingsWrapEntry(StereoMasterFix7);
+	SettingsWrapEntry(StereoMasterFix8);
+	SettingsWrapEntry(StereoMasterFix9);
+	SettingsWrapEntry(StereoMasterFix10);
 	SettingsWrapEntry(StereoRequireDisplayBuffer1);
 	SettingsWrapEntry(StereoRequireDisplayBuffer2);
 	SettingsWrapEntry(StereoFixStencilShadows);

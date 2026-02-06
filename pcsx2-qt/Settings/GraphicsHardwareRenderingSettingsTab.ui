@@ -506,16 +506,79 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="stereoRejectTextureNoGapsMismatch">
+         <widget class="QCheckBox" name="stereoMasterFix">
           <property name="text">
-           <string>Mono Fix: Reject Sprite UV Mismatch</string>
+           <string>GLOBAL Master FIX</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="stereoMasterFix">
+         <widget class="QCheckBox" name="stereoMasterFix1">
           <property name="text">
-           <string>Master FIX</string>
+           <string>Master FIX 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix2">
+          <property name="text">
+           <string>Master FIX 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix3">
+          <property name="text">
+           <string>Master FIX 3</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix4">
+          <property name="text">
+           <string>Master FIX 4</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix5">
+          <property name="text">
+           <string>Master FIX 5</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix6">
+          <property name="text">
+           <string>Master FIX 6</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix7">
+          <property name="text">
+           <string>Master FIX 7</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix8">
+          <property name="text">
+           <string>Master FIX 8</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix9">
+          <property name="text">
+           <string>Master FIX 9</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoMasterFix10">
+          <property name="text">
+           <string>Master FIX 10</string>
           </property>
          </widget>
         </item>
@@ -1610,14 +1673,14 @@
         <item>
          <widget class="QCheckBox" name="stereoUniversalRequireFixedQ">
           <property name="text">
-           <string>Universal 3D Fix: TFX_HIGHLIGHT / 2</string>
+           <string>Universal 3D Fix: TEX0.TFX == TFX_DECAL</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoUniversalRequireFixedZ">
           <property name="text">
-           <string>Universal 3D Fix: TFX_MODULATE</string>
+           <string>Universal 3D Fix: TEX0.TFX != TFX_DECAL</string>
           </property>
          </widget>
         </item>
@@ -2045,8 +2108,17 @@
    <tabstop>stereoStencilRequireZTestGequal</tabstop>
    <tabstop>stereoRejectUiLike</tabstop>
    <tabstop>stereoUiBackgroundDepth</tabstop>
-   <tabstop>stereoRejectTextureNoGapsMismatch</tabstop>
    <tabstop>stereoMasterFix</tabstop>
+   <tabstop>stereoMasterFix1</tabstop>
+   <tabstop>stereoMasterFix2</tabstop>
+   <tabstop>stereoMasterFix3</tabstop>
+   <tabstop>stereoMasterFix4</tabstop>
+   <tabstop>stereoMasterFix5</tabstop>
+   <tabstop>stereoMasterFix6</tabstop>
+   <tabstop>stereoMasterFix7</tabstop>
+   <tabstop>stereoMasterFix8</tabstop>
+   <tabstop>stereoMasterFix9</tabstop>
+   <tabstop>stereoMasterFix10</tabstop>
    <tabstop>stereoMasterFixTest</tabstop>
    <tabstop>stereoRejectNonPositiveZ</tabstop>
    <tabstop>stereoRejectSmallZRange</tabstop>
