@@ -8220,6 +8220,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	m_conf.cb_vs.stereo_params = GSVector4::zero();
+	m_conf.cb_ps.StereoRemap = GSVector4(0.0f, 0.0f, -1.0f, 0.0f);
+	m_conf.cb_ps.StereoClipParams = GSVector4::zero();
+	m_conf.cb_ps.StereoScissorLeft = GSVector4::zero();
+	m_conf.cb_ps.StereoScissorRight = GSVector4::zero();
+	m_conf.cb_ps.StereoDrawLeft = GSVector4::zero();
+	m_conf.cb_ps.StereoDrawRight = GSVector4::zero();
 
 	if (!m_channel_shuffle_width)
 	{
@@ -8273,6 +8279,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			draw_height <= (fullscreen_height / 4);
 		const bool top_draw_band = fullscreen_valid && draw_rect.y <= (fullscreen_height / 6) &&
 			draw_height <= (fullscreen_height / 4);
+		const u32 draw_start = GSLocalMemory::GetStartBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
 		const u32 draw_end = GSLocalMemory::GetUnwrappedEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
 		const bool tex_is_rt = m_process_texture && m_cached_ctx.TEX0.TBP0 >= m_cached_ctx.FRAME.Block() &&
 			m_cached_ctx.TEX0.TBP0 < draw_end;
@@ -8329,9 +8336,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool rt_sprite_alpha_blend = tex_is_rt && m_vt.m_primclass == GS_SPRITE_CLASS && texture_mapping && alpha_blend;
 		const bool process_texture = m_process_texture;
 		const bool source_from_target = (tex && tex->m_from_target);
-//		const bool draw_uses_target_tex = source_from_target && ((tex->m_from_target_TEX0.TBP0 <= draw_start &&
-//			tex->m_from_target->UnwrappedEndBlock() > m_cached_ctx.FRAME.Block()) ||
-//			(m_cached_ctx.FRAME.Block() < tex->m_from_target_TEX0.TBP0 && draw_end > tex->m_from_target_TEX0.TBP0));
+		const bool draw_uses_target_tex = source_from_target && ((tex->m_from_target_TEX0.TBP0 <= draw_start &&
+			tex->m_from_target->UnwrappedEndBlock() > m_cached_ctx.FRAME.Block()) ||
+			(m_cached_ctx.FRAME.Block() < tex->m_from_target_TEX0.TBP0 && draw_end > tex->m_from_target_TEX0.TBP0));
 		const bool in_target_draw = m_in_target_draw;
 		const bool using_temp_z = m_using_temp_z;
 		const bool one_barrier = m_conf.require_one_barrier;
@@ -8380,6 +8387,20 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			fmv_no_depth_test && fmv_no_depth_write && fmv_no_depth_output && fmv_no_depth_read &&
 			fmv_no_fb_mask && fmv_color_output && fmv_source_not_from_target && fmv_draw_matches_tex &&
 			fmv_no_shuffle && fmv_no_mipmap;
+		const bool feedback_loop_shader = m_conf.ps.IsFeedbackLoop();
+		const bool feedback_loop_draw_uses_target = draw_uses_target_tex;
+		const bool feedback_loop_tex_is_rt = tex_is_rt;
+		const bool feedback_loop_source_from_target = source_from_target;
+		const bool feedback_loop_in_target_draw = in_target_draw;
+		const bool feedback_loop_using_temp_z = using_temp_z;
+		const bool feedback_loop_overlap_draw_range = draw_uses_target_tex;
+		const bool feedback_loop_any_raw = feedback_loop_shader || feedback_loop_draw_uses_target ||
+			(feedback_loop_source_from_target && feedback_loop_tex_is_rt) || feedback_loop_in_target_draw;
+		const bool feedback_loop_any = GSConfig.StereoFeedbackLoopSourceFromTargetOnly ?
+			feedback_loop_source_from_target : feedback_loop_any_raw;
+		const bool sbs_remap_fullscreen_texture = source_from_target && tex && tex->m_from_target && fullscreen_target &&
+			tex->m_from_target->m_texture && tex->m_from_target->m_texture->GetWidth() == fullscreen_target->GetWidth() &&
+			tex->m_from_target->m_texture->GetHeight() == fullscreen_target->GetHeight();
 
         const bool ui_safe_detect = !PRIM->FST && ((m_cached_ctx.TEST.ZTST == ZTST_ALWAYS // TODO remove that ?
                              || m_cached_ctx.TEST.ZTST != ZTST_GEQUAL && m_cached_ctx.TEST.ZTST != ZTST_GREATER) // almost all default UI
@@ -8427,6 +8448,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
                                 && m_vt.m_eq.rgba && !PRIM->FGE && m_cached_ctx.ZBUF.ZMSK && m_cached_ctx.FRAME.FBMSK == 0
                                 && (m_conf.ps.no_color || m_conf.ps.no_color1);
 
+        const bool fifth_fix = tex && tex->m_from_target;
+        const bool sixth_fix = tex && tex->m_from_target && PRIM->FST && !m_conf.ps.adjt;
+
         const bool movies_fix_override = process_texture && !tex_is_rt && !in_target_draw && !using_temp_z && !full_barrier
                                 && !depth_texture && !mipmap_active && fmv_active && fmv_sprite && fmv_texture_mapping
                                 && fmv_process_texture && !fmv_no_depth_test && fmv_no_fb_mask && fmv_no_shuffle
@@ -8435,7 +8459,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
         const bool master_fix_enabled = GSConfig.StereoMasterFix && (GSConfig.StereoMasterFix1 && first_fix
                                   || GSConfig.StereoMasterFix2 && second_fix
                                   || GSConfig.StereoMasterFix3 && third_fix
-                                  || GSConfig.StereoMasterFix4 && fourth_fix);
+                                  || GSConfig.StereoMasterFix4 && fourth_fix
+                                  || GSConfig.StereoMasterFix5 && fifth_fix
+                                  || GSConfig.StereoMasterFix6 && sixth_fix);
 
         const bool master_fix_override = GSConfig.StereoMasterFix && (GSConfig.StereoMasterFix9 && movies_fix_override);
 
@@ -8770,6 +8796,23 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 //			if (GSConfig.StereoRejectFmvRecentEeUpload) disable_stereo_pass &= fmv_recent_ee_upload;
 			if (GSConfig.StereoRequireFmvRecentTransferDraw) disable_stereo_pass &= !fmv_recent_transfer_draw;
 			if (GSConfig.StereoRejectFmvRecentTransferDraw) disable_stereo_pass &= fmv_recent_transfer_draw;
+			if (GSConfig.StereoRequireFeedbackLoopAny) disable_stereo_pass &= !feedback_loop_any;
+			if (GSConfig.StereoRejectFeedbackLoopAny) disable_stereo_pass &= feedback_loop_any;
+			if (GSConfig.StereoRequireFeedbackLoopShader) disable_stereo_pass &= !feedback_loop_shader;
+			if (GSConfig.StereoRejectFeedbackLoopShader) disable_stereo_pass &= feedback_loop_shader;
+			if (GSConfig.StereoRequireFeedbackLoopDrawUsesTarget) disable_stereo_pass &= !feedback_loop_draw_uses_target;
+			if (GSConfig.StereoRejectFeedbackLoopDrawUsesTarget) disable_stereo_pass &= feedback_loop_draw_uses_target;
+			if (GSConfig.StereoRequireFeedbackLoopTexIsRt) disable_stereo_pass &= !feedback_loop_tex_is_rt;
+			if (GSConfig.StereoRejectFeedbackLoopTexIsRt) disable_stereo_pass &= feedback_loop_tex_is_rt;
+			if (GSConfig.StereoRequireFeedbackLoopSourceFromTarget) disable_stereo_pass &= !feedback_loop_source_from_target;
+			if (GSConfig.StereoRejectFeedbackLoopSourceFromTarget) disable_stereo_pass &= feedback_loop_source_from_target;
+			if (GSConfig.StereoRequireFeedbackLoopInTargetDraw) disable_stereo_pass &= !feedback_loop_in_target_draw;
+			if (GSConfig.StereoRejectFeedbackLoopInTargetDraw) disable_stereo_pass &= feedback_loop_in_target_draw;
+			if (GSConfig.StereoRequireFeedbackLoopTempZ) disable_stereo_pass &= !feedback_loop_using_temp_z;
+			if (GSConfig.StereoRejectFeedbackLoopTempZ) disable_stereo_pass &= feedback_loop_using_temp_z;
+			if (GSConfig.StereoRequireFeedbackLoopOverlapDrawRange) disable_stereo_pass &= !feedback_loop_overlap_draw_range;
+			if (GSConfig.StereoRejectFeedbackLoopOverlapDrawRange) disable_stereo_pass &= feedback_loop_overlap_draw_range;
+			if (GSConfig.StereoFeedbackLoopDisableStereo && feedback_loop_any) disable_stereo_pass = true;
 		}
 
 //	    const bool is_fmv_framebuffer = (m_vt.m_primclass == GS_SPRITE_CLASS &&
@@ -8957,9 +9000,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 //                            GSConfig.StereoRejectSpriteBlit && sprite_blit ||
 //                            GSConfig.StereoRejectConstantColor && constant_color;
 
-        const bool postfx_fix = false; // GSConfig.StereoRejectFeedbackLoop && m_conf.ps.IsFeedbackLoop();
-        const bool mono_postfx = false; //GSConfig.StereoRejectSpriteNoGaps && m_primitive_covers_without_gaps == NoGapsType::SpriteNoGaps ||
-                                   //GSConfig.StereoRejectRegionRect && m_conf.ps.region_rect;
+		const bool postfx_fix = false; // GSConfig.StereoRejectFeedbackLoop && m_conf.ps.IsFeedbackLoop();
+		const bool mono_postfx = false; //GSConfig.StereoRejectSpriteNoGaps && m_primitive_covers_without_gaps == NoGapsType::SpriteNoGaps ||
+							   //GSConfig.StereoRejectRegionRect && m_conf.ps.region_rect;
+		const bool clamp_feedback_loop = GSConfig.StereoFeedbackLoopClampToDominantEye && feedback_loop_any;
 
 
 //        if (postfx_fix || GSConfig.StereoRemoveFixedSt && double_image_fix) // TODO make only if stereo mode is enabled, but consider disable_stereo_pass
@@ -8971,6 +9015,34 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool stereo_enabled = GSConfig.StereoMode != GSStereoMode::Off
 		&& (!master_fix_enabled && !stereo_display_target_not_matched && !mono_postfx && !disable_stereo_pass || master_fix_override);
 //		 || GSConfig.StereoRejectTfxDecal && m_cached_ctx.TEX0.TFX == TFX_DECAL && !m_conf.ps.region_rect);
+
+		bool sbs_remap_active = false;
+		bool sbs_remap_axis_vertical = GSConfig.StereoMode == GSStereoMode::TopAndBottom;
+		if (GSConfig.StereoSbsRemapDetectTabInput && tab_input)
+			sbs_remap_axis_vertical = true;
+		if (GSConfig.StereoSbsRemapDetectSbsInput && sbs_input)
+			sbs_remap_axis_vertical = false;
+
+		if (stereo_enabled && GSConfig.StereoSbsRemapEnable)
+		{
+			bool sbs_remap_detected = false;
+			if (GSConfig.StereoSbsRemapDetectSourceFromTarget) sbs_remap_detected |= source_from_target;
+			if (GSConfig.StereoSbsRemapDetectFeedbackLoop) sbs_remap_detected |= feedback_loop_any;
+			if (GSConfig.StereoSbsRemapDetectDisplayMatch) sbs_remap_detected |= fmv_display_match;
+			if (GSConfig.StereoSbsRemapDetectFullscreenTexture) sbs_remap_detected |= sbs_remap_fullscreen_texture;
+			if (GSConfig.StereoSbsRemapDetectSbsInput) sbs_remap_detected |= sbs_input;
+			if (GSConfig.StereoSbsRemapDetectTabInput) sbs_remap_detected |= tab_input;
+
+			sbs_remap_active = sbs_remap_detected;
+			if (GSConfig.StereoSbsRemapRequireTextureMapping) sbs_remap_active &= texture_mapping;
+			if (GSConfig.StereoSbsRemapRequireProcessTexture) sbs_remap_active &= process_texture;
+		}
+
+		if (sbs_remap_active)
+		{
+			const float forced_eye = GSConfig.StereoSbsRemapMono ? 0.0f : -1.0f;
+			m_conf.cb_ps.StereoRemap = GSVector4(1.0f, sbs_remap_axis_vertical ? 1.0f : 0.0f, forced_eye, 0.0f);
+		}
 
 		if (stereo_enabled)
 		{
@@ -9039,7 +9111,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 //						 (GSConfig.StereoRejectRtSpriteNoDepth && rt_sprite_no_depth) ||
 //						 (GSConfig.StereoRejectRtSpriteAlphaBlend && rt_sprite_alpha_blend);
 
-//            if (GSConfig.StereoDontRenderMonoObjects && mono_object)
+//            if (GSConfig.StereoInstencedRenderer && mono_object)
 //            {
 //                m_last_rt = rt;
 //                return;
@@ -9057,11 +9129,121 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			const float depth_factor = ui_detect || mono_object ? 0.01f : GSConfig.StereoDepthFactor * 1000;
 			const int dominant_mode = static_cast<int>(GSConfig.StereoDominantEye);
 
-			if (GSConfig.StereoDontRenderMonoObjects)
+			if (clamp_feedback_loop)
+			{
+				const bool clamp_right = GSConfig.StereoDominantEye == GSStereoDominantEye::Right;
+				const float eye_separation = clamp_right ? separation : -separation;
+				const float mode = static_cast<float>((GSConfig.StereoFlipRendering ? 2 : 1) + (dominant_mode * 4));
+				m_conf.instance_count = 1;
+
+				// Save original values
+				const GSVector4i original_scissor = m_conf.scissor;
+				const GSVector4i original_drawarea = m_conf.drawarea;
+				const GSVector2 original_vertex_scale = m_conf.cb_vs.vertex_scale;
+				const GSVector2 original_vertex_offset = m_conf.cb_vs.vertex_offset;
+				const GSVector4 original_stereo_remap = m_conf.cb_ps.StereoRemap;
+				const GSTexture* stereo_target = m_conf.rt ? m_conf.rt : m_conf.ds;
+
+				m_conf.cb_vs.stereo_params = GSVector4(eye_separation, convergence, depth_factor, mode);
+				m_conf.scissor = original_scissor;
+				m_conf.drawarea = original_drawarea;
+				m_conf.cb_vs.vertex_scale = original_vertex_scale;
+				m_conf.cb_vs.vertex_offset = original_vertex_offset;
+				if (m_conf.cb_ps.StereoRemap.x > 0.5f && !GSConfig.StereoSbsRemapMono)
+					m_conf.cb_ps.StereoRemap.z = clamp_right ? 1.0f : 0.0f;
+
+				if (!GSConfig.StereoFlipRendering)
+				{
+					const int eye_width = stereo_target ? (stereo_target->GetWidth() / 2) : (original_scissor.z - original_scissor.x);
+					if (clamp_right)
+					{
+						m_conf.scissor.x += eye_width;
+						m_conf.drawarea.x += eye_width;
+					}
+					else
+					{
+						m_conf.scissor.z -= eye_width;
+						m_conf.drawarea.z -= eye_width;
+					}
+				}
+				else
+				{
+					const int eye_height = stereo_target ? (stereo_target->GetHeight() / 2) : (original_scissor.w - original_scissor.y);
+					if (clamp_right)
+					{
+						m_conf.scissor.y += eye_height;
+						m_conf.drawarea.y += eye_height;
+					}
+					else
+					{
+						m_conf.scissor.w -= eye_height;
+						m_conf.drawarea.w -= eye_height;
+					}
+				}
+
+				g_gs_device->RenderHW(m_conf);
+
+				// Restore original values
+				m_conf.scissor = original_scissor;
+				m_conf.drawarea = original_drawarea;
+				m_conf.cb_vs.vertex_scale = original_vertex_scale;
+				m_conf.cb_vs.vertex_offset = original_vertex_offset;
+				m_conf.cb_ps.StereoRemap = original_stereo_remap;
+			}
+			else if (GSConfig.StereoInstencedRenderer)
 			{
 				const float mode = static_cast<float>((GSConfig.StereoFlipRendering ? 4 : 3) + (dominant_mode * 4));
 				m_conf.instance_count = 2;
 				m_conf.cb_vs.stereo_params = GSVector4(separation, convergence, depth_factor, mode);
+				const bool instanced_scissor_clip = GSConfig.StereoInstancedShaderScissor;
+				const bool instanced_drawarea_clip = GSConfig.StereoInstancedShaderDrawArea;
+				const bool instanced_shader_clip = instanced_scissor_clip || instanced_drawarea_clip;
+
+				if (instanced_shader_clip)
+				{
+					const GSVector4i original_scissor = m_conf.scissor;
+					const GSVector4i original_drawarea = m_conf.drawarea;
+					const GSTexture* stereo_target = m_conf.rt ? m_conf.rt : m_conf.ds;
+					GSVector4i left_scissor = original_scissor;
+					GSVector4i right_scissor = original_scissor;
+					GSVector4i left_drawarea = original_drawarea;
+					GSVector4i right_drawarea = original_drawarea;
+
+					if (!GSConfig.StereoFlipRendering)
+					{
+						const int eye_width = stereo_target ? (stereo_target->GetWidth() / 2) : (original_scissor.width() / 2);
+						left_scissor.x = original_scissor.x / 2;
+						left_scissor.z = original_scissor.z / 2;
+						right_scissor.x = left_scissor.x + eye_width;
+						right_scissor.z = left_scissor.z + eye_width;
+
+						left_drawarea.x = original_drawarea.x / 2;
+						left_drawarea.z = original_drawarea.z / 2;
+						right_drawarea.x = left_drawarea.x + eye_width;
+						right_drawarea.z = left_drawarea.z + eye_width;
+					}
+					else
+					{
+						const int eye_height = stereo_target ? (stereo_target->GetHeight() / 2) : (original_scissor.height() / 2);
+						left_scissor.y = original_scissor.y / 2;
+						left_scissor.w = original_scissor.w / 2;
+						right_scissor.y = left_scissor.y + eye_height;
+						right_scissor.w = left_scissor.w + eye_height;
+
+						left_drawarea.y = original_drawarea.y / 2;
+						left_drawarea.w = original_drawarea.w / 2;
+						right_drawarea.y = left_drawarea.y + eye_height;
+						right_drawarea.w = left_drawarea.w + eye_height;
+					}
+
+					m_conf.scissor = left_scissor.runion(right_scissor);
+					m_conf.drawarea = left_drawarea.runion(right_drawarea);
+					m_conf.cb_ps.StereoClipParams = GSVector4(1.0f, instanced_scissor_clip ? 1.0f : 0.0f, instanced_drawarea_clip ? 1.0f : 0.0f, 0.0f);
+					m_conf.cb_ps.StereoScissorLeft = GSVector4(static_cast<float>(left_scissor.x), static_cast<float>(left_scissor.y), static_cast<float>(left_scissor.z), static_cast<float>(left_scissor.w));
+					m_conf.cb_ps.StereoScissorRight = GSVector4(static_cast<float>(right_scissor.x), static_cast<float>(right_scissor.y), static_cast<float>(right_scissor.z), static_cast<float>(right_scissor.w));
+					m_conf.cb_ps.StereoDrawLeft = GSVector4(static_cast<float>(left_drawarea.x), static_cast<float>(left_drawarea.y), static_cast<float>(left_drawarea.z), static_cast<float>(left_drawarea.w));
+					m_conf.cb_ps.StereoDrawRight = GSVector4(static_cast<float>(right_drawarea.x), static_cast<float>(right_drawarea.y), static_cast<float>(right_drawarea.z), static_cast<float>(right_drawarea.w));
+				}
 				g_gs_device->RenderHW(m_conf);
 			}
 			else
@@ -9074,6 +9256,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				const GSVector4i original_drawarea = m_conf.drawarea;
 				const GSVector2 original_vertex_scale = m_conf.cb_vs.vertex_scale;
 				const GSVector2 original_vertex_offset = m_conf.cb_vs.vertex_offset;
+				const GSVector4 original_stereo_remap = m_conf.cb_ps.StereoRemap;
 				const GSTexture* stereo_target = m_conf.rt ? m_conf.rt : m_conf.ds;
 
 //					Console.WriteLn("m_conf.cb_vs.vertex_offset=(%d,%d)",
@@ -9093,8 +9276,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					m_conf.drawarea = original_drawarea;
 					m_conf.cb_vs.vertex_scale = original_vertex_scale;
 					m_conf.cb_vs.vertex_offset = original_vertex_offset;
-					m_conf.scissor.z -= eye_width;
-					m_conf.drawarea.z -= eye_width;
+					if (m_conf.cb_ps.StereoRemap.x > 0.5f)
+						m_conf.cb_ps.StereoRemap.z = 0.0f;
+					m_conf.scissor.x *= 0.5f;
+					m_conf.scissor.z *= 0.5f;
+					m_conf.drawarea.x *= 0.5f;
+					m_conf.drawarea.z *= 0.5f;
 //					m_conf.cb_vs.vertex_scale.x *= 0.5f;
 //					m_conf.cb_vs.vertex_offset.x += 1.0f;
 					g_gs_device->RenderHW(m_conf);
@@ -9105,8 +9292,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					m_conf.drawarea = original_drawarea;
 					m_conf.cb_vs.vertex_scale = original_vertex_scale;
 					m_conf.cb_vs.vertex_offset = original_vertex_offset;
-					m_conf.scissor.x += eye_width;
-					m_conf.drawarea.x += eye_width;
+					if (m_conf.cb_ps.StereoRemap.x > 0.5f)
+						m_conf.cb_ps.StereoRemap.z = GSConfig.StereoSbsRemapMono ? 0.0f : 1.0f;
+					m_conf.scissor.x *= 0.5f;
+					m_conf.scissor.x += stereo_target->GetWidth() / 2;
+					m_conf.scissor.z *= 0.5f;
+					m_conf.scissor.z += stereo_target->GetWidth() / 2;
+					m_conf.drawarea.x *= 0.5f;
+					m_conf.drawarea.x += stereo_target->GetWidth() / 2;
+                    m_conf.drawarea.z *= 0.5f;
+					m_conf.drawarea.z += stereo_target->GetWidth() / 2;
 //					m_conf.cb_vs.vertex_scale.x *= 0.5f;
 //					m_conf.cb_vs.vertex_offset.x -= 1.0f;
 					g_gs_device->RenderHW(m_conf);
@@ -9121,8 +9316,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					m_conf.drawarea = original_drawarea;
 					m_conf.cb_vs.vertex_scale = original_vertex_scale;
 					m_conf.cb_vs.vertex_offset = original_vertex_offset;
-					m_conf.scissor.w -= eye_height;
-					m_conf.drawarea.w -= eye_height;
+					if (m_conf.cb_ps.StereoRemap.x > 0.5f)
+						m_conf.cb_ps.StereoRemap.z = 0.0f;
+					m_conf.scissor.y *= 0.5f;
+					m_conf.scissor.w *= 0.5f;
+					m_conf.drawarea.y *= 0.5f;
+					m_conf.drawarea.w *= 0.5f;
 //					m_conf.cb_vs.vertex_scale.y *= 0.5f;
 //					m_conf.cb_vs.vertex_offset.y += 1.0f;
 					g_gs_device->RenderHW(m_conf);
@@ -9133,8 +9332,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					m_conf.drawarea = original_drawarea;
 					m_conf.cb_vs.vertex_scale = original_vertex_scale;
 					m_conf.cb_vs.vertex_offset = original_vertex_offset;
-					m_conf.scissor.y += eye_height;
-					m_conf.drawarea.y += eye_height;
+					if (m_conf.cb_ps.StereoRemap.x > 0.5f)
+						m_conf.cb_ps.StereoRemap.z = GSConfig.StereoSbsRemapMono ? 0.0f : 1.0f;
+					m_conf.scissor.y *= 0.5f;
+					m_conf.scissor.y += stereo_target->GetHeight() / 2;
+					m_conf.scissor.w *= 0.5f;
+					m_conf.scissor.w += stereo_target->GetHeight() / 2;
+					m_conf.drawarea.y *= 0.5f;
+					m_conf.drawarea.y += stereo_target->GetHeight() / 2;
+                    m_conf.drawarea.w *= 0.5f;
+					m_conf.drawarea.w += stereo_target->GetHeight() / 2;
 //					m_conf.cb_vs.vertex_scale.y *= 0.5f;
 //					m_conf.cb_vs.vertex_offset.y -= 1.0f;
 					g_gs_device->RenderHW(m_conf);
@@ -9145,6 +9352,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				m_conf.drawarea = original_drawarea;
 				m_conf.cb_vs.vertex_scale = original_vertex_scale;
 				m_conf.cb_vs.vertex_offset = original_vertex_offset;
+				m_conf.cb_ps.StereoRemap = original_stereo_remap;
 			}
 		}
 		else

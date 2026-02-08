@@ -630,6 +630,12 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 DitherMatrix[4];
 
 		GSVector4 ScaleFactor;
+		GSVector4 StereoRemap;
+		GSVector4 StereoClipParams;
+		GSVector4 StereoScissorLeft;
+		GSVector4 StereoScissorRight;
+		GSVector4 StereoDrawLeft;
+		GSVector4 StereoDrawRight;
 
 		__fi PSConstantBuffer()
 		{

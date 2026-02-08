@@ -130,7 +130,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	onUiSecondLayerDepthChanged();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSwapEyes, "EmuCore/GS", "StereoSwapEyes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFlipRendering, "EmuCore/GS", "StereoFlipRendering", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderMonoObjects, "EmuCore/GS", "StereoDontRenderMonoObjects", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoInstencedRenderer, "EmuCore/GS", "StereoInstencedRenderer", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNonPositiveZ, "EmuCore/GS", "StereoRejectNonPositiveZ", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallZRange, "EmuCore/GS", "StereoRejectSmallZRange", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteBlit, "EmuCore/GS", "StereoRejectSpriteBlit", false);
@@ -192,6 +192,37 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectChannelFetch, "EmuCore/GS", "StereoRejectChannelFetch", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectChannelFetchFb, "EmuCore/GS", "StereoRejectChannelFetchFb", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoop, "EmuCore/GS", "StereoRejectFeedbackLoop", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopAny, "EmuCore/GS", "StereoRequireFeedbackLoopAny", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopAny, "EmuCore/GS", "StereoRejectFeedbackLoopAny", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopShader, "EmuCore/GS", "StereoRequireFeedbackLoopShader", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopShader, "EmuCore/GS", "StereoRejectFeedbackLoopShader", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopDrawUsesTarget, "EmuCore/GS", "StereoRequireFeedbackLoopDrawUsesTarget", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopDrawUsesTarget, "EmuCore/GS", "StereoRejectFeedbackLoopDrawUsesTarget", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopTexIsRt, "EmuCore/GS", "StereoRequireFeedbackLoopTexIsRt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopTexIsRt, "EmuCore/GS", "StereoRejectFeedbackLoopTexIsRt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopSourceFromTarget, "EmuCore/GS", "StereoRequireFeedbackLoopSourceFromTarget", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopSourceFromTarget, "EmuCore/GS", "StereoRejectFeedbackLoopSourceFromTarget", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopInTargetDraw, "EmuCore/GS", "StereoRequireFeedbackLoopInTargetDraw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopInTargetDraw, "EmuCore/GS", "StereoRejectFeedbackLoopInTargetDraw", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopTempZ, "EmuCore/GS", "StereoRequireFeedbackLoopTempZ", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopTempZ, "EmuCore/GS", "StereoRejectFeedbackLoopTempZ", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFeedbackLoopOverlapDrawRange, "EmuCore/GS", "StereoRequireFeedbackLoopOverlapDrawRange", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectFeedbackLoopOverlapDrawRange, "EmuCore/GS", "StereoRejectFeedbackLoopOverlapDrawRange", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFeedbackLoopDisableStereo, "EmuCore/GS", "StereoFeedbackLoopDisableStereo", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFeedbackLoopClampToDominantEye, "EmuCore/GS", "StereoFeedbackLoopClampToDominantEye", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFeedbackLoopSourceFromTargetOnly, "EmuCore/GS", "StereoFeedbackLoopSourceFromTargetOnly", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapEnable, "EmuCore/GS", "StereoSbsRemapEnable", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapMono, "EmuCore/GS", "StereoSbsRemapMono", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectSourceFromTarget, "EmuCore/GS", "StereoSbsRemapDetectSourceFromTarget", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectFeedbackLoop, "EmuCore/GS", "StereoSbsRemapDetectFeedbackLoop", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectDisplayMatch, "EmuCore/GS", "StereoSbsRemapDetectDisplayMatch", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectFullscreenTexture, "EmuCore/GS", "StereoSbsRemapDetectFullscreenTexture", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectSbsInput, "EmuCore/GS", "StereoSbsRemapDetectSbsInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapDetectTabInput, "EmuCore/GS", "StereoSbsRemapDetectTabInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapRequireTextureMapping, "EmuCore/GS", "StereoSbsRemapRequireTextureMapping", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapRequireProcessTexture, "EmuCore/GS", "StereoSbsRemapRequireProcessTexture", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoInstancedShaderScissor, "EmuCore/GS", "StereoInstancedShaderScissor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoInstancedShaderDrawArea, "EmuCore/GS", "StereoInstancedShaderDrawArea", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectColclip, "EmuCore/GS", "StereoRejectColclip", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectRtaCorrection, "EmuCore/GS", "StereoRejectRtaCorrection", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectRtaSourceCorrection, "EmuCore/GS", "StereoUniversalRejectRtaSourceCorrection", false);
@@ -1007,6 +1038,66 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy when channel fetch reads from the framebuffer."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoop, tr("Reject Feedback Loop"), tr("Unchecked"),
 			tr("Disable stereoscopy when a framebuffer feedback loop is detected."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopAny, tr("Require Feedback Loop"), tr("Unchecked"),
+			tr("Disable stereoscopy unless any feedback loop condition is detected."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopAny, tr("Reject Feedback Loop"), tr("Unchecked"),
+			tr("Disable stereoscopy when any feedback loop condition is detected."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopShader, tr("Require Feedback Loop Shader Path"), tr("Unchecked"),
+			tr("Disable stereoscopy unless the shader feedback loop path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopShader, tr("Reject Feedback Loop Shader Path"), tr("Unchecked"),
+			tr("Disable stereoscopy when the shader feedback loop path is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopDrawUsesTarget, tr("Require Draw Uses Target"), tr("Unchecked"),
+			tr("Disable stereoscopy unless the draw samples from the current render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopDrawUsesTarget, tr("Reject Draw Uses Target"), tr("Unchecked"),
+			tr("Disable stereoscopy when the draw samples from the current render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopTexIsRt, tr("Require Texture Is RT"), tr("Unchecked"),
+			tr("Disable stereoscopy unless the source texture overlaps the render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopTexIsRt, tr("Reject Texture Is RT"), tr("Unchecked"),
+			tr("Disable stereoscopy when the source texture overlaps the render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopSourceFromTarget, tr("Require Source From Target"), tr("Unchecked"),
+			tr("Disable stereoscopy unless the source texture comes from a render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopSourceFromTarget, tr("Reject Source From Target"), tr("Unchecked"),
+			tr("Disable stereoscopy when the source texture comes from a render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopInTargetDraw, tr("Require In-Target Draw"), tr("Unchecked"),
+			tr("Disable stereoscopy unless drawing inside a render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopInTargetDraw, tr("Reject In-Target Draw"), tr("Unchecked"),
+			tr("Disable stereoscopy when drawing inside a render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopTempZ, tr("Require Temp Z"), tr("Unchecked"),
+			tr("Disable stereoscopy unless temporary Z usage is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopTempZ, tr("Reject Temp Z"), tr("Unchecked"),
+			tr("Disable stereoscopy when temporary Z usage is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireFeedbackLoopOverlapDrawRange, tr("Require Overlap Draw Range"), tr("Unchecked"),
+			tr("Disable stereoscopy unless the draw overlaps the source target range."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectFeedbackLoopOverlapDrawRange, tr("Reject Overlap Draw Range"), tr("Unchecked"),
+			tr("Disable stereoscopy when the draw overlaps the source target range."));
+		dialog()->registerWidgetHelp(m_hw.stereoFeedbackLoopDisableStereo, tr("Disable Stereo On Feedback Loop"), tr("Unchecked"),
+			tr("Force mono rendering for feedback loop passes to avoid multi-image stacking."));
+		dialog()->registerWidgetHelp(m_hw.stereoFeedbackLoopClampToDominantEye, tr("Clamp To Dominant Eye"), tr("Unchecked"),
+			tr("Render only the dominant eye for feedback loop passes."));
+		dialog()->registerWidgetHelp(m_hw.stereoFeedbackLoopSourceFromTargetOnly, tr("Source From Target Only"), tr("Unchecked"),
+			tr("Detect feedback loops using only the source-from-target signal for precision."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapEnable, tr("SBS Remap Enable"), tr("Unchecked"),
+			tr("Remap SBS/TAB feedback textures so each eye samples its own half. Enable at least one Detect option."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectSourceFromTarget, tr("Detect Source From Target"), tr("Unchecked"),
+			tr("Detect SBS feedback when the texture originated from a render target."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectFeedbackLoop, tr("Detect Feedback Loop"), tr("Unchecked"),
+			tr("Detect SBS feedback when a framebuffer feedback loop is active."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectDisplayMatch, tr("Detect Display Match"), tr("Unchecked"),
+			tr("Detect SBS feedback when the draw overlaps the active display buffer."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectFullscreenTexture, tr("Detect Fullscreen Texture"), tr("Unchecked"),
+			tr("Detect SBS feedback when the source texture matches the fullscreen target size."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectSbsInput, tr("Detect SBS Input"), tr("Unchecked"),
+			tr("Detect SBS feedback when the texture looks like side-by-side input."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapDetectTabInput, tr("Detect TAB Input"), tr("Unchecked"),
+			tr("Detect SBS feedback when the texture looks like top-and-bottom input."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapRequireTextureMapping, tr("Require Texture Mapping"), tr("Unchecked"),
+			tr("Only apply SBS remap when texture mapping is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapRequireProcessTexture, tr("Require Process Texture"), tr("Unchecked"),
+			tr("Only apply SBS remap when processing a texture."));
+		dialog()->registerWidgetHelp(m_hw.stereoInstancedShaderScissor, tr("Instanced Shader: Clip Scissor"), tr("Unchecked"),
+			tr("Apply per-eye scissor clipping in the shader for instanced stereo draws."));
+		dialog()->registerWidgetHelp(m_hw.stereoInstancedShaderDrawArea, tr("Instanced Shader: Clip Draw Area"), tr("Unchecked"),
+			tr("Apply per-eye draw area clipping in the shader for instanced stereo draws."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectColclip, tr("Reject Colclip"), tr("Unchecked"),
 			tr("Disable stereoscopy when color clipping is active."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectRtaCorrection, tr("Reject RTA Correction"), tr("Unchecked"),
@@ -1943,7 +2034,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoUiSecondLayerDepthValue->setEnabled(stereo_enabled);
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
-	m_hw.stereoDontRenderMonoObjects->setEnabled(stereo_enabled);
+	m_hw.stereoInstencedRenderer->setEnabled(stereo_enabled);
 	m_hw.stereoRejectNonPositiveZ->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSmallZRange->setEnabled(stereo_enabled);
 	m_hw.stereoRejectSpriteBlit->setEnabled(stereo_enabled);
@@ -2005,6 +2096,37 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectChannelFetch->setEnabled(stereo_enabled);
 	m_hw.stereoRejectChannelFetchFb->setEnabled(stereo_enabled);
 	m_hw.stereoRejectFeedbackLoop->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopAny->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopAny->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopShader->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopShader->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopDrawUsesTarget->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopDrawUsesTarget->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopTexIsRt->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopTexIsRt->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopSourceFromTarget->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopSourceFromTarget->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopInTargetDraw->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopInTargetDraw->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopTempZ->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopTempZ->setEnabled(stereo_enabled);
+	m_hw.stereoRequireFeedbackLoopOverlapDrawRange->setEnabled(stereo_enabled);
+	m_hw.stereoRejectFeedbackLoopOverlapDrawRange->setEnabled(stereo_enabled);
+	m_hw.stereoFeedbackLoopDisableStereo->setEnabled(stereo_enabled);
+	m_hw.stereoFeedbackLoopClampToDominantEye->setEnabled(stereo_enabled);
+	m_hw.stereoFeedbackLoopSourceFromTargetOnly->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapEnable->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapMono->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectSourceFromTarget->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectFeedbackLoop->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectDisplayMatch->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectFullscreenTexture->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectSbsInput->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapDetectTabInput->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapRequireTextureMapping->setEnabled(stereo_enabled);
+	m_hw.stereoSbsRemapRequireProcessTexture->setEnabled(stereo_enabled);
+	m_hw.stereoInstancedShaderScissor->setEnabled(stereo_enabled);
+	m_hw.stereoInstancedShaderDrawArea->setEnabled(stereo_enabled);
 	m_hw.stereoRejectColclip->setEnabled(stereo_enabled);
 	m_hw.stereoRejectRtaCorrection->setEnabled(stereo_enabled);
 	m_hw.stereoUniversalRejectRtaSourceCorrection->setEnabled(stereo_enabled);

@@ -95,7 +95,7 @@ void vs_main()
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		gl_Position.x -= eye_sep * (depth - StereoParams.y);
+		gl_Position.x -= eye_sep * min(20.0f, depth + StereoParams.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{
@@ -185,7 +185,7 @@ ProcessedVertex load_vertex(uint index)
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		vtx.p.x -= eye_sep * (depth - StereoParams.y);
+		vtx.p.x -= eye_sep * min(20.0f, depth + StereoParams.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{

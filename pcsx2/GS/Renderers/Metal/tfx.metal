@@ -202,7 +202,7 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(cb.stereo_params.x) * eye_scale * eye_sign;
-		out.p.x -= eye_sep * (depth + cb.stereo_params.y);
+		out.p.x -= eye_sep * min(20.0f, depth + cb.stereo_params.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{
@@ -361,6 +361,20 @@ struct PSMain
 			return tex.read(pos, lod);
 	}
 
+	float2 stereo_remap_uv(float2 uv)
+	{
+		const bool use_forced_eye = (cb.stereo_remap.z >= 0.0f);
+		if (cb.stereo_remap.x > 0.5f && (use_forced_eye || in.stereo_eye != 0.0f))
+		{
+			float eye_index = use_forced_eye ? cb.stereo_remap.z : (in.stereo_eye > 0.0f ? 1.0f : 0.0f);
+			if (cb.stereo_remap.y > 0.5f)
+				uv.y = uv.y * 0.5f + eye_index * 0.5f;
+			else
+				uv.x = uv.x * 0.5f + eye_index * 0.5f;
+		}
+		return uv;
+	}
+
 	float4 sample_c(float2 uv)
 	{
 		if (PS_TEX_IS_FB)
@@ -383,6 +397,8 @@ struct PSMain
 			else
 				uv.y = uv.y * cb.st_scale.y;
 		}
+
+		uv = stereo_remap_uv(uv);
 
 		if (PS_AUTOMATIC_LOD)
 		{
@@ -1102,15 +1118,28 @@ struct PSMain
 		MainPSOut out = {};
 		if (in.stereo_eye != 0.0f)
 		{
-			if (in.stereo_axis > 0.5f)
+			if (cb.stereo_clip_params.x > 0.5f)
 			{
-				if (in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f)
+				float2 frag = in.p.xy;
+				float4 sc = (in.stereo_eye > 0.0f) ? cb.stereo_scissor_right : cb.stereo_scissor_left;
+				float4 da = (in.stereo_eye > 0.0f) ? cb.stereo_draw_right : cb.stereo_draw_left;
+				if (cb.stereo_clip_params.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+					discard_fragment();
+				if (cb.stereo_clip_params.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
 					discard_fragment();
 			}
 			else
 			{
-				if (in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f)
-					discard_fragment();
+				if (in.stereo_axis > 0.5f)
+				{
+					if (in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f)
+						discard_fragment();
+				}
+				else
+				{
+					if (in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f)
+						discard_fragment();
+				}
 			}
 		}
 

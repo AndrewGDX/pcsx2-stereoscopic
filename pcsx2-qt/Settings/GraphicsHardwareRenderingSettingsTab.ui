@@ -543,14 +543,14 @@
         <item>
          <widget class="QCheckBox" name="stereoMasterFix5">
           <property name="text">
-           <string>Master FIX 5</string>
+           <string>Master FIX 5 (REAL MASTER)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoMasterFix6">
           <property name="text">
-           <string>Master FIX 6</string>
+           <string>Master FIX 6 (SAFE MASTER)</string>
           </property>
          </widget>
         </item>
@@ -660,6 +660,209 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Require Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Reject Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Require Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Reject Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Require Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Reject Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Require In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Reject In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Require Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Reject Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Require Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Reject Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopDisableStereo">
+          <property name="text">
+           <string>Feedback Loop: Disable Stereo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopClampToDominantEye">
+          <property name="text">
+           <string>Feedback Loop: Clamp To Dominant Eye</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopSourceFromTargetOnly">
+          <property name="text">
+           <string>Feedback Loop: Source From Target Only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapEnable">
+          <property name="text">
+           <string>SBS Remap: Enable</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapMono">
+          <property name="text">
+           <string>SBS Remap: Mono (Left)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectSourceFromTarget">
+          <property name="text">
+           <string>SBS Remap: Detect Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectFeedbackLoop">
+          <property name="text">
+           <string>SBS Remap: Detect Feedback Loop</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectDisplayMatch">
+          <property name="text">
+           <string>SBS Remap: Detect Display Match</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectFullscreenTexture">
+          <property name="text">
+           <string>SBS Remap: Detect Fullscreen Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectSbsInput">
+          <property name="text">
+           <string>SBS Remap: Detect SBS Input</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapDetectTabInput">
+          <property name="text">
+           <string>SBS Remap: Detect TAB Input</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapRequireTextureMapping">
+          <property name="text">
+           <string>SBS Remap: Require Texture Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapRequireProcessTexture">
+          <property name="text">
+           <string>SBS Remap: Require Process Texture</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="stereoRejectRegionRect">
           <property name="text">
            <string>PostFX Overlay Fix 1: Reject Region Rect</string>
@@ -681,9 +884,23 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="stereoDontRenderMonoObjects">
+         <widget class="QCheckBox" name="stereoInstencedRenderer">
           <property name="text">
            <string>DON'T RENDER MONO OBJECTS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoInstancedShaderScissor">
+          <property name="text">
+           <string>Instanced Shader: Clip Scissor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoInstancedShaderDrawArea">
+          <property name="text">
+           <string>Instanced Shader: Clip Draw Area</string>
           </property>
          </widget>
         </item>
@@ -2759,11 +2976,42 @@
    <tabstop>stereoRejectScanmask</tabstop>
    <tabstop>stereoRequireDisplayBuffer1</tabstop>
    <tabstop>stereoRequireDisplayBuffer2</tabstop>
-   <tabstop>stereoRejectFeedbackLoop</tabstop>
-   <tabstop>stereoRejectRegionRect</tabstop>
+    <tabstop>stereoRejectFeedbackLoop</tabstop>
+    <tabstop>stereoRequireFeedbackLoopAny</tabstop>
+    <tabstop>stereoRejectFeedbackLoopAny</tabstop>
+    <tabstop>stereoRequireFeedbackLoopShader</tabstop>
+    <tabstop>stereoRejectFeedbackLoopShader</tabstop>
+    <tabstop>stereoRequireFeedbackLoopDrawUsesTarget</tabstop>
+    <tabstop>stereoRejectFeedbackLoopDrawUsesTarget</tabstop>
+    <tabstop>stereoRequireFeedbackLoopTexIsRt</tabstop>
+    <tabstop>stereoRejectFeedbackLoopTexIsRt</tabstop>
+    <tabstop>stereoRequireFeedbackLoopSourceFromTarget</tabstop>
+    <tabstop>stereoRejectFeedbackLoopSourceFromTarget</tabstop>
+    <tabstop>stereoRequireFeedbackLoopInTargetDraw</tabstop>
+    <tabstop>stereoRejectFeedbackLoopInTargetDraw</tabstop>
+    <tabstop>stereoRequireFeedbackLoopTempZ</tabstop>
+    <tabstop>stereoRejectFeedbackLoopTempZ</tabstop>
+    <tabstop>stereoRequireFeedbackLoopOverlapDrawRange</tabstop>
+    <tabstop>stereoRejectFeedbackLoopOverlapDrawRange</tabstop>
+    <tabstop>stereoFeedbackLoopDisableStereo</tabstop>
+    <tabstop>stereoFeedbackLoopClampToDominantEye</tabstop>
+    <tabstop>stereoFeedbackLoopSourceFromTargetOnly</tabstop>
+    <tabstop>stereoSbsRemapEnable</tabstop>
+    <tabstop>stereoSbsRemapMono</tabstop>
+    <tabstop>stereoSbsRemapDetectSourceFromTarget</tabstop>
+    <tabstop>stereoSbsRemapDetectFeedbackLoop</tabstop>
+    <tabstop>stereoSbsRemapDetectDisplayMatch</tabstop>
+    <tabstop>stereoSbsRemapDetectFullscreenTexture</tabstop>
+    <tabstop>stereoSbsRemapDetectSbsInput</tabstop>
+    <tabstop>stereoSbsRemapDetectTabInput</tabstop>
+    <tabstop>stereoSbsRemapRequireTextureMapping</tabstop>
+    <tabstop>stereoSbsRemapRequireProcessTexture</tabstop>
+    <tabstop>stereoRejectRegionRect</tabstop>
    <tabstop>stereoRejectTfxDecal</tabstop>
    <tabstop>stereoFixStencilShadows</tabstop>
-   <tabstop>stereoDontRenderMonoObjects</tabstop>
+    <tabstop>stereoInstencedRenderer</tabstop>
+    <tabstop>stereoInstancedShaderScissor</tabstop>
+    <tabstop>stereoInstancedShaderDrawArea</tabstop>
    <tabstop>stereoRejectConstantColor</tabstop>
    <tabstop>stereoRejectScalingDraw</tabstop>
    <tabstop>stereoRejectSbsInput</tabstop>

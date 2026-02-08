@@ -902,7 +902,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoUiSecondLayerDepth) &&
 		OpEqu(StereoSwapEyes) &&
 		OpEqu(StereoFlipRendering) &&
-		OpEqu(StereoDontRenderMonoObjects) &&
+		OpEqu(StereoInstencedRenderer) &&
 		OpEqu(StereoRejectNonPositiveZ) &&
 		OpEqu(StereoRejectSmallZRange) &&
 		OpEqu(StereoRejectSpriteBlit) &&
@@ -1221,6 +1221,36 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectFmvRecentEeUpload) &&
 		OpEqu(StereoRequireFmvRecentTransferDraw) &&
 		OpEqu(StereoRejectFmvRecentTransferDraw) &&
+		OpEqu(StereoRequireFeedbackLoopAny) &&
+		OpEqu(StereoRejectFeedbackLoopAny) &&
+		OpEqu(StereoRequireFeedbackLoopShader) &&
+		OpEqu(StereoRejectFeedbackLoopShader) &&
+		OpEqu(StereoRequireFeedbackLoopDrawUsesTarget) &&
+		OpEqu(StereoRejectFeedbackLoopDrawUsesTarget) &&
+		OpEqu(StereoRequireFeedbackLoopTexIsRt) &&
+		OpEqu(StereoRejectFeedbackLoopTexIsRt) &&
+		OpEqu(StereoRequireFeedbackLoopSourceFromTarget) &&
+		OpEqu(StereoRejectFeedbackLoopSourceFromTarget) &&
+		OpEqu(StereoRequireFeedbackLoopInTargetDraw) &&
+		OpEqu(StereoRejectFeedbackLoopInTargetDraw) &&
+		OpEqu(StereoRequireFeedbackLoopTempZ) &&
+		OpEqu(StereoRejectFeedbackLoopTempZ) &&
+		OpEqu(StereoRequireFeedbackLoopOverlapDrawRange) &&
+		OpEqu(StereoRejectFeedbackLoopOverlapDrawRange) &&
+		OpEqu(StereoFeedbackLoopDisableStereo) &&
+		OpEqu(StereoFeedbackLoopClampToDominantEye) &&
+		OpEqu(StereoFeedbackLoopSourceFromTargetOnly) &&
+		OpEqu(StereoSbsRemapEnable) &&
+		OpEqu(StereoSbsRemapDetectSourceFromTarget) &&
+		OpEqu(StereoSbsRemapDetectFeedbackLoop) &&
+		OpEqu(StereoSbsRemapDetectDisplayMatch) &&
+		OpEqu(StereoSbsRemapDetectFullscreenTexture) &&
+		OpEqu(StereoSbsRemapDetectSbsInput) &&
+		OpEqu(StereoSbsRemapDetectTabInput) &&
+		OpEqu(StereoSbsRemapRequireTextureMapping) &&
+		OpEqu(StereoSbsRemapRequireProcessTexture) &&
+		OpEqu(StereoInstancedShaderScissor) &&
+		OpEqu(StereoInstancedShaderDrawArea) &&
 
 		OpEqu(Adapter) &&
 
@@ -1434,7 +1464,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoUiSecondLayerDepth);
 	SettingsWrapEntry(StereoSwapEyes);
 	SettingsWrapEntry(StereoFlipRendering);
-	SettingsWrapEntry(StereoDontRenderMonoObjects);
+	SettingsWrapEntry(StereoInstencedRenderer);
 	SettingsWrapEntry(StereoRejectNonPositiveZ);
 	SettingsWrapEntry(StereoRejectSmallZRange);
 	SettingsWrapEntry(StereoRejectSpriteBlit);
@@ -1753,6 +1783,37 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectFmvRecentEeUpload);
 	SettingsWrapEntry(StereoRequireFmvRecentTransferDraw);
 	SettingsWrapEntry(StereoRejectFmvRecentTransferDraw);
+	SettingsWrapEntry(StereoRequireFeedbackLoopAny);
+	SettingsWrapEntry(StereoRejectFeedbackLoopAny);
+	SettingsWrapEntry(StereoRequireFeedbackLoopShader);
+	SettingsWrapEntry(StereoRejectFeedbackLoopShader);
+	SettingsWrapEntry(StereoRequireFeedbackLoopDrawUsesTarget);
+	SettingsWrapEntry(StereoRejectFeedbackLoopDrawUsesTarget);
+	SettingsWrapEntry(StereoRequireFeedbackLoopTexIsRt);
+	SettingsWrapEntry(StereoRejectFeedbackLoopTexIsRt);
+	SettingsWrapEntry(StereoRequireFeedbackLoopSourceFromTarget);
+	SettingsWrapEntry(StereoRejectFeedbackLoopSourceFromTarget);
+	SettingsWrapEntry(StereoRequireFeedbackLoopInTargetDraw);
+	SettingsWrapEntry(StereoRejectFeedbackLoopInTargetDraw);
+	SettingsWrapEntry(StereoRequireFeedbackLoopTempZ);
+	SettingsWrapEntry(StereoRejectFeedbackLoopTempZ);
+	SettingsWrapEntry(StereoRequireFeedbackLoopOverlapDrawRange);
+	SettingsWrapEntry(StereoRejectFeedbackLoopOverlapDrawRange);
+	SettingsWrapEntry(StereoFeedbackLoopDisableStereo);
+	SettingsWrapEntry(StereoFeedbackLoopClampToDominantEye);
+	SettingsWrapEntry(StereoFeedbackLoopSourceFromTargetOnly);
+	SettingsWrapEntry(StereoSbsRemapEnable);
+	SettingsWrapEntry(StereoSbsRemapDetectSourceFromTarget);
+	SettingsWrapEntry(StereoSbsRemapDetectFeedbackLoop);
+	SettingsWrapEntry(StereoSbsRemapDetectDisplayMatch);
+	SettingsWrapEntry(StereoSbsRemapDetectFullscreenTexture);
+	SettingsWrapEntry(StereoSbsRemapDetectSbsInput);
+	SettingsWrapEntry(StereoSbsRemapDetectTabInput);
+	SettingsWrapEntry(StereoSbsRemapRequireTextureMapping);
+	SettingsWrapEntry(StereoSbsRemapRequireProcessTexture);
+	SettingsWrapEntry(StereoSbsRemapMono);
+	SettingsWrapEntry(StereoInstancedShaderScissor);
+	SettingsWrapEntry(StereoInstancedShaderDrawArea);
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))

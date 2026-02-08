@@ -180,9 +180,15 @@ cbuffer cb1
 	float4x4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float4 StereoRemap;
+	float4 StereoClipParams;
+	float4 StereoScissorLeft;
+	float4 StereoScissorRight;
+	float4 StereoDrawLeft;
+	float4 StereoDrawRight;
 };
 
-float4 sample_c(float2 uv, float uv_w, int2 xy)
+float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(int2(xy), 0));
@@ -213,6 +219,16 @@ float4 sample_c(float2 uv, float uv_w, int2 xy)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return Texture.Sample(TextureSampler, uv);
@@ -324,26 +340,26 @@ float4 clamp_wrap_uv(float4 uv)
 	return uv;
 }
 
-float4x4 sample_4c(float4 uv, float uv_w, int2 xy)
+float4x4 sample_4c(float4 uv, float uv_w, int2 xy, float stereo_eye)
 {
 	float4x4 c;
 
-	c[0] = sample_c(uv.xy, uv_w, xy);
-	c[1] = sample_c(uv.zy, uv_w, xy);
-	c[2] = sample_c(uv.xw, uv_w, xy);
-	c[3] = sample_c(uv.zw, uv_w, xy);
+	c[0] = sample_c(uv.xy, uv_w, xy, stereo_eye);
+	c[1] = sample_c(uv.zy, uv_w, xy, stereo_eye);
+	c[2] = sample_c(uv.xw, uv_w, xy, stereo_eye);
+	c[3] = sample_c(uv.zw, uv_w, xy, stereo_eye);
 
 	return c;
 }
 
-uint4 sample_4_index(float4 uv, float uv_w, int2 xy)
+uint4 sample_4_index(float4 uv, float uv_w, int2 xy, float stereo_eye)
 {
 	float4 c;
 
-	c.x = sample_c(uv.xy, uv_w, xy).a;
-	c.y = sample_c(uv.zy, uv_w, xy).a;
-	c.z = sample_c(uv.xw, uv_w, xy).a;
-	c.w = sample_c(uv.zw, uv_w, xy).a;
+	c.x = sample_c(uv.xy, uv_w, xy, stereo_eye).a;
+	c.y = sample_c(uv.zy, uv_w, xy, stereo_eye).a;
+	c.z = sample_c(uv.xw, uv_w, xy, stereo_eye).a;
+	c.w = sample_c(uv.zw, uv_w, xy, stereo_eye).a;
 
 	// Denormalize value
 	uint4 i;
@@ -615,7 +631,7 @@ float4 fetch_gXbY(int2 xy)
 	}
 }
 
-float4 sample_color(float2 st, float uv_w, int2 xy)
+float4 sample_color(float2 st, float uv_w, int2 xy, float stereo_eye)
 {
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -627,7 +643,7 @@ float4 sample_color(float2 st, float uv_w, int2 xy)
 
 	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
-		c[0] = sample_c(st, uv_w, xy);
+		c[0] = sample_c(st, uv_w, xy, stereo_eye);
 	}
 	else
 	{
@@ -651,9 +667,9 @@ float4 sample_color(float2 st, float uv_w, int2 xy)
 		uv = clamp_wrap_uv(uv);
 
 #if PS_PAL_FMT != 0
-			c = sample_4p(sample_4_index(uv, uv_w, xy));
+			c = sample_4p(sample_4_index(uv, uv_w, xy, stereo_eye));
 #else
-			c = sample_4c(uv, uv_w, xy);
+			c = sample_4c(uv, uv_w, xy, stereo_eye);
 #endif
 	}
 
@@ -778,7 +794,7 @@ float4 ps_color(PS_INPUT input)
 #elif PS_DEPTH_FMT > 0
 	float4 T = sample_depth(st_int, input.p.xy);
 #else
-	float4 T = sample_color(st, input.t.w, int2(input.p.xy));
+	float4 T = sample_color(st, input.t.w, int2(input.p.xy), input.stereo_eye);
 #endif
 
 	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
@@ -1027,17 +1043,30 @@ PS_OUTPUT ps_main(PS_INPUT input)
 {
 	if (input.stereo_eye != 0.0f)
 	{
-		if (input.stereo_axis > 0.5f)
+		if (StereoClipParams.x > 0.5f)
 		{
-			if ((input.stereo_eye < 0.0f && input.stereo_pos.y < 0.0f) ||
-				(input.stereo_eye > 0.0f && input.stereo_pos.y > 0.0f))
+			float2 frag = input.p.xy;
+			float4 sc = (input.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			float4 da = (input.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
 				discard;
 		}
 		else
 		{
-			if ((input.stereo_eye < 0.0f && input.stereo_pos.x > 0.0f) ||
-				(input.stereo_eye > 0.0f && input.stereo_pos.x < 0.0f))
-				discard;
+			if (input.stereo_axis > 0.5f)
+			{
+				if ((input.stereo_eye < 0.0f && input.stereo_pos.y < 0.0f) ||
+					(input.stereo_eye > 0.0f && input.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((input.stereo_eye < 0.0f && input.stereo_pos.x > 0.0f) ||
+					(input.stereo_eye > 0.0f && input.stereo_pos.x < 0.0f))
+					discard;
+			}
 		}
 	}
 
@@ -1305,7 +1334,7 @@ VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		output.p.x -= eye_sep * (depth - StereoParams.y);
+		output.p.x -= eye_sep * min(20.0f, depth + StereoParams.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{

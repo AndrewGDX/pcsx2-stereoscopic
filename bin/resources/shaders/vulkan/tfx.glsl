@@ -76,7 +76,7 @@ void main()
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		gl_Position.x -= eye_sep * (depth - StereoParams.y);
+		gl_Position.x -= eye_sep * min(20.0f, depth + StereoParams.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{
@@ -186,7 +186,7 @@ ProcessedVertex load_vertex(uint index)
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		vtx.p.x -= eye_sep * (depth - StereoParams.y);
+		vtx.p.x -= eye_sep * min(20.0f, depth + StereoParams.y);
 
 		if (base_mode == 2 || base_mode == 4)
 		{
@@ -397,6 +397,12 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	mat4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	vec4 StereoRemap;
+	vec4 StereoClipParams;
+	vec4 StereoScissorLeft;
+	vec4 StereoScissorRight;
+	vec4 StereoDrawLeft;
+	vec4 StereoDrawRight;
 };
 
 layout(location = 0) in VSOutput
@@ -467,6 +473,16 @@ vec4 sample_c(vec2 uv)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || vsIn.stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (vsIn.stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return texture(Texture, uv);
@@ -1316,17 +1332,30 @@ void main()
 {
 	if (vsIn.stereo_eye != 0.0f)
 	{
-		if (vsIn.stereo_axis > 0.5f)
+		if (StereoClipParams.x > 0.5f)
 		{
-			if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.y < 0.0f) ||
-				(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.y > 0.0f))
+			vec2 frag = gl_FragCoord.xy;
+			vec4 sc = (vsIn.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			vec4 da = (vsIn.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
 				discard;
 		}
 		else
 		{
-			if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.x > 0.0f) ||
-				(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.x < 0.0f))
-				discard;
+			if (vsIn.stereo_axis > 0.5f)
+			{
+				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.y < 0.0f) ||
+					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.x > 0.0f) ||
+					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.x < 0.0f))
+					discard;
+			}
 		}
 	}
 

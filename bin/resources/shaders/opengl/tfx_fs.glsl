@@ -58,6 +58,12 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	vec4 StereoRemap;
+	vec4 StereoClipParams;
+	vec4 StereoScissorLeft;
+	vec4 StereoScissorRight;
+	vec4 StereoDrawLeft;
+	vec4 StereoDrawRight;
 };
 
 in SHADER
@@ -155,6 +161,16 @@ vec4 sample_c(vec2 uv)
 		uv.y = uv.y * STScale.y;
 	#endif
 #endif
+
+	bool use_forced_eye = (StereoRemap.z >= 0.0f);
+	if (StereoRemap.x > 0.5f && (use_forced_eye || PSin.stereo_eye != 0.0f))
+	{
+		float eye_index = use_forced_eye ? StereoRemap.z : (PSin.stereo_eye > 0.0f ? 1.0f : 0.0f);
+		if (StereoRemap.y > 0.5f)
+			uv.y = uv.y * 0.5f + eye_index * 0.5f;
+		else
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
 
 #if PS_AUTOMATIC_LOD == 1
 	return texture(TextureSampler, uv);
@@ -979,17 +995,30 @@ void ps_main()
 {
 	if (PSin.stereo_eye != 0.0f)
 	{
-		if (PSin.stereo_axis > 0.5f)
+		if (StereoClipParams.x > 0.5f)
 		{
-			if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y < 0.0f) ||
-				(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y > 0.0f))
+			vec2 frag = gl_FragCoord.xy;
+			vec4 sc = (PSin.stereo_eye > 0.0f) ? StereoScissorRight : StereoScissorLeft;
+			vec4 da = (PSin.stereo_eye > 0.0f) ? StereoDrawRight : StereoDrawLeft;
+			if (StereoClipParams.y > 0.5f && (frag.x < sc.x || frag.y < sc.y || frag.x >= sc.z || frag.y >= sc.w))
+				discard;
+			if (StereoClipParams.z > 0.5f && (frag.x < da.x || frag.y < da.y || frag.x >= da.z || frag.y >= da.w))
 				discard;
 		}
 		else
 		{
-			if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.x > 0.0f) ||
-				(PSin.stereo_eye > 0.0f && PSin.stereo_pos.x < 0.0f))
-				discard;
+			if (PSin.stereo_axis > 0.5f)
+			{
+				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y < 0.0f) ||
+					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y > 0.0f))
+					discard;
+			}
+			else
+			{
+				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.x > 0.0f) ||
+					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.x < 0.0f))
+					discard;
+			}
 		}
 	}
 
