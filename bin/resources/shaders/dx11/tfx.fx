@@ -178,8 +178,8 @@ cbuffer cb1
 	float2 TC_OffsetHack;
 	float2 STScale;
 	float4x4 DitherMatrix;
-	float ScaledScaleFactor;
-	float RcpScaleFactor;
+	float2 ScaledScaleFactor;
+	float2 RcpScaleFactor;
 	float4 StereoRemap;
 	float4 StereoClipParams;
 	float4 StereoScissorLeft;
@@ -472,7 +472,7 @@ int2 clamp_wrap_uv_depth(int2 uv)
 
 float4 sample_depth(float2 st, float2 pos)
 {
-	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)ScaledScaleFactor;
+	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * ScaledScaleFactor;
 
 #if PS_REGION_RECT == 1
 	uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);

@@ -2404,11 +2404,12 @@ void GSRendererHW::Draw()
 
 				if (!m_full_screen_shuffle)
 				{
-					m_conf.scissor.w = m_conf.scissor.y + shuffle_height * m_conf.cb_ps.ScaleFactor.z;
+					const float scale = 1.0f / m_conf.cb_ps.ScaleFactor.z;
+					m_conf.scissor.w = m_conf.scissor.y + shuffle_height * scale;
 					if (shuffle_width)
-						m_conf.scissor.z = m_conf.scissor.x + (shuffle_width * m_conf.cb_ps.ScaleFactor.z);
+						m_conf.scissor.z = m_conf.scissor.x + (shuffle_width * scale);
 					else
-						m_conf.scissor.z = std::min(m_conf.scissor.z, static_cast<int>((m_channel_shuffle_width * 64) * m_conf.cb_ps.ScaleFactor.z));
+						m_conf.scissor.z = std::min(m_conf.scissor.z, static_cast<int>((m_channel_shuffle_width * 64) * scale));
 				}
 
 				m_last_rt->UpdateValidity(valid_area);
@@ -6485,11 +6486,16 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	HandleTextureHazards(rt, ds, tex, tmm, source_region, target_region, unscaled_size, scale, src_copy);
 
 	// This is used for reading depth sources, so we should go off the source scale.
-	// the Z vector contains line width which will be based on the target draw, where XY are used for source reading.
+	// ScaleFactor layout: XY = ScaledScaleFactor per-axis, ZW = RcpScaleFactor per-axis
 	const float scale_factor = scale;
 	const float scale_rt = rt ? rt->GetScale() : ds->GetScale();
+	const GSVector2 stereo_scale = tex->m_target ? GetStereoScaleVector2() : GSVector2(1.0f, 1.0f);
+	const float scaled_scale_x = scale_factor * stereo_scale.x * (1.0f / 16.0f);
+	const float scaled_scale_y = scale_factor * stereo_scale.y * (1.0f / 16.0f);
+	const float rcp_scale_x = 1.0f / (scale_rt * stereo_scale.x);
+	const float rcp_scale_y = 1.0f / (scale_rt * stereo_scale.y);
 
-	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_rt, 0.0f);
+	m_conf.cb_ps.ScaleFactor = GSVector4(scaled_scale_x, scaled_scale_y, rcp_scale_x, rcp_scale_y);
 
 	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
 	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
@@ -7744,7 +7750,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 	{
 		const float scale_factor = rt ? rt->GetScale() : ds->GetScale();
-		m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
+		const GSVector2 stereo_scale = GetStereoScaleVector2();
+		const float scaled_scale_x = scale_factor * stereo_scale.x * (1.0f / 16.0f);
+		const float scaled_scale_y = scale_factor * stereo_scale.y * (1.0f / 16.0f);
+		const float rcp_scale_x = 1.0f / (scale_factor * stereo_scale.x);
+		const float rcp_scale_y = 1.0f / (scale_factor * stereo_scale.y);
+		m_conf.cb_ps.ScaleFactor = GSVector4(scaled_scale_x, scaled_scale_y, rcp_scale_x, rcp_scale_y);
 
 		m_conf.ps.tfx = 4;
 	}
@@ -8814,8 +8825,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		}
 
 		const bool stereo_enabled = GSConfig.StereoMode != GSStereoMode::Off
-						&& (!master_fix_enabled && !mono_postfx
-						&& (!GSConfig.StereoDisableCorrectSbsFramebufferSize || !safe_master_fix)
+						&& (!master_fix_enabled && !mono_postfx && !safe_master_fix
 						&& (!GSConfig.StereoRequireRtaCorrection || !m_conf.ps.rta_correction) // Tekken 4, MK shadows fix
 						&& (!GSConfig.StereoFixStencilShadows1 || !(m_vt.m_eq.q && !m_vt.m_eq.z && depth_active)) // Tekken 5 shadows fix
 						&& (!GSConfig.StereoFixStencilShadows2 || !(m_conf.ps.blend_mix == 0 && !m_conf.ps.tcc && !m_conf.ps.automatic_lod && !m_conf.ps.adjs)) // Tekken 4, Onimusha 3 shadows fix
@@ -8921,9 +8931,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			    || GSConfig.StereoUiSecondLayerSelector5 && (m_cached_ctx.TEST.ZTST != ZTST_GEQUAL && m_cached_ctx.TEST.ZTST != ZTST_GREATER)
 								&& m_vt.m_eq.z && (!m_cached_ctx.ZBUF.ZMSK || !m_conf.ps.iip || !m_conf.ps.automatic_lod);
 
-			const float ui_depth = std::min(GSConfig.StereoSeparation, GSConfig.StereoUiDepth + (increase_depth ? GSConfig.StereoUiSecondLayerDepth : 0.0f) - (ui_top_layer ? 0.5f : 0.0f));
+			float ui_depth = std::min(GSConfig.StereoSeparation, GSConfig.StereoUiDepth + (increase_depth ? GSConfig.StereoUiSecondLayerDepth : 0.0f) - (ui_top_layer ? 0.5f : 0.0f));
 
 			if (GSConfig.StereoRenderCheckedObjectsMono && disable_stereo_pass) ui_detect = true;
+
+			if (GSConfig.StereoSkyFix && !ui_detect && m_vt.m_max.p.z > 882000
+				&& (m_conf.ps.fog && constant_color && (m_conf.ps.blend_b != 0 || m_conf.ps.blend_d != 0) || fullscreen_draw_area))
+			{
+				ui_detect = true;
+				ui_depth = GSConfig.StereoSeparation;
+			}
 
 			float separation;
 			if (sbs_remap_fix && m_cached_ctx.TEST.ZTST != ZTST_GEQUAL && m_cached_ctx.TEST.ZTST != ZTST_GREATER)

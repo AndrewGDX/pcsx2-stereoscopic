@@ -171,6 +171,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFixMovies, "EmuCore/GS", "StereoMasterFixMovies", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoMasterFixTest, "EmuCore/GS", "StereoMasterFixTest", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoCloseDepthFix, "EmuCore/GS", "StereoCloseDepthFix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSkyFix, "EmuCore/GS", "StereoSkyFix", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireTextureMapping, "EmuCore/GS", "StereoRequireTextureMapping", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireAlphaBlend, "EmuCore/GS", "StereoRequireAlphaBlend", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireAlphaTest, "EmuCore/GS", "StereoRequireAlphaTest", false);
@@ -978,6 +979,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Experimental test toggle for stereo fixes."));
 		dialog()->registerWidgetHelp(m_hw.stereoCloseDepthFix, tr("Close Depth Fix"), tr("Unchecked"),
 			tr("Disable stereoscopy for very close depth ranges (God of War, Gun)."));
+		dialog()->registerWidgetHelp(m_hw.stereoSkyFix, tr("Sky Fix"), tr("Unchecked"),
+			tr("Fix for sky depth issues, when some far away objects renders as very close one"));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFix1, tr("Master FIX 1"), tr("Unchecked"),
 			tr("Additional stereo fix toggle."));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFix2, tr("Master FIX 2"), tr("Unchecked"),
@@ -2053,8 +2056,8 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoUiSecondLayerDepthLabel->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerDepth->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerDepthValue->setEnabled(stereo_enabled);
-	m_hw.stereoFeedbackLoopFixLabel->setEnabled(stereo_enabled && disable_correct_sbs_framebuffer_size);
-	m_hw.stereoFeedbackLoopFix->setEnabled(stereo_enabled && disable_correct_sbs_framebuffer_size);
+	m_hw.stereoFeedbackLoopFixLabel->setEnabled(stereo_enabled);
+	m_hw.stereoFeedbackLoopFix->setEnabled(stereo_enabled);
 	m_hw.stereoSbsRemapFixLabel->setEnabled(stereo_enabled);
 	m_hw.stereoSbsRemapFix->setEnabled(stereo_enabled);
 	m_hw.stereoUiDetectModeLabel->setEnabled(stereo_enabled);
@@ -2079,6 +2082,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoSbsRemapMono->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoCloseDepthFix->setEnabled(stereo_enabled);
+	m_hw.stereoSkyFix->setEnabled(stereo_enabled);
 	m_hw.stereoRequireRtaCorrection->setEnabled(stereo_enabled);
 	m_hw.stereoFixStencilShadows1->setEnabled(stereo_enabled);
 	m_hw.stereoFixStencilShadows2->setEnabled(stereo_enabled);

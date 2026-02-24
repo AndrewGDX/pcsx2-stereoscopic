@@ -910,6 +910,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRejectNonPositiveZ) &&
 		OpEqu(StereoRejectSmallZRange) &&
 		OpEqu(StereoCloseDepthFix) &&
+		OpEqu(StereoSkyFix) &&
 		OpEqu(StereoRejectSpriteBlit) &&
 		OpEqu(StereoRejectConstantColor) &&
 		OpEqu(StereoRejectScalingDraw) &&
@@ -1469,6 +1470,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRejectNonPositiveZ);
 	SettingsWrapEntry(StereoRejectSmallZRange);
 	SettingsWrapEntry(StereoCloseDepthFix);
+	SettingsWrapEntry(StereoSkyFix);
 	SettingsWrapEntry(StereoRejectSpriteBlit);
 	SettingsWrapEntry(StereoRejectConstantColor);
 	SettingsWrapEntry(StereoRejectScalingDraw);

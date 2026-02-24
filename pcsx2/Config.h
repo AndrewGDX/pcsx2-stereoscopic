@@ -898,6 +898,7 @@ struct Pcsx2Config
 		bool StereoRejectNonPositiveZ = false;
 		bool StereoRejectSmallZRange = false;
 		bool StereoCloseDepthFix = false;
+		bool StereoSkyFix = false;
 		bool StereoRejectSpriteBlit = false;
 		bool StereoRejectConstantColor = false;
 		bool StereoRejectScalingDraw = false;

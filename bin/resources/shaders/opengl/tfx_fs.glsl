@@ -56,8 +56,8 @@ layout(std140, binding = 0) uniform cb21
 
 	mat4 DitherMatrix;
 
-	float ScaledScaleFactor;
-	float RcpScaleFactor;
+	vec2 ScaledScaleFactor;
+	vec2 RcpScaleFactor;
 	vec4 StereoRemap;
 	vec4 StereoClipParams;
 	vec4 StereoScissorLeft;
@@ -401,7 +401,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
 vec4 sample_depth(vec2 st)
 {
-	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
+	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * ScaledScaleFactor;
 
 	#if PS_REGION_RECT == 1
 		uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);

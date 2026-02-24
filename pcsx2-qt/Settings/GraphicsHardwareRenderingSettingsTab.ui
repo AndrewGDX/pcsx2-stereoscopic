@@ -730,6 +730,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="stereoSkyFix">
+          <property name="text">
+           <string>Sky Fix: Killzone, Gran Turismo 4</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="stereoRequireRtaCorrection">
           <property name="text">
            <string>Shadows Fix: Require RTA Correction (MK, COD shadows fix)</string>
@@ -3088,6 +3095,7 @@
 	    <tabstop>stereoSbsRemapMono</tabstop>
 	    <tabstop>stereoFlipRendering</tabstop>
 	    <tabstop>stereoCloseDepthFix</tabstop>
+	    <tabstop>stereoSkyFix</tabstop>
 	    <tabstop>stereoRequireRtaCorrection</tabstop>
 	    <tabstop>stereoFixStencilShadows1</tabstop>
 	    <tabstop>stereoFixStencilShadows2</tabstop>
