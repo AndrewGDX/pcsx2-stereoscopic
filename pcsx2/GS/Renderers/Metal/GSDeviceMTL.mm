@@ -1175,6 +1175,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	{
 		PresentShader conv = static_cast<PresentShader>(i);
 		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
+		if (conv == PresentShader::COPY)
+			name = @"ps_copy_present";
 		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
 		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
 	}
@@ -1623,7 +1625,7 @@ static_assert(offsetof(DisplayConstantBuffer, TargetResolution)    == offsetof(G
 static_assert(offsetof(DisplayConstantBuffer, RcpTargetResolution) == offsetof(GSMTLPresentPSUniform, rcp_target_resolution));
 static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(GSMTLPresentPSUniform, source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
-static_assert(offsetof(DisplayConstantBuffer, TimeAndPad.x)        == offsetof(GSMTLPresentPSUniform, time));
+static_assert(offsetof(DisplayConstantBuffer, TimeAndPad)          == offsetof(GSMTLPresentPSUniform, time_and_pad));
 
 void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 { @autoreleasepool {
@@ -1632,6 +1634,7 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
+	cb.SetStereoFix(sTex->GetSize());
 	id<MTLRenderPipelineState> pipe = m_present_pipeline[static_cast<int>(shader)];
 
 	if (dTex)

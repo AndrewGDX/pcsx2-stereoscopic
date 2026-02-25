@@ -583,6 +583,28 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_GAMMA);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_SATURATION);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixShift, "EmuCore/GS", "StereoFix_Shift", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixTilt, "EmuCore/GS", "StereoFix_Tilt", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteSize, "EmuCore/GS", "StereoFix_VignetteSize", 0.13f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteX, "EmuCore/GS", "StereoFix_VignetteX", 0.75f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteY, "EmuCore/GS", "StereoFix_VignetteY", 0.50f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixExtendEdges, "EmuCore/GS", "StereoFix_ExtendEdges", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixExtendBorder, "EmuCore/GS", "StereoFix_ExtendBorder", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixCutOffset, "EmuCore/GS", "StereoFix_CutOffset", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteOffset, "EmuCore/GS", "StereoFix_VignetteOffset", 0.0f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableAutoGamma, "EmuCore/GS", "StereoFix_EnableAutoGamma", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixContrastIntensity, "EmuCore/GS", "StereoFix_ContrastIntensity", 0.92f);
+//	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixMidpointFocus, "EmuCore/GS", "StereoFix_MidpointFocus", 2.0f);
+//	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixContrastMidpoint, "EmuCore/GS", "StereoFix_ContrastMidpoint", 0.5f);
+//	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixGammaCompStrength, "EmuCore/GS", "StereoFix_GammaCompStrength", 1.0f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableLuminanceBlend, "EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixOpacity, "EmuCore/GS", "StereoFix_Opacity", 0.22f);
+//	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixMidpointFocus2, "EmuCore/GS", "StereoFix_MidpointFocus2", 8.0f);
+//	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixLuminanceMidpoint, "EmuCore/GS", "StereoFix_LuminanceMidpoint", 0.5f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableLevels, "EmuCore/GS", "StereoFix_EnableLevels", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixBlackLevel, "EmuCore/GS", "StereoFix_BlackLevel", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixWhiteLevel, "EmuCore/GS", "StereoFix_WhiteLevel", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixTemperature, "EmuCore/GS", "StereoFix_Temperature", 0.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
 

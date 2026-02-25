@@ -3187,6 +3187,35 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		};
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
 			s_tv_shaders, std::size(s_tv_shaders), true);
+
+		MenuHeading(FSUI_CSTR("Stereo Adjustments"));
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Shift"), FSUI_CSTR("Move screens in X axis."), "EmuCore/GS", "StereoFix_Shift", 0.0f, -30.0f, 30.0f, "%.0f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Tilt"), FSUI_CSTR("Move screens in Y axis."), "EmuCore/GS", "StereoFix_Tilt", 0.0f, -10.0f, 10.0f, "%.0f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Size"), FSUI_CSTR("Controls vignette transition width."), "EmuCore/GS", "StereoFix_VignetteSize", 0.13f, 0.0f, 1.0f, "%.2f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette X"), FSUI_CSTR("Horizontal vignette strength."), "EmuCore/GS", "StereoFix_VignetteX", 0.75f, 0.0f, 2.0f, "%.2f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Y"), FSUI_CSTR("Vertical vignette strength."), "EmuCore/GS", "StereoFix_VignetteY", 0.50f, 0.0f, 2.0f, "%.2f", 1.0f);
+
+		DrawToggleSetting(bsi, FSUI_CSTR("Extend Edges"), FSUI_CSTR("Extend edges of the screen to fill border."), "EmuCore/GS", "StereoFix_ExtendEdges", false);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Extend Border"), FSUI_CSTR("How many normalized pixels to cut at edges."), "EmuCore/GS", "StereoFix_ExtendBorder", 0.0f, 0.0f, 0.1f, "%.4f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Cut Offset"), FSUI_CSTR("Cuts extended screen edges."), "EmuCore/GS", "StereoFix_CutOffset", 0.0f, 0.0f, 200.0f, "%.0f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Offset"), FSUI_CSTR("Offsets vignette, useful for 4:3 screens."), "EmuCore/GS", "StereoFix_VignetteOffset", 0.0f, 0.0f, 250.0f, "%.0f", 1.0f);
+
+		MenuHeading(FSUI_CSTR("Image Adjustments"));
+		DrawToggleSetting(bsi, FSUI_CSTR("Enable Luminance Contrast"), FSUI_CSTR("Enable automatic luminance contrast pass."), "EmuCore/GS", "StereoFix_EnableAutoGamma", false);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Contrast Intensity"), FSUI_CSTR("Maximum contrast boost applied to mid-tones."), "EmuCore/GS", "StereoFix_ContrastIntensity", 0.92f, 0.01f, 1.0f, "%.2f", 1.0f);
+//			DrawFloatRangeSetting(bsi, FSUI_CSTR("Contrast Focus"), FSUI_CSTR("Controls contrast falloff away from midpoint."), "EmuCore/GS", "StereoFix_MidpointFocus", 2.0f, 1.0f, 8.0f, "%.1f", 1.0f);
+//			DrawFloatRangeSetting(bsi, FSUI_CSTR("Contrast Midpoint"), FSUI_CSTR("Center luminance for contrast adjustment."), "EmuCore/GS", "StereoFix_ContrastMidpoint", 0.5f, 0.5f, 1.5f, "%.2f", 1.0f);
+//			DrawFloatRangeSetting(bsi, FSUI_CSTR("Gamma Compensation Strength"), FSUI_CSTR("Strength of automatic gamma compensation."), "EmuCore/GS", "StereoFix_GammaCompStrength", 1.0f, 0.0f, 1.0f, "%.2f", 1.0f);
+
+		DrawToggleSetting(bsi, FSUI_CSTR("Enable Luminance Blend"), FSUI_CSTR("Enable luminance-weighted self blend."), "EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Blend Opacity"), FSUI_CSTR("Maximum strength of the blend effect."), "EmuCore/GS", "StereoFix_Opacity", 0.22f, 0.0f, 1.0f, "%.2f", 1.0f);
+//			DrawFloatRangeSetting(bsi, FSUI_CSTR("Blend Focus"), FSUI_CSTR("Controls blend falloff around midpoint."), "EmuCore/GS", "StereoFix_MidpointFocus2", 8.0f, 1.0f, 8.0f, "%.1f", 1.0f);
+//			DrawFloatRangeSetting(bsi, FSUI_CSTR("Blend Midpoint"), FSUI_CSTR("Center luminance for blend strength."), "EmuCore/GS", "StereoFix_LuminanceMidpoint", 0.5f, 0.4f, 0.5f, "%.3f", 1.0f);
+
+		DrawToggleSetting(bsi, FSUI_CSTR("Enable Levels"), FSUI_CSTR("Enable levels and temperature pass."), "EmuCore/GS", "StereoFix_EnableLevels", false);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Black Level"), FSUI_CSTR("Raises the black point."), "EmuCore/GS", "StereoFix_BlackLevel", 0.0f, 0.0f, 16.0f, "%.0f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("White Level"), FSUI_CSTR("Lowers the white point."), "EmuCore/GS", "StereoFix_WhiteLevel", 0.0f, 0.0f, 32.0f, "%.0f", 1.0f);
+		DrawFloatRangeSetting(bsi, FSUI_CSTR("Temperature"), FSUI_CSTR("Adjust red/blue color temperature."), "EmuCore/GS", "StereoFix_Temperature", 0.0f, -1.0f, 1.0f, "%.2f", 1.0f);
 	}
 
 	static constexpr const char* s_gsdump_compression[] = {
@@ -5145,6 +5174,8 @@ TRANSLATE_NOOP("FullscreenUI", "Shade Boost Gamma");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts gamma. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts saturation. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "Applies a shader which replicates the visual effects of different styles of television set.");
+TRANSLATE_NOOP("FullscreenUI", "Stereo Adjustments");
+TRANSLATE_NOOP("FullscreenUI", "Image Adjustments");
 TRANSLATE_NOOP("FullscreenUI", "Advanced");
 TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
 TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");

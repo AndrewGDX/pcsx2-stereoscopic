@@ -238,6 +238,24 @@ struct alignas(16) DisplayConstantBuffer
 	{
 		TimeAndPad = GSVector4(time);
 	}
+
+	void SetStereoFix(const GSVector2i& sourceSize)
+	{
+		SourceRect = GSVector4(GSConfig.StereoFix_Shift, GSConfig.StereoFix_Tilt,
+			GSConfig.StereoFix_VignetteSize, GSConfig.StereoFix_VignetteX);
+		TargetRect = GSVector4(GSConfig.StereoFix_VignetteY, GSConfig.StereoFix_ExtendBorder,
+			GSConfig.StereoFix_CutOffset, GSConfig.StereoFix_VignetteOffset);
+		SourceSize = GSVector2(GSConfig.StereoFix_ContrastIntensity, GSConfig.StereoFix_MidpointFocus);
+		TargetSize = GSVector2(GSConfig.StereoFix_ContrastMidpoint, GSConfig.StereoFix_GammaCompStrength);
+		TargetResolution = GSVector2(GSConfig.StereoFix_Opacity, GSConfig.StereoFix_MidpointFocus2);
+		RcpTargetResolution = GSVector2(GSConfig.StereoFix_LuminanceMidpoint, GSConfig.StereoFix_BlackLevel);
+		SourceResolution = GSVector2(GSConfig.StereoFix_WhiteLevel, GSConfig.StereoFix_Temperature);
+		RcpSourceResolution = GSVector2(static_cast<float>(sourceSize.x), static_cast<float>(sourceSize.y));
+		TimeAndPad = GSVector4(GSConfig.StereoFix_ExtendEdges ? 1.0f : 0.0f,
+			GSConfig.StereoFix_EnableAutoGamma ? 1.0f : 0.0f,
+			GSConfig.StereoFix_EnableLuminanceBlend ? 1.0f : 0.0f,
+			GSConfig.StereoFix_EnableLevels ? 1.0f : 0.0f);
+	}
 };
 static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
 

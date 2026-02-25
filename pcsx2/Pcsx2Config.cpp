@@ -869,6 +869,28 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Contrast) &&
 		OpEqu(ShadeBoost_Saturation) &&
 		OpEqu(ShadeBoost_Gamma) &&
+		OpEqu(StereoFix_Shift) &&
+		OpEqu(StereoFix_Tilt) &&
+		OpEqu(StereoFix_VignetteSize) &&
+		OpEqu(StereoFix_VignetteX) &&
+		OpEqu(StereoFix_VignetteY) &&
+		OpEqu(StereoFix_ExtendBorder) &&
+		OpEqu(StereoFix_CutOffset) &&
+		OpEqu(StereoFix_VignetteOffset) &&
+		OpEqu(StereoFix_ContrastIntensity) &&
+		OpEqu(StereoFix_MidpointFocus) &&
+		OpEqu(StereoFix_ContrastMidpoint) &&
+		OpEqu(StereoFix_GammaCompStrength) &&
+		OpEqu(StereoFix_Opacity) &&
+		OpEqu(StereoFix_MidpointFocus2) &&
+		OpEqu(StereoFix_LuminanceMidpoint) &&
+		OpEqu(StereoFix_BlackLevel) &&
+		OpEqu(StereoFix_WhiteLevel) &&
+		OpEqu(StereoFix_Temperature) &&
+		OpEqu(StereoFix_ExtendEdges) &&
+		OpEqu(StereoFix_EnableAutoGamma) &&
+		OpEqu(StereoFix_EnableLuminanceBlend) &&
+		OpEqu(StereoFix_EnableLevels) &&
 		OpEqu(PNGCompressionLevel) &&
 		OpEqu(SaveDrawStart) &&
 		OpEqu(SaveDrawCount) &&
@@ -1425,6 +1447,28 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfield(ShadeBoost_Contrast);
 	SettingsWrapBitfield(ShadeBoost_Saturation);
 	SettingsWrapBitfield(ShadeBoost_Gamma);
+	SettingsWrapEntry(StereoFix_Shift);
+	SettingsWrapEntry(StereoFix_Tilt);
+	SettingsWrapEntry(StereoFix_VignetteSize);
+	SettingsWrapEntry(StereoFix_VignetteX);
+	SettingsWrapEntry(StereoFix_VignetteY);
+	SettingsWrapEntry(StereoFix_ExtendEdges);
+	SettingsWrapEntry(StereoFix_ExtendBorder);
+	SettingsWrapEntry(StereoFix_CutOffset);
+	SettingsWrapEntry(StereoFix_VignetteOffset);
+	SettingsWrapEntry(StereoFix_EnableAutoGamma);
+	SettingsWrapEntry(StereoFix_ContrastIntensity);
+	SettingsWrapEntry(StereoFix_MidpointFocus);
+	SettingsWrapEntry(StereoFix_ContrastMidpoint);
+	SettingsWrapEntry(StereoFix_GammaCompStrength);
+	SettingsWrapEntry(StereoFix_EnableLuminanceBlend);
+	SettingsWrapEntry(StereoFix_Opacity);
+	SettingsWrapEntry(StereoFix_MidpointFocus2);
+	SettingsWrapEntry(StereoFix_LuminanceMidpoint);
+	SettingsWrapEntry(StereoFix_EnableLevels);
+	SettingsWrapEntry(StereoFix_BlackLevel);
+	SettingsWrapEntry(StereoFix_WhiteLevel);
+	SettingsWrapEntry(StereoFix_Temperature);
 	SettingsWrapBitfield(ExclusiveFullscreenControl);
 	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
 	SettingsWrapBitfieldEx(SaveDrawStart, "SaveDrawStart");

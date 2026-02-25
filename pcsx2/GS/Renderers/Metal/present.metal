@@ -31,33 +31,134 @@ static float4 ps_scanlines(float4 color, int i)
 	return color * saturate(mask[i] + 0.5f);
 }
 
+static float4 auto_gamma(float4 color, constant GSMTLPresentPSUniform& cb);
+static float3 luminance_blend(float3 color, constant GSMTLPresentPSUniform& cb);
+static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb);
+
+static float2 stereo_fix_adjust_uv(float2 uv, constant GSMTLPresentPSUniform& cb)
+{
+	const float shift = cb.source_rect.x;
+	const float tilt = cb.source_rect.y;
+	const float extend_border = cb.target_rect.y;
+	const bool extend_edges = (cb.time_and_pad.x > 0.5f);
+
+	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
+	const float shift_uv = shift / source_width;
+	const float tilt_uv = tilt / source_width;
+
+	uv.y = (uv.x > 0.5f) ? (uv.y + tilt_uv) : (uv.y - tilt_uv);
+	const float edge_border = extend_edges ? extend_border : 0.0f;
+	uv.x = (uv.x > 0.5f) ? max(uv.x - shift_uv, 0.5f + edge_border) : min(uv.x + shift_uv, 0.498f - edge_border);
+	if (extend_edges)
+		uv.x = clamp(uv.x, extend_border, 0.998f - extend_border);
+
+	return uv;
+}
+
+static bool stereo_fix_is_outside(float2 uv, constant GSMTLPresentPSUniform& cb)
+{
+	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
+	const float tilt_uv = cb.source_rect.y / source_width;
+
+	if (uv.x < 0.5f)
+		return (uv.y < tilt_uv || uv.y > 1.0f + tilt_uv);
+
+	return (uv.y < -tilt_uv || uv.y > 1.0f - tilt_uv);
+}
+
+static float stereo_fix_fade(float2 uv, constant GSMTLPresentPSUniform& cb)
+{
+	const float tilt = cb.source_rect.y;
+	const float vignette_size = cb.source_rect.z;
+	const float vignette_x = cb.source_rect.w;
+	const float vignette_y = cb.target_rect.x;
+	const float cut_offset = cb.target_rect.z;
+	const float vignette_offset = cb.target_rect.w;
+	const bool extend_edges = (cb.time_and_pad.x > 0.5f);
+
+	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
+	const float tilt_uv = tilt / source_width;
+	const float offset_x = vignette_offset / source_width;
+	const float cut_offset_x = cut_offset / source_width;
+	const float fade_width = (vignette_size + 0.001f) / 50.0f;
+	const float edge_offset = extend_edges ? offset_x : 0.0f;
+
+	const float outer_edge = smoothstep(0.0f, fade_width, uv.x - edge_offset) *
+		smoothstep(1.0f, 1.0f - fade_width, uv.x + edge_offset);
+	const float inner_edge = smoothstep(0.5f, 0.5f - fade_width, uv.x + edge_offset) +
+		smoothstep(0.5f, 0.5f + fade_width, uv.x - edge_offset);
+	const float horizontal_fade = outer_edge * inner_edge;
+
+	const float v_tilt1 = (uv.x < 0.5f) ? ((tilt_uv > 0.0f) ? 0.0f : tilt_uv) : ((tilt_uv > 0.0f) ? -tilt_uv : 0.0f);
+	const float v_tilt2 = (uv.x < 0.5f) ? ((tilt_uv < 0.0f) ? 0.0f : tilt_uv) : ((tilt_uv < 0.0f) ? -tilt_uv : 0.0f);
+	const float vertical_fade = smoothstep(0.0f, fade_width, uv.y + v_tilt1) *
+		smoothstep(1.0f, 1.0f - fade_width, uv.y + v_tilt2);
+
+	const float outer_cut = smoothstep(0.0f, 0.01f, uv.x - cut_offset_x) * smoothstep(1.0f, 0.99f, uv.x + cut_offset_x);
+	const float inner_cut = smoothstep(0.5f, 0.49f, uv.x + cut_offset_x) + smoothstep(0.5f, 0.51f, uv.x - cut_offset_x);
+
+	const float vignette_fade = max(vignette_x * (1.0f - horizontal_fade), vignette_y * (1.0f - vertical_fade));
+	const float cut_fade = (extend_edges && cut_offset > 0.0f) ? (1.0f - outer_cut * inner_cut) : 0.0f;
+	return saturate(1.0f - vignette_fade - cut_fade);
+}
+
+static float4 stereo_fix_finalize(float2 uv, float4 color, constant GSMTLPresentPSUniform& cb)
+{
+	if (stereo_fix_is_outside(uv, cb))
+		return float4(0.0f);
+
+	if (cb.time_and_pad.y > 0.5f)
+		color = auto_gamma(color, cb);
+	if (cb.time_and_pad.z > 0.5f)
+		color.rgb = luminance_blend(color.rgb, cb);
+	if (cb.time_and_pad.w > 0.5f)
+		color.rgb = levels(color.rgb, cb);
+
+	return color * stereo_fix_fade(uv, cb);
+}
+
+static float4 sample_with_stereo(thread ConvertPSRes& res, float2 uv, constant GSMTLPresentPSUniform& cb)
+{
+	return res.sample(stereo_fix_adjust_uv(uv, cb));
+}
+
 // use ps_copy from convert.metal
 
-fragment float4 ps_filter_scanlines(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+fragment float4 ps_copy_present(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return ps_scanlines(res.sample(data.t), uint(data.p.y) % 2);
+	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), cb);
 }
 
-fragment float4 ps_filter_diagonal(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+fragment float4 ps_filter_scanlines(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	return stereo_fix_finalize(data.t, ps_scanlines(sample_with_stereo(res, data.t, cb), uint(data.p.y) % 2), cb);
+}
+
+fragment float4 ps_filter_diagonal(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	uint4 p = uint4(data.p);
-	return ps_crt(res.sample(data.t), (p.x + (p.y % 3)) % 3);
+	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), (p.x + (p.y % 3)) % 3), cb);
 }
 
-fragment float4 ps_filter_triangular(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+fragment float4 ps_filter_triangular(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	uint4 p = uint4(data.p);
 	uint val = ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3;
-	return ps_crt(res.sample(data.t), val);
+	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), val), cb);
 }
 
-fragment float4 ps_filter_complex(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+fragment float4 ps_filter_complex(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	float2 texdim = float2(res.texture.get_width(), res.texture.get_height());
 	float factor = (0.9f - 0.4f * cos(2.f * M_PI_F * data.t.y * texdim.y));
 	float ycoord = (floor(data.t.y * texdim.y) + 0.5f) / texdim.y;
 
-	return factor * res.sample(float2(data.t.x, ycoord));
+	return stereo_fix_finalize(data.t, factor * sample_with_stereo(res, float2(data.t.x, ycoord), cb), cb);
 }
 
 #define MaskingType 4                      //[1|2|3|4] The type of CRT shadow masking used. 1: compressed TV style, 2: Aperture-grille, 3: Stretched VGA style, 4: VGA style.
@@ -101,14 +202,15 @@ struct LottesCRTPass
 
 	float3 Fetch(float2 pos, float2 off)
 	{
-		pos = (floor(pos * uniform.target_size + off) + float2(0.5, 0.5)) / uniform.target_size;
+		const float2 render_size = max(uniform.rcp_source_resolution, float2(1.0f, 1.0f));
+		pos = (floor(pos * render_size + off) + float2(0.5f, 0.5f)) / render_size;
 		if (max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5)
 		{
 			return float3(0.0, 0.0, 0.0);
 		}
 		else
 		{
-			return ToLinear(res.sample(pos.xy).rgb);
+			return ToLinear(sample_with_stereo(res, pos.xy, uniform).rgb);
 		}
 	}
 
@@ -337,17 +439,17 @@ struct LottesCRTPass
 #endif
 	}
 
-	float4 Run(float4 fragcoord)
+	float4 Run(float2 uv)
 	{
 		float4 color;
-		fragcoord -= uniform.target_rect;
-		float2 inSize = uniform.target_resolution - (2 * uniform.target_rect.xy);
+		const float2 inSize = max(uniform.rcp_source_resolution, float2(1.0f, 1.0f));
+		const float2 fragcoord = uv * inSize;
 
-		float2 pos = Warp(fragcoord.xy / inSize);
+		float2 pos = Warp(fragcoord / inSize);
 		color.rgb = Tri(pos);
 		color.rgb += Bloom(pos) * BloomAmount;
 	#if UseShadowMask
-		color.rgb *= Mask(fragcoord.xy);
+		color.rgb *= Mask(fragcoord);
 	#endif
 		color.rgb = ToSrgb(color.rgb);
 
@@ -358,10 +460,11 @@ struct LottesCRTPass
 fragment float4 ps_filter_lottes(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return LottesCRTPass(res, uniform).Run(data.p);
+	return stereo_fix_finalize(data.t, LottesCRTPass(res, uniform).Run(data.t), uniform);
 }
 
-fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	float2 dxy = float2(dfdx(data.t.x), dfdy(data.t.y));
 	float3 color = 0;
@@ -369,31 +472,143 @@ fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res
 	float s = 1.0/8.0;
 	float l = 3.0/8.0;
 
-	color += res.sample(data.t + float2( s, l) * dxy).rgb;
-	color += res.sample(data.t + float2( l,-s) * dxy).rgb;
-	color += res.sample(data.t + float2(-s,-l) * dxy).rgb;
-	color += res.sample(data.t + float2(-l, s) * dxy).rgb;
+	color += sample_with_stereo(res, data.t + float2( s, l) * dxy, cb).rgb;
+	color += sample_with_stereo(res, data.t + float2( l,-s) * dxy, cb).rgb;
+	color += sample_with_stereo(res, data.t + float2(-s,-l) * dxy, cb).rgb;
+	color += sample_with_stereo(res, data.t + float2(-l, s) * dxy, cb).rgb;
 
-	return float4(color * 0.25,1);
+	return stereo_fix_finalize(data.t, float4(color * 0.25f, 1.0f), cb);
 }
 
 fragment float4 ps_automagical_supersampling(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	float2 ratio = (cb.source_size / cb.target_size) * 0.5;
+	const float2 source_size = max(cb.rcp_source_resolution, float2(1.0f, 1.0f));
+	const float2 uv_step = abs(float2(dfdx(data.t.x), dfdy(data.t.y)));
+	float2 ratio = uv_step * source_size * 0.5f;
 	float2 steps = floor(ratio);
-	float3 col = res.sample(data.t).rgb;
-	float div = 1;
+	float3 col = sample_with_stereo(res, data.t, cb).rgb;
+	float div = 1.0f;
 
 	for (float y = 0; y < steps.y; y++)
 	{
 		for (float x = 0; x < steps.x; x++)
 		{
 			float2 offset = float2(x,y) - ratio * 0.5;
-			col += res.sample(data.t + offset * cb.rcp_source_resolution * 2.0).rgb;
+			col += sample_with_stereo(res, data.t + offset / source_size * 2.0f, cb).rgb;
 			div++;
 		}
 	}
 
-	return float4(col / div, 1);
+	return stereo_fix_finalize(data.t, float4(col / div, 1.0f), cb);
+}
+
+static float3 srgb_to_linear(float3 color_srgb)
+{
+	return pow(max(float3(0.0f), color_srgb), float3(2.2f));
+}
+
+static float3 linear_to_srgb_dynamic(float3 color_linear, float exponent)
+{
+	return pow(max(float3(0.0f), color_linear), float3(exponent));
+}
+
+static float get_luminance(float3 color_linear)
+{
+	return dot(color_linear, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+static float adjust_luminance_contrast(float lum, float contrast, float midpoint)
+{
+	return mix(midpoint, lum, contrast);
+}
+
+static float4 auto_gamma(float4 color, constant GSMTLPresentPSUniform& cb)
+{
+	const float contrast_intensity = cb.source_size.x;
+	const float midpoint_focus = cb.source_size.y;
+	const float contrast_midpoint = cb.target_size.x;
+	const float gamma_comp_strength = cb.target_size.y;
+
+	float3 color_linear = srgb_to_linear(color.rgb);
+	float3 processed_linear = color_linear;
+	const float pixel_lum_linear = get_luminance(color_linear);
+	float gamma_correction_factor = 1.0f;
+
+	const float dist_from_mid = abs(pixel_lum_linear - contrast_midpoint);
+	const float norm_range = max(contrast_midpoint, 1.0f - contrast_midpoint);
+	const float dist_scaled = saturate(dist_from_mid / max(norm_range, 1e-6f));
+	const float falloff = pow(dist_scaled, midpoint_focus);
+	const float contrast_modulation_factor = saturate(1.0f - falloff);
+
+	if (contrast_modulation_factor > 0.0f)
+	{
+		const float dynamic_contrast = mix(1.0f, contrast_intensity, contrast_modulation_factor);
+		float adjusted_lum = adjust_luminance_contrast(pixel_lum_linear, dynamic_contrast, contrast_midpoint);
+		adjusted_lum = max(0.0f, adjusted_lum);
+
+		const float luminance_ratio = adjusted_lum / max(pixel_lum_linear, 1e-6f);
+		const float ev_shift = log2(max(luminance_ratio, 1e-6f));
+		gamma_correction_factor = 1.0f - (ev_shift * gamma_comp_strength * 0.25f);
+		gamma_correction_factor = clamp(gamma_correction_factor, 0.5f, 1.5f);
+
+		if (pixel_lum_linear <= 1e-6f)
+			processed_linear = float3(0.0f);
+		else
+			processed_linear = color_linear * luminance_ratio;
+	}
+
+	const float final_exponent = (1.0f / 2.2f) / gamma_correction_factor;
+	const float3 final_srgb = linear_to_srgb_dynamic(processed_linear, final_exponent);
+	return float4(saturate(final_srgb), color.a);
+}
+
+static float calculate_modulation_factor(float pixel_lum, float target_point, float focus)
+{
+	const float dist_from_point = abs(pixel_lum - target_point);
+	const float norm_range = max(target_point, 1.0f - target_point);
+	const float dist_scaled = saturate(dist_from_point / max(norm_range, 1e-6f));
+	const float falloff = pow(dist_scaled, focus);
+	return saturate(1.0f - falloff);
+}
+
+static float3 apply_blend(float3 base, float3 blend)
+{
+	float3 r;
+	r.r = (base.r < 0.5f) ? (2.0f * base.r * blend.r) : (1.0f - 2.0f * (1.0f - base.r) * (1.0f - blend.r));
+	r.g = (base.g < 0.5f) ? (2.0f * base.g * blend.g) : (1.0f - 2.0f * (1.0f - base.g) * (1.0f - blend.g));
+	r.b = (base.b < 0.5f) ? (2.0f * base.b * blend.b) : (1.0f - 2.0f * (1.0f - base.b) * (1.0f - blend.b));
+	return r;
+}
+
+static float3 luminance_blend(float3 color, constant GSMTLPresentPSUniform& cb)
+{
+	const float opacity = cb.target_resolution.x;
+	const float midpoint_focus2 = cb.target_resolution.y;
+	const float luminance_midpoint = cb.rcp_target_resolution.x;
+	const float pixel_lum_linear = get_luminance(srgb_to_linear(color));
+	const float blend_mod_factor = calculate_modulation_factor(pixel_lum_linear, luminance_midpoint, midpoint_focus2);
+	if (blend_mod_factor <= 0.0f)
+		return color;
+
+	const float3 blended_full = apply_blend(color, color);
+	const float actual_opacity = opacity * blend_mod_factor;
+	return saturate(mix(color, saturate(blended_full), actual_opacity));
+}
+
+static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb)
+{
+	const float black_level = cb.rcp_target_resolution.y;
+	const float white_level = cb.source_resolution.x;
+	const float temperature = cb.source_resolution.y;
+	const float black_point = black_level / 255.0f;
+	const float white_point = 255.0f / ((255.0f - white_level) - black_level);
+	color *= float3(1.0f + temperature * 0.1f, 1.0f, 1.0f - temperature * 0.1f);
+	return saturate(color * white_point - (black_point * white_point));
+}
+
+fragment float4 ps_stereoscopic_fixes(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), cb);
 }

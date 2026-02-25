@@ -414,7 +414,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			m_present[i].RegisterUniform("u_rcp_target_resolution");
 			m_present[i].RegisterUniform("u_source_resolution");
 			m_present[i].RegisterUniform("u_rcp_source_resolution");
-			m_present[i].RegisterUniform("u_time");
+			m_present[i].RegisterUniform("u_time_and_pad");
 		}
 	}
 
@@ -1591,6 +1591,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
+	cb.SetStereoFix(sTex->GetSize());
 
 	GLProgram& prog = m_present[static_cast<int>(shader)];
 	prog.Bind();
@@ -1602,7 +1603,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	prog.Uniform2fv(5, &cb.RcpTargetResolution.x);
 	prog.Uniform2fv(6, &cb.SourceResolution.x);
 	prog.Uniform2fv(7, &cb.RcpSourceResolution.x);
-	prog.Uniform1f(8, cb.TimeAndPad.x);
+	prog.Uniform4fv(8, cb.TimeAndPad.F32);
 
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);

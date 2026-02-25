@@ -28,7 +28,7 @@ layout(push_constant) uniform cb10
 	vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 	vec2 u_source_resolution;
 	vec2 u_rcp_source_resolution; // 1 / u_source_resolution
-	float u_time;
+	vec4 u_time_and_pad;
 };
 
 layout(location = 0) in vec2 v_tex;
@@ -37,9 +37,93 @@ layout(location = 0) out vec4 o_col0;
 
 layout(set = 0, binding = 0) uniform sampler2D samp0;
 
+vec4 AutoGamma(vec4 color);
+vec3 LuminanceBlend(vec3 color);
+vec3 Levels(vec3 color);
+
+vec2 StereoFixAdjustUV(vec2 uv)
+{
+	float shift = u_source_rect.x;
+	float tilt = u_source_rect.y;
+	float extendBorder = u_target_rect.y;
+	bool extendEdges = (u_time_and_pad.x > 0.5);
+
+	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
+	float shiftUV = shift / sourceWidth;
+	float tiltUV = tilt / sourceWidth;
+
+	uv.y = (uv.x > 0.5) ? (uv.y + tiltUV) : (uv.y - tiltUV);
+	float edgeBorder = extendEdges ? extendBorder : 0.0;
+	uv.x = (uv.x > 0.5) ? max(uv.x - shiftUV, 0.5 + edgeBorder) : min(uv.x + shiftUV, 0.498 - edgeBorder);
+	if (extendEdges)
+		uv.x = clamp(uv.x, extendBorder, 0.998 - extendBorder);
+
+	return uv;
+}
+
+bool StereoFixIsOutside(vec2 uv)
+{
+	float tilt = u_source_rect.y;
+	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
+	float tiltUV = tilt / sourceWidth;
+
+	if (uv.x < 0.5)
+		return (uv.y < tiltUV || uv.y > 1.0 + tiltUV);
+
+	return (uv.y < -tiltUV || uv.y > 1.0 - tiltUV);
+}
+
+float StereoFixFade(vec2 uv)
+{
+	float tilt = u_source_rect.y;
+	float vignetteSize = u_source_rect.z;
+	float vignetteX = u_source_rect.w;
+	float vignetteY = u_target_rect.x;
+	float cutOffset = u_target_rect.z;
+	float vignetteOffset = u_target_rect.w;
+	bool extendEdges = (u_time_and_pad.x > 0.5);
+
+	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
+	float tiltUV = tilt / sourceWidth;
+	float offsetX = vignetteOffset / sourceWidth;
+	float cutOffsetX = cutOffset / sourceWidth;
+	float fadeWidth = (vignetteSize + 0.001) / 50.0;
+	float edgeOffset = extendEdges ? offsetX : 0.0;
+
+	float outerEdge = smoothstep(0.0, fadeWidth, uv.x - edgeOffset) * smoothstep(1.0, 1.0 - fadeWidth, uv.x + edgeOffset);
+	float innerEdge = smoothstep(0.5, 0.5 - fadeWidth, uv.x + edgeOffset) + smoothstep(0.5, 0.5 + fadeWidth, uv.x - edgeOffset);
+	float horizontalFade = outerEdge * innerEdge;
+
+	float vTilt1 = (uv.x < 0.5) ? ((tiltUV > 0.0) ? 0.0 : tiltUV) : ((tiltUV > 0.0) ? -tiltUV : 0.0);
+	float vTilt2 = (uv.x < 0.5) ? ((tiltUV < 0.0) ? 0.0 : tiltUV) : ((tiltUV < 0.0) ? -tiltUV : 0.0);
+	float verticalFade = smoothstep(0.0, fadeWidth, uv.y + vTilt1) * smoothstep(1.0, 1.0 - fadeWidth, uv.y + vTilt2);
+
+	float outerCut = smoothstep(0.0, 0.01, uv.x - cutOffsetX) * smoothstep(1.0, 0.99, uv.x + cutOffsetX);
+	float innerCut = smoothstep(0.5, 0.49, uv.x + cutOffsetX) + smoothstep(0.5, 0.51, uv.x - cutOffsetX);
+
+	float vignetteFade = max(vignetteX * (1.0 - horizontalFade), vignetteY * (1.0 - verticalFade));
+	float cutFade = (extendEdges && cutOffset > 0.0) ? (1.0 - outerCut * innerCut) : 0.0;
+	return clamp(1.0 - vignetteFade - cutFade, 0.0, 1.0);
+}
+
+vec4 StereoFixFinalize(vec2 uv, vec4 color)
+{
+	if (StereoFixIsOutside(uv))
+		return vec4(0.0);
+
+	if (u_time_and_pad.y > 0.5)
+		color = AutoGamma(color);
+	if (u_time_and_pad.z > 0.5)
+		color.rgb = LuminanceBlend(color.rgb);
+	if (u_time_and_pad.w > 0.5)
+		color.rgb = Levels(color.rgb);
+
+	return color * StereoFixFade(uv);
+}
+
 vec4 sample_c(vec2 uv)
 {
-	return texture(samp0, uv);
+	return texture(samp0, StereoFixAdjustUV(uv));
 }
 
 vec4 ps_crt(uint i)
@@ -65,7 +149,7 @@ vec4 ps_scanlines(uint i)
 #ifdef ps_copy
 void ps_copy()
 {
-	o_col0 = sample_c(v_tex);
+	o_col0 = StereoFixFinalize(v_tex, sample_c(v_tex));
 }
 #endif
 
@@ -74,7 +158,7 @@ void ps_filter_scanlines() // scanlines
 {
 	uvec4 p = uvec4(gl_FragCoord);
 
-	o_col0 = ps_scanlines(p.y % 2);
+	o_col0 = StereoFixFinalize(v_tex, ps_scanlines(p.y % 2));
 }
 #endif
 
@@ -82,7 +166,7 @@ void ps_filter_scanlines() // scanlines
 void ps_filter_diagonal() // diagonal
 {
 	uvec4 p = uvec4(gl_FragCoord);
-	o_col0 = ps_crt((p.x + (p.y % 3)) % 3);
+	o_col0 = StereoFixFinalize(v_tex, ps_crt((p.x + (p.y % 3)) % 3));
 }
 #endif
 
@@ -92,7 +176,7 @@ void ps_filter_triangular() // triangular
 	uvec4 p = uvec4(gl_FragCoord);
 
 	// output.c = ps_crt(input, ((p.x + (p.y & 1) * 3) >> 1) % 3);
-	o_col0 = ps_crt(((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3);
+	o_col0 = StereoFixFinalize(v_tex, ps_crt(((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3));
 }
 #endif
 
@@ -102,7 +186,8 @@ void ps_filter_complex() // triangular
 	const float PI = 3.14159265359f;
 	vec2 texdim = vec2(textureSize(samp0, 0));
 
-	o_col0 = (0.9 - 0.4 * cos(2 * PI * v_tex.y * texdim.y)) * sample_c(vec2(v_tex.x, (floor(v_tex.y * texdim.y) + 0.5) / texdim.y));
+	o_col0 = StereoFixFinalize(v_tex,
+		(0.9 - 0.4 * cos(2 * PI * v_tex.y * texdim.y)) * sample_c(vec2(v_tex.x, (floor(v_tex.y * texdim.y) + 0.5) / texdim.y)));
 }
 #endif
 
@@ -143,14 +228,15 @@ vec3 ToSrgb(vec3 c)
 
 vec3 Fetch(vec2 pos, vec2 off)
 {
-	pos = (floor(pos * u_target_size + off) + vec2(0.5, 0.5)) / u_target_size;
+	vec2 renderSize = max(u_rcp_source_resolution, vec2(1.0, 1.0));
+	pos = (floor(pos * renderSize + off) + vec2(0.5, 0.5)) / renderSize;
 	if (max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5)
 	{
 		return vec3(0.0, 0.0, 0.0);
 	}
 	else
 	{
-		return ToLinear(texture(samp0, pos.xy).rgb);
+		return ToLinear(sample_c(pos.xy).rgb);
 	}
 }
 
@@ -382,14 +468,14 @@ vec3 Mask(vec2 pos)
 vec4 LottesCRTPass()
 {
 	vec4 color;
-	vec4 fragcoord = gl_FragCoord - u_target_rect;
-	vec2 inSize = u_target_resolution - (2 * u_target_rect.xy);
+	vec2 inSize = max(u_rcp_source_resolution, vec2(1.0, 1.0));
+	vec2 fragcoord = v_tex * inSize;
 
-	vec2 pos = Warp(fragcoord.xy / inSize);
+	vec2 pos = Warp(fragcoord / inSize);
 	color.rgb = Tri(pos);
 	color.rgb += Bloom(pos) * BloomAmount;
 #if UseShadowMask
-	color.rgb *= Mask(fragcoord.xy);
+	color.rgb *= Mask(fragcoord);
 #endif
 	color.rgb = ToSrgb(color.rgb);
 
@@ -398,7 +484,7 @@ vec4 LottesCRTPass()
 
 void ps_filter_lottes()
 {
-	o_col0 = LottesCRTPass();
+	o_col0 = StereoFixFinalize(v_tex, LottesCRTPass());
 }
 
 #endif
@@ -417,29 +503,143 @@ void ps_4x_rgss()
 	color += sample_c(v_tex + vec2(-s,-l) * dxy).rgb;
 	color += sample_c(v_tex + vec2(-l, s) * dxy).rgb;
 
-	o_col0 = vec4(color * 0.25,1);
+	o_col0 = StereoFixFinalize(v_tex, vec4(color * 0.25, 1.0));
 }
 #endif
 
 #ifdef ps_automagical_supersampling
 void ps_automagical_supersampling()
 {
-	vec2 ratio = (u_source_size / u_target_size) * 0.5;
+	vec2 sourceSize = max(u_rcp_source_resolution, vec2(1.0, 1.0));
+	vec2 uvStep = abs(vec2(dFdx(v_tex.x), dFdy(v_tex.y)));
+	vec2 ratio = uvStep * sourceSize * 0.5;
 	vec2 steps = floor(ratio);
 	vec3 col = sample_c(v_tex).rgb;
-	float div = 1;
+	float div = 1.0;
 
 	for (float y = 0; y < steps.y; y++)
 	{
 		for (float x = 0; x < steps.x; x++)
 		{
 			vec2 offset = vec2(x,y) - ratio * 0.5;
-			col += sample_c(v_tex + offset * u_rcp_source_resolution * 2.0).rgb;
+			col += sample_c(v_tex + offset / sourceSize * 2.0).rgb;
 			div++;
 		}
 	}
 
-	o_col0 = vec4(col / div, 1);
+	o_col0 = StereoFixFinalize(v_tex, vec4(col / div, 1.0));
+}
+#endif
+
+// Stereoscopic adjustment helpers shared by all present shaders.
+vec3 srgb_to_linear(vec3 color_srgb)
+{
+	return pow(max(vec3(0.0), color_srgb), vec3(2.2));
+}
+
+vec3 linear_to_srgb_dynamic(vec3 color_linear, float exponent)
+{
+	return pow(max(vec3(0.0), color_linear), vec3(exponent));
+}
+
+float GetLuminance(vec3 color_linear)
+{
+	return dot(color_linear, vec3(0.2126, 0.7152, 0.0722));
+}
+
+float AdjustLuminanceContrast(float lum, float contrast, float midpoint)
+{
+	return mix(midpoint, lum, contrast);
+}
+
+vec4 AutoGamma(vec4 color)
+{
+	float contrastIntensity = u_source_size.x;
+	float midpointFocus = u_source_size.y;
+	float contrastMidpoint = u_target_size.x;
+	float gammaCompStrength = u_target_size.y;
+
+	vec3 color_linear = srgb_to_linear(color.rgb);
+	vec3 processed_linear = color_linear;
+	float pixelLumLinear = GetLuminance(color_linear);
+	float gammaCorrectionFactor = 1.0;
+
+	float distFromMid = abs(pixelLumLinear - contrastMidpoint);
+	float normRange = max(contrastMidpoint, 1.0 - contrastMidpoint);
+	float distScaled = clamp(distFromMid / max(normRange, 1e-6), 0.0, 1.0);
+	float falloff = pow(distScaled, midpointFocus);
+	float contrastModulationFactor = clamp(1.0 - falloff, 0.0, 1.0);
+
+	if (contrastModulationFactor > 0.0)
+	{
+		float dynamicContrast = mix(1.0, contrastIntensity, contrastModulationFactor);
+		float adjustedLum = AdjustLuminanceContrast(pixelLumLinear, dynamicContrast, contrastMidpoint);
+		adjustedLum = max(0.0, adjustedLum);
+
+		float luminanceRatio = adjustedLum / max(pixelLumLinear, 1e-6);
+		float evShift = log2(max(luminanceRatio, 1e-6));
+		gammaCorrectionFactor = 1.0 - (evShift * gammaCompStrength * 0.25);
+		gammaCorrectionFactor = clamp(gammaCorrectionFactor, 0.5, 1.5);
+
+		if (pixelLumLinear <= 1e-6)
+			processed_linear = vec3(0.0);
+		else
+			processed_linear = color_linear * luminanceRatio;
+	}
+
+	float final_exponent = (1.0 / 2.2) / gammaCorrectionFactor;
+	vec3 final_srgb = linear_to_srgb_dynamic(processed_linear, final_exponent);
+	return vec4(clamp(final_srgb, 0.0, 1.0), color.a);
+}
+
+float CalculateModulationFactor(float pixelLum, float targetPoint, float focus)
+{
+	float distFromPoint = abs(pixelLum - targetPoint);
+	float normRange = max(targetPoint, 1.0 - targetPoint);
+	float distScaled = clamp(distFromPoint / max(normRange, 1e-6), 0.0, 1.0);
+	float falloff = pow(distScaled, focus);
+	return clamp(1.0 - falloff, 0.0, 1.0);
+}
+
+vec3 ApplyBlend(vec3 base, vec3 blend)
+{
+	vec3 r;
+	r.r = (base.r < 0.5) ? (2.0 * base.r * blend.r) : (1.0 - 2.0 * (1.0 - base.r) * (1.0 - blend.r));
+	r.g = (base.g < 0.5) ? (2.0 * base.g * blend.g) : (1.0 - 2.0 * (1.0 - base.g) * (1.0 - blend.g));
+	r.b = (base.b < 0.5) ? (2.0 * base.b * blend.b) : (1.0 - 2.0 * (1.0 - base.b) * (1.0 - blend.b));
+	return r;
+}
+
+vec3 LuminanceBlend(vec3 color)
+{
+	float opacity = u_target_resolution.x;
+	float midpointFocus2 = u_target_resolution.y;
+	float luminanceMidpoint = u_rcp_target_resolution.x;
+	float pixelLumLinear = GetLuminance(srgb_to_linear(color));
+	float blendModFactor = CalculateModulationFactor(pixelLumLinear, luminanceMidpoint, midpointFocus2);
+	if (blendModFactor <= 0.0)
+		return color;
+
+	vec3 blended_full = ApplyBlend(color, color);
+	float actualOpacity = opacity * blendModFactor;
+	return clamp(mix(color, clamp(blended_full, 0.0, 1.0), actualOpacity), 0.0, 1.0);
+}
+
+vec3 Levels(vec3 color)
+{
+	float blackLevel = u_rcp_target_resolution.y;
+	float whiteLevel = u_source_resolution.x;
+	float temperature = u_source_resolution.y;
+	float black_point = blackLevel / 255.0;
+	float white_point = 255.0 / ((255.0 - whiteLevel) - blackLevel);
+	color *= vec3(1.0 + temperature * 0.1, 1.0, 1.0 - temperature * 0.1);
+	return clamp(color * white_point - (black_point * white_point), 0.0, 1.0);
+}
+
+#ifdef ps_stereoscopic_fixes
+void ps_stereoscopic_fixes()
+{
+	o_col0 = StereoFixFinalize(v_tex, sample_c(v_tex));
 }
 #endif
 

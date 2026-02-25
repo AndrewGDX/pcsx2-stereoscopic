@@ -25,15 +25,106 @@ cbuffer cb0 : register(b0)
 	float2 u_rcp_target_resolution; // 1 / u_target_resolution
 	float2 u_source_resolution;
 	float2 u_rcp_source_resolution; // 1 / u_source_resolution
-	float u_time;
+	float4 u_time_and_pad;
 };
 
 Texture2D Texture;
 SamplerState TextureSampler;
 
+float4 AutoGamma(float4 color);
+float3 LuminanceBlend(float3 color);
+float3 Levels(float3 color);
+
+float2 StereoFixAdjustUV(float2 uv)
+{
+	const float shift = u_source_rect.x;
+	const float tilt = u_source_rect.y;
+	const float extendBorder = u_target_rect.y;
+	const bool extendEdges = (u_time_and_pad.x > 0.5f);
+
+	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
+	const float shiftUV = shift / sourceWidth;
+	const float tiltUV = tilt / sourceWidth;
+
+	uv.y = (uv.x > 0.5f) ? (uv.y + tiltUV) : (uv.y - tiltUV);
+	const float edgeBorder = extendEdges ? extendBorder : 0.0f;
+	if (uv.x > 0.5f)
+		uv.x = max(uv.x - shiftUV, 0.5f + edgeBorder);
+	else
+		uv.x = min(uv.x + shiftUV, 0.498f - edgeBorder);
+
+	if (extendEdges)
+		uv.x = clamp(uv.x, extendBorder, 0.998f - extendBorder);
+
+	return uv;
+}
+
+bool StereoFixIsOutside(float2 uv)
+{
+	const float tilt = u_source_rect.y;
+	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
+	const float tiltUV = tilt / sourceWidth;
+
+	if (uv.x < 0.5f)
+		return (uv.y < tiltUV || uv.y > 1.0f + tiltUV);
+
+	return (uv.y < -tiltUV || uv.y > 1.0f - tiltUV);
+}
+
+float StereoFixFade(float2 uv)
+{
+	const float tilt = u_source_rect.y;
+	const float vignetteSize = u_source_rect.z;
+	const float vignetteX = u_source_rect.w;
+	const float vignetteY = u_target_rect.x;
+	const float cutOffset = u_target_rect.z;
+	const float vignetteOffset = u_target_rect.w;
+	const bool extendEdges = (u_time_and_pad.x > 0.5f);
+
+	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
+	const float tiltUV = tilt / sourceWidth;
+	const float offsetX = vignetteOffset / sourceWidth;
+	const float cutOffsetX = cutOffset / sourceWidth;
+	const float fadeWidth = (vignetteSize + 0.001f) / 50.0f;
+	const float edgeOffset = extendEdges ? offsetX : 0.0f;
+
+	const float outerEdge = smoothstep(0.0f, fadeWidth, uv.x - edgeOffset) *
+		smoothstep(1.0f, 1.0f - fadeWidth, uv.x + edgeOffset);
+	const float innerEdge = smoothstep(0.5f, 0.5f - fadeWidth, uv.x + edgeOffset) +
+		smoothstep(0.5f, 0.5f + fadeWidth, uv.x - edgeOffset);
+	const float horizontalFade = outerEdge * innerEdge;
+
+	const float vTilt1 = (uv.x < 0.5f) ? ((tiltUV > 0.0f) ? 0.0f : tiltUV) : ((tiltUV > 0.0f) ? -tiltUV : 0.0f);
+	const float vTilt2 = (uv.x < 0.5f) ? ((tiltUV < 0.0f) ? 0.0f : tiltUV) : ((tiltUV < 0.0f) ? -tiltUV : 0.0f);
+	const float verticalFade = smoothstep(0.0f, fadeWidth, uv.y + vTilt1) *
+		smoothstep(1.0f, 1.0f - fadeWidth, uv.y + vTilt2);
+
+	const float outerCut = smoothstep(0.0f, 0.01f, uv.x - cutOffsetX) * smoothstep(1.0f, 0.99f, uv.x + cutOffsetX);
+	const float innerCut = smoothstep(0.5f, 0.49f, uv.x + cutOffsetX) + smoothstep(0.5f, 0.51f, uv.x - cutOffsetX);
+
+	const float vignetteFade = max(vignetteX * (1.0f - horizontalFade), vignetteY * (1.0f - verticalFade));
+	const float cutFade = (extendEdges && cutOffset > 0.0f) ? (1.0f - outerCut * innerCut) : 0.0f;
+	return saturate(1.0f - vignetteFade - cutFade);
+}
+
+float4 StereoFixFinalize(float2 uv, float4 color)
+{
+	if (StereoFixIsOutside(uv))
+		return 0.0f;
+
+	if (u_time_and_pad.y > 0.5f)
+		color = AutoGamma(color);
+	if (u_time_and_pad.z > 0.5f)
+		color.rgb = LuminanceBlend(color.rgb);
+	if (u_time_and_pad.w > 0.5f)
+		color.rgb = Levels(color.rgb);
+
+	return color * StereoFixFade(uv);
+}
+
 float4 sample_c(float2 uv)
 {
-	return Texture.Sample(TextureSampler, uv);
+	return Texture.Sample(TextureSampler, StereoFixAdjustUV(uv));
 }
 
 struct PS_INPUT
@@ -63,7 +154,7 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = sample_c(input.t);
+	output.c = StereoFixFinalize(input.t, sample_c(input.t));
 
 	return output;
 }
@@ -98,7 +189,7 @@ PS_OUTPUT ps_filter_scanlines(PS_INPUT input)
 
 	uint4 p = (uint4)input.p;
 
-	output.c = ps_scanlines(input, p.y % 2);
+	output.c = StereoFixFinalize(input.t, ps_scanlines(input, p.y % 2));
 
 	return output;
 }
@@ -109,7 +200,7 @@ PS_OUTPUT ps_filter_diagonal(PS_INPUT input)
 
 	uint4 p = (uint4)input.p;
 
-	output.c = ps_crt(input, (p.x + (p.y % 3)) % 3);
+	output.c = StereoFixFinalize(input.t, ps_crt(input, (p.x + (p.y % 3)) % 3));
 
 	return output;
 }
@@ -121,7 +212,7 @@ PS_OUTPUT ps_filter_triangular(PS_INPUT input)
 	uint4 p = (uint4)input.p;
 
 	// output.c = ps_crt(input, ((p.x + (p.y & 1) * 3) >> 1) % 3);
-	output.c = ps_crt(input, ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3);
+	output.c = StereoFixFinalize(input.t, ps_crt(input, ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3));
 
 	return output;
 }
@@ -134,7 +225,8 @@ PS_OUTPUT ps_filter_complex(PS_INPUT input) // triangular
 	float2 texdim; 
 	Texture.GetDimensions(texdim.x, texdim.y);
 
-	output.c = (0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y));
+	output.c = StereoFixFinalize(input.t,
+		(0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y)));
 
 	return output;
 }
@@ -175,14 +267,15 @@ float3 ToSrgb(float3 c)
 
 float3 Fetch(float2 pos, float2 off)
 {
-	pos = (floor(pos * u_target_size + off) + float2(0.5, 0.5)) / u_target_size;
+	const float2 renderSize = max(u_rcp_source_resolution, float2(1.0f, 1.0f));
+	pos = (floor(pos * renderSize + off) + float2(0.5f, 0.5f)) / renderSize;
 	if (max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5)
 	{
 		return float3(0.0, 0.0, 0.0);
 	}
 	else
 	{
-		return ToLinear(Texture.Sample(TextureSampler, pos.xy).rgb);
+		return ToLinear(sample_c(pos.xy).rgb);
 	}
 }
 
@@ -411,11 +504,11 @@ float3 Mask(float2 pos)
 #endif
 }
 
-float4 LottesCRTPass(float4 fragcoord)
+float4 LottesCRTPass(float2 uv)
 {
 	float4 color;
-	fragcoord -= u_target_rect;
-	float2 inSize = u_target_resolution - (2 * u_target_rect.xy);
+	const float2 inSize = max(u_rcp_source_resolution, float2(1.0f, 1.0f));
+	const float2 fragcoord = uv * inSize;
 
 	float2 pos = Warp(fragcoord.xy / inSize);
 	color.rgb = Tri(pos);
@@ -432,7 +525,7 @@ float4 LottesCRTPass(float4 fragcoord)
 PS_OUTPUT ps_filter_lottes(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	output.c = LottesCRTPass(input.p);
+	output.c = StereoFixFinalize(input.t, LottesCRTPass(input.t));
 
 	return output;
 }
@@ -452,7 +545,7 @@ PS_OUTPUT ps_4x_rgss(PS_INPUT input)
 	color += sample_c(input.t + float2(-s,-l) * dxy).rgb;
 	color += sample_c(input.t + float2(-l, s) * dxy).rgb;
 
-	output.c = float4(color * 0.25,1);
+	output.c = StereoFixFinalize(input.t, float4(color * 0.25f, 1.0f));
 	return output;
 }
 
@@ -460,21 +553,136 @@ PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	float2 ratio = (u_source_size / u_target_size) * 0.5;
+	const float2 sourceSize = max(u_rcp_source_resolution, float2(1.0f, 1.0f));
+	const float2 uvStep = abs(float2(ddx(input.t.x), ddy(input.t.y)));
+	float2 ratio = uvStep * sourceSize * 0.5f;
 	float2 steps = floor(ratio);
 	float3 col = sample_c(input.t).rgb;
-	float div = 1;
+	float div = 1.0f;
 
 	for (float y = 0; y < steps.y; y++)
 	{
 		for (float x = 0; x < steps.x; x++)
 		{
 			float2 offset = float2(x,y) - ratio * 0.5;
-			col += sample_c(input.t + offset * u_rcp_source_resolution * 2.0).rgb;
+			col += sample_c(input.t + offset / sourceSize * 2.0f).rgb;
 			div++;
 		}
 	}
 
-	output.c = float4(col / div, 1);
+	output.c = StereoFixFinalize(input.t, float4(col / div, 1.0f));
+	return output;
+}
+
+float3 srgb_to_linear(float3 color_srgb)
+{
+	return pow(max(0.0f, color_srgb), 2.2f);
+}
+
+float3 linear_to_srgb_dynamic(float3 color_linear, float exponent)
+{
+	return pow(max(0.0f, color_linear), exponent);
+}
+
+float GetLuminance(float3 color_linear)
+{
+	return dot(color_linear, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+float AdjustLuminanceContrast(float lum, float contrast, float midpoint)
+{
+	return lerp(midpoint, lum, contrast);
+}
+
+float4 AutoGamma(float4 color)
+{
+	const float contrastIntensity = u_source_size.x;
+	const float midpointFocus = u_source_size.y;
+	const float contrastMidpoint = u_target_size.x;
+	const float gammaCompStrength = u_target_size.y;
+
+	float3 color_linear = srgb_to_linear(color.rgb);
+	float3 processed_linear = color_linear;
+	const float pixelLumLinear = GetLuminance(color_linear);
+	float gammaCorrectionFactor = 1.0f;
+
+	const float distFromMid = abs(pixelLumLinear - contrastMidpoint);
+	const float normRange = max(contrastMidpoint, 1.0f - contrastMidpoint);
+	const float distScaled = saturate(distFromMid / max(normRange, 1e-6f));
+	const float falloff = pow(distScaled, midpointFocus);
+	const float contrastModulationFactor = saturate(1.0f - falloff);
+
+	if (contrastModulationFactor > 0.0f)
+	{
+		const float dynamicContrast = lerp(1.0f, contrastIntensity, contrastModulationFactor);
+		float adjustedLum = AdjustLuminanceContrast(pixelLumLinear, dynamicContrast, contrastMidpoint);
+		adjustedLum = max(0.0f, adjustedLum);
+
+		const float luminanceRatio = adjustedLum / max(pixelLumLinear, 1e-6f);
+		const float evShift = log2(max(luminanceRatio, 1e-6f));
+		gammaCorrectionFactor = 1.0f - (evShift * gammaCompStrength * 0.25f);
+		gammaCorrectionFactor = clamp(gammaCorrectionFactor, 0.5f, 1.5f);
+
+		if (pixelLumLinear <= 1e-6f)
+			processed_linear = 0.0f;
+		else
+			processed_linear = color_linear * luminanceRatio;
+	}
+
+	const float final_exponent = (1.0f / 2.2f) / gammaCorrectionFactor;
+	const float3 final_srgb = linear_to_srgb_dynamic(processed_linear, final_exponent);
+	return float4(saturate(final_srgb), color.a);
+}
+
+float CalculateModulationFactor(float pixelLum, float targetPoint, float focus)
+{
+	const float distFromPoint = abs(pixelLum - targetPoint);
+	const float normRange = max(targetPoint, 1.0f - targetPoint);
+	const float distScaled = saturate(distFromPoint / max(normRange, 1e-6f));
+	const float falloff = pow(distScaled, focus);
+	return saturate(1.0f - falloff);
+}
+
+float3 ApplyBlend(float3 base, float3 blend)
+{
+	float3 r;
+	r.r = (base.r < 0.5f) ? (2.0f * base.r * blend.r) : (1.0f - 2.0f * (1.0f - base.r) * (1.0f - blend.r));
+	r.g = (base.g < 0.5f) ? (2.0f * base.g * blend.g) : (1.0f - 2.0f * (1.0f - base.g) * (1.0f - blend.g));
+	r.b = (base.b < 0.5f) ? (2.0f * base.b * blend.b) : (1.0f - 2.0f * (1.0f - base.b) * (1.0f - blend.b));
+	return r;
+}
+
+float3 LuminanceBlend(float3 color)
+{
+	const float opacity = u_target_resolution.x;
+	const float midpointFocus2 = u_target_resolution.y;
+	const float luminanceMidpoint = u_rcp_target_resolution.x;
+
+	const float pixelLumLinear = GetLuminance(srgb_to_linear(color));
+	const float blendModFactor = CalculateModulationFactor(pixelLumLinear, luminanceMidpoint, midpointFocus2);
+	if (blendModFactor <= 0.0f)
+		return color;
+
+	const float3 blended_full = ApplyBlend(color, color);
+	const float actualOpacity = opacity * blendModFactor;
+	return saturate(lerp(color, saturate(blended_full), actualOpacity));
+}
+
+float3 Levels(float3 color)
+{
+	const float blackLevel = u_rcp_target_resolution.y;
+	const float whiteLevel = u_source_resolution.x;
+	const float temperature = u_source_resolution.y;
+
+	const float black_point = blackLevel / 255.0f;
+	const float white_point = 255.0f / ((255.0f - whiteLevel) - blackLevel);
+	color *= float3(1.0f + temperature * 0.1f, 1.0f, 1.0f - temperature * 0.1f);
+	return saturate(color * white_point - (black_point * white_point));
+}
+
+PS_OUTPUT ps_stereoscopic_fixes(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	output.c = StereoFixFinalize(input.t, sample_c(input.t));
 	return output;
 }

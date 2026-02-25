@@ -251,7 +251,279 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+     <widget class="QGroupBox" name="stereoFixGroup">
+      <property name="title">
+       <string>Stereo Adjustments</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_stereoFix">
+       <item row="0" column="0">
+        <widget class="QLabel" name="stereoFixShiftLabel">
+         <property name="text">
+          <string>Shift:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixShift</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="stereoFixShift">
+         <property name="minimum"><double>-30.000000000000000</double></property>
+         <property name="maximum"><double>30.000000000000000</double></property>
+         <property name="singleStep"><double>1.000000000000000</double></property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="stereoFixTiltLabel">
+         <property name="text"><string>Tilt:</string></property>
+         <property name="buddy"><cstring>stereoFixTilt</cstring></property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixTilt">
+         <property name="minimum"><double>-10.000000000000000</double></property>
+         <property name="maximum"><double>10.000000000000000</double></property>
+         <property name="singleStep"><double>1.000000000000000</double></property>
+        </widget>
+       </item>
+
+       <item row="1" column="0">
+        <widget class="QLabel" name="stereoFixVignetteSizeLabel"><property name="text"><string>Vignette Size:</string></property><property name="buddy"><cstring>stereoFixVignetteSize</cstring></property></widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="stereoFixVignetteSize">
+         <property name="decimals"><number>2</number></property>
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>1.000000000000000</double></property>
+         <property name="singleStep"><double>0.010000000000000</double></property>
+         <property name="value"><double>0.130000000000000</double></property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="stereoFixVignetteXLabel"><property name="text"><string>Vignette X:</string></property><property name="buddy"><cstring>stereoFixVignetteX</cstring></property></widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixVignetteX">
+         <property name="decimals"><number>2</number></property>
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>2.000000000000000</double></property>
+         <property name="singleStep"><double>0.010000000000000</double></property>
+         <property name="value"><double>0.750000000000000</double></property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QLabel" name="stereoFixVignetteYLabel"><property name="text"><string>Vignette Y:</string></property><property name="buddy"><cstring>stereoFixVignetteY</cstring></property></widget>
+       </item>
+       <item row="1" column="5">
+        <widget class="QDoubleSpinBox" name="stereoFixVignetteY">
+         <property name="decimals"><number>2</number></property>
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>2.000000000000000</double></property>
+         <property name="singleStep"><double>0.010000000000000</double></property>
+         <property name="value"><double>0.500000000000000</double></property>
+        </widget>
+       </item>
+
+       <item row="2" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixExtendEdges"><property name="text"><string>Extend Edges</string></property></widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="stereoFixExtendBorderLabel"><property name="text"><string>Extend Border:</string></property><property name="buddy"><cstring>stereoFixExtendBorder</cstring></property></widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixExtendBorder">
+         <property name="decimals"><number>4</number></property>
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>0.100000000000000</double></property>
+         <property name="singleStep"><double>0.000100000000000</double></property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="stereoFixCutOffsetLabel"><property name="text"><string>Cut Offset:</string></property><property name="buddy"><cstring>stereoFixCutOffset</cstring></property></widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QDoubleSpinBox" name="stereoFixCutOffset">
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>200.000000000000000</double></property>
+         <property name="singleStep"><double>1.000000000000000</double></property>
+        </widget>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="stereoFixVignetteOffsetLabel"><property name="text"><string>Vignette Offset:</string></property><property name="buddy"><cstring>stereoFixVignetteOffset</cstring></property></widget>
+       </item>
+       <item row="2" column="7">
+        <widget class="QDoubleSpinBox" name="stereoFixVignetteOffset">
+         <property name="minimum"><double>0.000000000000000</double></property>
+         <property name="maximum"><double>250.000000000000000</double></property>
+         <property name="singleStep"><double>1.000000000000000</double></property>
+        </widget>
+       </item>
+
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="stereoFixImageAdjustmentsGroup">
+      <property name="title">
+       <string>Image Adjustments</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_stereoFixImageAdjustments">
+       <item row="0" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixEnableAutoGamma">
+         <property name="text">
+          <string>Enable Luminance Contrast</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="stereoFixContrastIntensityLabel">
+         <property name="text">
+          <string>Contrast Intensity:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixContrastIntensity</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixContrastIntensity">
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="minimum">
+          <double>0.010000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.920000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixEnableLuminanceBlend">
+         <property name="text">
+          <string>Enable Luminance Blend</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="stereoFixOpacityLabel">
+         <property name="text">
+          <string>Opacity:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixOpacity</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixOpacity">
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.220000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixEnableLevels">
+         <property name="text">
+          <string>Enable Levels</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="stereoFixBlackLevelLabel">
+         <property name="text">
+          <string>Black Level:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixBlackLevel</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QDoubleSpinBox" name="stereoFixBlackLevel">
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>16.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="stereoFixWhiteLevelLabel">
+         <property name="text">
+          <string>White Level:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixWhiteLevel</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QDoubleSpinBox" name="stereoFixWhiteLevel">
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>32.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="stereoFixTemperatureLabel">
+         <property name="text">
+          <string>Temperature:</string>
+         </property>
+         <property name="buddy">
+          <cstring>stereoFixTemperature</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="7">
+        <widget class="QDoubleSpinBox" name="stereoFixTemperature">
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="minimum">
+          <double>-1.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
