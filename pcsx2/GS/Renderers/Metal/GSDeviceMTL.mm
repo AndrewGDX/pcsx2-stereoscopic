@@ -1627,7 +1627,6 @@ static_assert(offsetof(DisplayConstantBuffer, RcpTargetResolution) == offsetof(G
 static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(GSMTLPresentPSUniform, source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, TimeAndPad)          == offsetof(GSMTLPresentPSUniform, time_and_pad));
-static_assert(offsetof(DisplayConstantBuffer, CRTGuestParams)      == offsetof(GSMTLPresentPSUniform, crt_guest_params));
 
 void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 { @autoreleasepool {

@@ -36,12 +36,27 @@ static float3 luminance_blend(float3 color, constant GSMTLPresentPSUniform& cb);
 static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb);
 static float3 apply_crt_guest_hd(float2 uv, float3 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb);
 
+static float stereo_fix_packed_flags(constant GSMTLPresentPSUniform& cb)
+{
+	return floor(cb.time_and_pad.x + 0.5f);
+}
+
+static bool stereo_fix_extend_edges_enabled(constant GSMTLPresentPSUniform& cb)
+{
+	return (fmod(stereo_fix_packed_flags(cb), 2.0f) > 0.5f);
+}
+
+static bool stereo_fix_crt_filter_enabled(constant GSMTLPresentPSUniform& cb)
+{
+	return (stereo_fix_packed_flags(cb) >= 2.0f);
+}
+
 static float2 stereo_fix_adjust_uv(float2 uv, constant GSMTLPresentPSUniform& cb)
 {
 	const float shift = cb.source_rect.x;
 	const float tilt = cb.source_rect.y;
 	const float extend_border = cb.target_rect.y;
-	const bool extend_edges = (cb.time_and_pad.x > 0.5f);
+	const bool extend_edges = stereo_fix_extend_edges_enabled(cb);
 
 	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
 	const float shift_uv = shift / source_width;
@@ -75,7 +90,7 @@ static float stereo_fix_fade(float2 uv, constant GSMTLPresentPSUniform& cb)
 	const float vignette_y = cb.target_rect.x;
 	const float cut_offset = cb.target_rect.z;
 	const float vignette_offset = cb.target_rect.w;
-	const bool extend_edges = (cb.time_and_pad.x > 0.5f);
+	const bool extend_edges = stereo_fix_extend_edges_enabled(cb);
 
 	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
 	const float tilt_uv = tilt / source_width;
@@ -127,7 +142,7 @@ static float4 sample_with_stereo(thread ConvertPSRes& res, float2 uv, constant G
 
 static float3 apply_crt_guest_hd(float2 uv, float3 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb)
 {
-	if (cb.crt_guest_params.x <= 0.5f)
+	if (!stereo_fix_crt_filter_enabled(cb))
 		return color;
 
 	(void)res;

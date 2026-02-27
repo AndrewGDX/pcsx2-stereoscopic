@@ -43,7 +43,6 @@ uniform vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 uniform vec2 u_source_resolution;
 uniform vec2 u_rcp_source_resolution; // 1 / u_source_resolution
 uniform vec4 u_time_and_pad;
-uniform vec4 u_crt_guest_params;
 
 in vec4 PSin_p;
 in vec2 PSin_t;
@@ -58,12 +57,27 @@ vec3 LuminanceBlend(vec3 color);
 vec3 Levels(vec3 color);
 vec3 ApplyCRTGuestHD(vec2 uv, vec3 color);
 
+float StereoFixPackedFlags()
+{
+	return floor(u_time_and_pad.x + 0.5);
+}
+
+bool StereoFixExtendEdgesEnabled()
+{
+	return (mod(StereoFixPackedFlags(), 2.0) > 0.5);
+}
+
+bool StereoFixCRTFilterEnabled()
+{
+	return (StereoFixPackedFlags() >= 2.0);
+}
+
 vec2 StereoFixAdjustUV(vec2 uv)
 {
 	float shift = u_source_rect.x;
 	float tilt = u_source_rect.y;
 	float extendBorder = u_target_rect.y;
-	bool extendEdges = (u_time_and_pad.x > 0.5);
+	bool extendEdges = StereoFixExtendEdgesEnabled();
 
 	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
 	float shiftUV = shift / sourceWidth;
@@ -98,7 +112,7 @@ float StereoFixFade(vec2 uv)
 	float vignetteY = u_target_rect.x;
 	float cutOffset = u_target_rect.z;
 	float vignetteOffset = u_target_rect.w;
-	bool extendEdges = (u_time_and_pad.x > 0.5);
+	bool extendEdges = StereoFixExtendEdgesEnabled();
 
 	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
 	float tiltUV = tilt / sourceWidth;
@@ -152,7 +166,7 @@ vec4 sample_c()
 
 vec3 ApplyCRTGuestHD(vec2 uv, vec3 color)
 {
-	if (u_crt_guest_params.x <= 0.5)
+	if (!StereoFixCRTFilterEnabled())
 		return color;
 
 	const float beamMin = 0.6;

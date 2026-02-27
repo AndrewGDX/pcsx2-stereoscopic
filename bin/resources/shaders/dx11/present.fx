@@ -26,7 +26,6 @@ cbuffer cb0 : register(b0)
 	float2 u_source_resolution;
 	float2 u_rcp_source_resolution; // 1 / u_source_resolution
 	float4 u_time_and_pad;
-	float4 u_crt_guest_params;
 };
 
 Texture2D Texture;
@@ -37,12 +36,27 @@ float3 LuminanceBlend(float3 color);
 float3 Levels(float3 color);
 float3 ApplyCRTGuestHD(float2 uv, float3 color);
 
+float StereoFixPackedFlags()
+{
+	return floor(u_time_and_pad.x + 0.5f);
+}
+
+bool StereoFixExtendEdgesEnabled()
+{
+	return (fmod(StereoFixPackedFlags(), 2.0f) > 0.5f);
+}
+
+bool StereoFixCRTFilterEnabled()
+{
+	return (StereoFixPackedFlags() >= 2.0f);
+}
+
 float2 StereoFixAdjustUV(float2 uv)
 {
 	const float shift = u_source_rect.x;
 	const float tilt = u_source_rect.y;
 	const float extendBorder = u_target_rect.y;
-	const bool extendEdges = (u_time_and_pad.x > 0.5f);
+	const bool extendEdges = StereoFixExtendEdgesEnabled();
 
 	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
 	const float shiftUV = shift / sourceWidth;
@@ -81,7 +95,7 @@ float StereoFixFade(float2 uv)
 	const float vignetteY = u_target_rect.x;
 	const float cutOffset = u_target_rect.z;
 	const float vignetteOffset = u_target_rect.w;
-	const bool extendEdges = (u_time_and_pad.x > 0.5f);
+	const bool extendEdges = StereoFixExtendEdgesEnabled();
 
 	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
 	const float tiltUV = tilt / sourceWidth;
@@ -133,7 +147,7 @@ float4 sample_c(float2 uv)
 
 float3 ApplyCRTGuestHD(float2 uv, float3 color)
 {
-	if (u_crt_guest_params.x <= 0.5f)
+	if (!StereoFixCRTFilterEnabled())
 		return color;
 
 	const float beamMin = 0.6f;

@@ -217,8 +217,7 @@ struct alignas(16) DisplayConstantBuffer
 	GSVector2 SourceResolution; // +64,xy
 	GSVector2 RcpSourceResolution; // +72,zw
 	GSVector4 TimeAndPad; // seconds since GS init +80,xyzw
-	GSVector4 CRTGuestParams; // +96,xyzw
-	// +112
+	// +96
 
 	// assumes that sRect is normalized
 	void SetSource(const GSVector4& sRect, const GSVector2i& sSize)
@@ -260,17 +259,15 @@ struct alignas(16) DisplayConstantBuffer
 		RcpTargetResolution = GSVector2(GSConfig.StereoFix_LuminanceMidpoint, GSConfig.StereoFix_BlackLevel);
 		SourceResolution = GSVector2(GSConfig.StereoFix_WhiteLevel, GSConfig.StereoFix_Temperature);
 		RcpSourceResolution = GSVector2(static_cast<float>(sourceSize.x), static_cast<float>(sourceSize.y));
-		TimeAndPad = GSVector4(GSConfig.StereoFix_ExtendEdges ? 1.0f : 0.0f,
+		const float packedFlags = (GSConfig.StereoFix_ExtendEdges ? 1.0f : 0.0f) +
+			(GSConfig.StereoFix_EnableCRTFilter ? 2.0f : 0.0f);
+		TimeAndPad = GSVector4(packedFlags,
 			GSConfig.StereoFix_EnableAutoGamma ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLuminanceBlend ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLevels ? 1.0f : 0.0f);
-		CRTGuestParams = GSVector4(GSConfig.StereoFix_EnableCRTFilter ? 1.0f : 0.0f,
-			0.0f,
-			0.0f,
-			0.0f);
 	}
 };
-static_assert(sizeof(DisplayConstantBuffer) == 112, "DisplayConstantBuffer is correct size");
+static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
 
 struct alignas(16) MergeConstantBuffer
 {
