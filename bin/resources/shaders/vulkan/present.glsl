@@ -29,6 +29,7 @@ layout(push_constant) uniform cb10
 	vec2 u_source_resolution;
 	vec2 u_rcp_source_resolution; // 1 / u_source_resolution
 	vec4 u_time_and_pad;
+	vec4 u_crt_guest_params;
 };
 
 layout(location = 0) in vec2 v_tex;
@@ -40,6 +41,7 @@ layout(set = 0, binding = 0) uniform sampler2D samp0;
 vec4 AutoGamma(vec4 color);
 vec3 LuminanceBlend(vec3 color);
 vec3 Levels(vec3 color);
+vec3 ApplyCRTGuestHD(vec2 uv, vec3 color);
 
 vec2 StereoFixAdjustUV(vec2 uv)
 {
@@ -108,6 +110,8 @@ float StereoFixFade(vec2 uv)
 
 vec4 StereoFixFinalize(vec2 uv, vec4 color)
 {
+	color.rgb = ApplyCRTGuestHD(uv, color.rgb);
+
 	if (StereoFixIsOutside(uv))
 		return vec4(0.0);
 
@@ -124,6 +128,29 @@ vec4 StereoFixFinalize(vec2 uv, vec4 color)
 vec4 sample_c(vec2 uv)
 {
 	return texture(samp0, StereoFixAdjustUV(uv));
+}
+
+vec3 ApplyCRTGuestHD(vec2 uv, vec3 color)
+{
+	if (u_crt_guest_params.x <= 0.5)
+		return color;
+
+	const float beamMin = 0.6;
+	const float beamMax = 0.3;
+	const float scanline1 = 0.5;
+	const float scanline2 = 1.0;
+	const float scans = 0.5;
+
+	vec2 sourceSize = max(u_rcp_source_resolution, vec2(1.0, 1.0));
+	vec3 work = clamp(color, vec3(0.0), vec3(1.0));
+	float mx = max(max(work.r, work.g), work.b);
+	float linePos = abs(fract(uv.y * sourceSize.y) - 0.5) * 2.0;
+	float beam = mix(beamMin, beamMax, mx);
+	float shape = mix(scanline1, scanline2, linePos);
+	float line = linePos * beam;
+	float scan = exp2(-shape * line * line * (1.0 + scans));
+	work *= scan;
+	return clamp(work, vec3(0.0), vec3(1.0));
 }
 
 vec4 ps_crt(uint i)

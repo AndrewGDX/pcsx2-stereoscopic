@@ -686,6 +686,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			{
 				const u64 current_time = Common::Timer::GetCurrentValue();
 				const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
+				const u32 tv_shader_index = std::min<u32>(GSConfig.TVShader, static_cast<u32>(s_tv_shader_indices.size() - 1));
 				const s32 window_width = g_gs_device->GetWindowWidth();
 				const s32 window_height = g_gs_device->GetWindowHeight();
 				const bool flip_y = g_gs_device->UsesLowerLeftOrigin();
@@ -736,10 +737,10 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 					// Present textures to both halves (stereoscopic rendering)
 					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						s_tv_shader_indices[tv_shader_index], shader_time,
 						GSConfig.LinearPresent != GSPostBilinearMode::Off);
 					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						s_tv_shader_indices[tv_shader_index], shader_time,
 						GSConfig.LinearPresent != GSPostBilinearMode::Off);
 				}
 				else if (GSConfig.StereoMode == GSStereoMode::TopAndBottom)
@@ -765,17 +766,17 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 					// Present textures to both halves
 					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						s_tv_shader_indices[tv_shader_index], shader_time,
 						GSConfig.LinearPresent != GSPostBilinearMode::Off);
 					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time,
+						s_tv_shader_indices[tv_shader_index], shader_time,
 						GSConfig.LinearPresent != GSPostBilinearMode::Off);
 				}
 				else
 				{
 					// Normal mono presentation
 					g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						s_tv_shader_indices[tv_shader_index], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 				}
 			}
 
@@ -1032,9 +1033,10 @@ void GSRenderer::PresentCurrentFrame()
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
+			const u32 tv_shader_index = std::min<u32>(GSConfig.TVShader, static_cast<u32>(s_tv_shader_indices.size() - 1));
 
 			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				s_tv_shader_indices[tv_shader_index], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
 		EndPresentFrame();

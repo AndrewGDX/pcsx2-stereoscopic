@@ -38,6 +38,7 @@ struct GSMTLPresentPSUniform
 	vector_float2 source_resolution;
 	vector_float2 rcp_source_resolution; ///< 1 / source_resolution
 	vector_float4 time_and_pad;
+	vector_float4 crt_guest_params;
 };
 
 struct GSMTLInterlacePSUniform

@@ -64,6 +64,7 @@ private:
 	GSRendererType getEffectiveRenderer() const;
 	void updateRendererDependentOptions();
 	void populateUpscaleMultipliers(u32 max_upscale_multiplier);
+	void onStereoFixControlStateChanged();
 
 	Ui::GraphicsSettingsHeader m_header;
 	Ui::GraphicsDisplaySettingsTab m_display;

@@ -897,10 +897,13 @@ struct Pcsx2Config
 		float StereoFix_BlackLevel = 0.0f;
 		float StereoFix_WhiteLevel = 0.0f;
 		float StereoFix_Temperature = 0.0f;
+		bool StereoFix_EnableShiftTilt = false;
+		bool StereoFix_EnableVignette = false;
 		bool StereoFix_ExtendEdges = false;
 		bool StereoFix_EnableAutoGamma = false;
 		bool StereoFix_EnableLuminanceBlend = false;
 		bool StereoFix_EnableLevels = false;
+		bool StereoFix_EnableCRTFilter = false;
 		u8 PNGCompressionLevel = 1;
 
 		GSStereoMode StereoMode = GSStereoMode::SideBySide;

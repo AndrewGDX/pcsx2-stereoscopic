@@ -1620,12 +1620,14 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
 static_assert(offsetof(DisplayConstantBuffer, SourceRect)          == offsetof(GSMTLPresentPSUniform, source_rect));
 static_assert(offsetof(DisplayConstantBuffer, TargetRect)          == offsetof(GSMTLPresentPSUniform, target_rect));
+static_assert(offsetof(DisplayConstantBuffer, SourceSize)          == offsetof(GSMTLPresentPSUniform, source_size));
 static_assert(offsetof(DisplayConstantBuffer, TargetSize)          == offsetof(GSMTLPresentPSUniform, target_size));
 static_assert(offsetof(DisplayConstantBuffer, TargetResolution)    == offsetof(GSMTLPresentPSUniform, target_resolution));
 static_assert(offsetof(DisplayConstantBuffer, RcpTargetResolution) == offsetof(GSMTLPresentPSUniform, rcp_target_resolution));
 static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(GSMTLPresentPSUniform, source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, TimeAndPad)          == offsetof(GSMTLPresentPSUniform, time_and_pad));
+static_assert(offsetof(DisplayConstantBuffer, CRTGuestParams)      == offsetof(GSMTLPresentPSUniform, crt_guest_params));
 
 void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 { @autoreleasepool {

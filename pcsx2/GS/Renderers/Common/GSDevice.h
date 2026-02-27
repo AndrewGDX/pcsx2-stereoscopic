@@ -216,8 +216,9 @@ struct alignas(16) DisplayConstantBuffer
 	GSVector2 RcpTargetResolution; // +56,zw
 	GSVector2 SourceResolution; // +64,xy
 	GSVector2 RcpSourceResolution; // +72,zw
-	GSVector4 TimeAndPad; // seconds since GS init +76,xyzw
-	// +96
+	GSVector4 TimeAndPad; // seconds since GS init +80,xyzw
+	GSVector4 CRTGuestParams; // +96,xyzw
+	// +112
 
 	// assumes that sRect is normalized
 	void SetSource(const GSVector4& sRect, const GSVector2i& sSize)
@@ -241,10 +242,18 @@ struct alignas(16) DisplayConstantBuffer
 
 	void SetStereoFix(const GSVector2i& sourceSize)
 	{
-		SourceRect = GSVector4(GSConfig.StereoFix_Shift, GSConfig.StereoFix_Tilt,
-			GSConfig.StereoFix_VignetteSize, GSConfig.StereoFix_VignetteX);
-		TargetRect = GSVector4(GSConfig.StereoFix_VignetteY, GSConfig.StereoFix_ExtendBorder,
-			GSConfig.StereoFix_CutOffset, GSConfig.StereoFix_VignetteOffset);
+		const bool enableShiftTilt = GSConfig.StereoFix_EnableShiftTilt;
+		const bool enableVignette = GSConfig.StereoFix_EnableVignette;
+		const bool enableExtendEdges = GSConfig.StereoFix_ExtendEdges;
+
+		SourceRect = GSVector4(enableShiftTilt ? GSConfig.StereoFix_Shift : 0.0f,
+			enableShiftTilt ? GSConfig.StereoFix_Tilt : 0.0f,
+			enableVignette ? GSConfig.StereoFix_VignetteSize : 0.0f,
+			enableVignette ? GSConfig.StereoFix_VignetteX : 0.0f);
+		TargetRect = GSVector4(enableVignette ? GSConfig.StereoFix_VignetteY : 0.0f,
+			GSConfig.StereoFix_ExtendBorder,
+			enableExtendEdges ? GSConfig.StereoFix_CutOffset : 0.0f,
+			enableExtendEdges ? GSConfig.StereoFix_VignetteOffset : 0.0f);
 		SourceSize = GSVector2(GSConfig.StereoFix_ContrastIntensity, GSConfig.StereoFix_MidpointFocus);
 		TargetSize = GSVector2(GSConfig.StereoFix_ContrastMidpoint, GSConfig.StereoFix_GammaCompStrength);
 		TargetResolution = GSVector2(GSConfig.StereoFix_Opacity, GSConfig.StereoFix_MidpointFocus2);
@@ -255,9 +264,13 @@ struct alignas(16) DisplayConstantBuffer
 			GSConfig.StereoFix_EnableAutoGamma ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLuminanceBlend ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLevels ? 1.0f : 0.0f);
+		CRTGuestParams = GSVector4(GSConfig.StereoFix_EnableCRTFilter ? 1.0f : 0.0f,
+			0.0f,
+			0.0f,
+			0.0f);
 	}
 };
-static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
+static_assert(sizeof(DisplayConstantBuffer) == 112, "DisplayConstantBuffer is correct size");
 
 struct alignas(16) MergeConstantBuffer
 {

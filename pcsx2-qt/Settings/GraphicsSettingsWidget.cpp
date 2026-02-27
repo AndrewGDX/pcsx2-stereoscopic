@@ -585,6 +585,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixShift, "EmuCore/GS", "StereoFix_Shift", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixTilt, "EmuCore/GS", "StereoFix_Tilt", 0.0f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableShiftTilt, "EmuCore/GS", "StereoFix_EnableShiftTilt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableVignette, "EmuCore/GS", "StereoFix_EnableVignette", false);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteSize, "EmuCore/GS", "StereoFix_VignetteSize", 0.13f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteX, "EmuCore/GS", "StereoFix_VignetteX", 0.75f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixVignetteY, "EmuCore/GS", "StereoFix_VignetteY", 0.50f);
@@ -605,11 +607,19 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixBlackLevel, "EmuCore/GS", "StereoFix_BlackLevel", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixWhiteLevel, "EmuCore/GS", "StereoFix_WhiteLevel", 0.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_post.stereoFixTemperature, "EmuCore/GS", "StereoFix_Temperature", 0.0f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.stereoFixEnableCRTFilter, "EmuCore/GS", "StereoFix_EnableCRTFilter", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
 
 	connect(m_post.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
+	connect(m_post.stereoFixEnableShiftTilt, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	connect(m_post.stereoFixEnableVignette, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	connect(m_post.stereoFixExtendEdges, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	connect(m_post.stereoFixEnableAutoGamma, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	connect(m_post.stereoFixEnableLuminanceBlend, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	connect(m_post.stereoFixEnableLevels, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onStereoFixControlStateChanged);
+	onStereoFixControlStateChanged();
 	connect(m_osd.messagesPos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onMessagesPosChanged);
 	connect(m_osd.performancePos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onPerformancePosChanged);
 	onMessagesPosChanged();
@@ -2055,6 +2065,47 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_post.shadeBoostContrast->setEnabled(enabled);
 	m_post.shadeBoostGamma->setEnabled(enabled);
 	m_post.shadeBoostSaturation->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onStereoFixControlStateChanged()
+{
+	const bool enable_shift_tilt = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableShiftTilt", false);
+	const bool enable_vignette = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableVignette", false);
+	const bool enable_extend_edges = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_ExtendEdges", false);
+	const bool enable_auto_gamma = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableAutoGamma", false);
+	const bool enable_luminance_blend = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
+	const bool enable_levels = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLevels", false);
+
+	m_post.stereoFixShiftLabel->setEnabled(enable_shift_tilt);
+	m_post.stereoFixShift->setEnabled(enable_shift_tilt);
+	m_post.stereoFixTiltLabel->setEnabled(enable_shift_tilt);
+	m_post.stereoFixTilt->setEnabled(enable_shift_tilt);
+
+	m_post.stereoFixVignetteSizeLabel->setEnabled(enable_vignette);
+	m_post.stereoFixVignetteSize->setEnabled(enable_vignette);
+	m_post.stereoFixVignetteXLabel->setEnabled(enable_vignette);
+	m_post.stereoFixVignetteX->setEnabled(enable_vignette);
+	m_post.stereoFixVignetteYLabel->setEnabled(enable_vignette);
+	m_post.stereoFixVignetteY->setEnabled(enable_vignette);
+	m_post.stereoFixExtendBorderLabel->setEnabled(enable_extend_edges);
+	m_post.stereoFixExtendBorder->setEnabled(enable_extend_edges);
+	m_post.stereoFixCutOffsetLabel->setEnabled(enable_extend_edges);
+	m_post.stereoFixCutOffset->setEnabled(enable_extend_edges);
+	m_post.stereoFixVignetteOffsetLabel->setEnabled(enable_extend_edges);
+	m_post.stereoFixVignetteOffset->setEnabled(enable_extend_edges);
+
+	m_post.stereoFixContrastIntensityLabel->setEnabled(enable_auto_gamma);
+	m_post.stereoFixContrastIntensity->setEnabled(enable_auto_gamma);
+
+	m_post.stereoFixOpacityLabel->setEnabled(enable_luminance_blend);
+	m_post.stereoFixOpacity->setEnabled(enable_luminance_blend);
+
+	m_post.stereoFixBlackLevelLabel->setEnabled(enable_levels);
+	m_post.stereoFixBlackLevel->setEnabled(enable_levels);
+	m_post.stereoFixWhiteLevelLabel->setEnabled(enable_levels);
+	m_post.stereoFixWhiteLevel->setEnabled(enable_levels);
+	m_post.stereoFixTemperatureLabel->setEnabled(enable_levels);
+	m_post.stereoFixTemperature->setEnabled(enable_levels);
 }
 
 void GraphicsSettingsWidget::onStereoscopicModeChanged()

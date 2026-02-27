@@ -26,6 +26,7 @@ cbuffer cb0 : register(b0)
 	float2 u_source_resolution;
 	float2 u_rcp_source_resolution; // 1 / u_source_resolution
 	float4 u_time_and_pad;
+	float4 u_crt_guest_params;
 };
 
 Texture2D Texture;
@@ -34,6 +35,7 @@ SamplerState TextureSampler;
 float4 AutoGamma(float4 color);
 float3 LuminanceBlend(float3 color);
 float3 Levels(float3 color);
+float3 ApplyCRTGuestHD(float2 uv, float3 color);
 
 float2 StereoFixAdjustUV(float2 uv)
 {
@@ -109,6 +111,8 @@ float StereoFixFade(float2 uv)
 
 float4 StereoFixFinalize(float2 uv, float4 color)
 {
+	color.rgb = ApplyCRTGuestHD(uv, color.rgb);
+
 	if (StereoFixIsOutside(uv))
 		return 0.0f;
 
@@ -125,6 +129,29 @@ float4 StereoFixFinalize(float2 uv, float4 color)
 float4 sample_c(float2 uv)
 {
 	return Texture.Sample(TextureSampler, StereoFixAdjustUV(uv));
+}
+
+float3 ApplyCRTGuestHD(float2 uv, float3 color)
+{
+	if (u_crt_guest_params.x <= 0.5f)
+		return color;
+
+	const float beamMin = 0.6f;
+	const float beamMax = 0.3f;
+	const float scanline1 = 0.5f;
+	const float scanline2 = 1.0f;
+	const float scans = 0.5f;
+
+	const float2 sourceSize = max(u_rcp_source_resolution, float2(1.0f, 1.0f));
+	float3 work = saturate(color);
+	const float mx = max(max(work.r, work.g), work.b);
+	const float linePos = abs(frac(uv.y * sourceSize.y) - 0.5f) * 2.0f;
+	const float beam = lerp(beamMin, beamMax, mx);
+	const float shape = lerp(scanline1, scanline2, linePos);
+	const float line = linePos * beam;
+	const float scan = exp2(-shape * line * line * (1.0f + scans));
+	work *= scan;
+	return saturate(work);
 }
 
 struct PS_INPUT

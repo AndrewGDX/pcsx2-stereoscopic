@@ -256,7 +256,14 @@
        <string>Stereo Adjustments</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_stereoFix">
-       <item row="0" column="0">
+       <item row="0" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixEnableShiftTilt">
+         <property name="text">
+          <string>Shift and Tilt</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
         <widget class="QLabel" name="stereoFixShiftLabel">
          <property name="text">
           <string>Shift:</string>
@@ -266,20 +273,20 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="0" column="3">
         <widget class="QDoubleSpinBox" name="stereoFixShift">
          <property name="minimum"><double>-30.000000000000000</double></property>
          <property name="maximum"><double>30.000000000000000</double></property>
          <property name="singleStep"><double>1.000000000000000</double></property>
         </widget>
        </item>
-       <item row="0" column="2">
+       <item row="0" column="4">
         <widget class="QLabel" name="stereoFixTiltLabel">
          <property name="text"><string>Tilt:</string></property>
          <property name="buddy"><cstring>stereoFixTilt</cstring></property>
         </widget>
        </item>
-       <item row="0" column="3">
+       <item row="0" column="5">
         <widget class="QDoubleSpinBox" name="stereoFixTilt">
          <property name="minimum"><double>-10.000000000000000</double></property>
          <property name="maximum"><double>10.000000000000000</double></property>
@@ -287,10 +294,17 @@
         </widget>
        </item>
 
-       <item row="1" column="0">
+       <item row="1" column="0" colspan="2">
+        <widget class="QCheckBox" name="stereoFixEnableVignette">
+         <property name="text">
+          <string>Vignette</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
         <widget class="QLabel" name="stereoFixVignetteSizeLabel"><property name="text"><string>Vignette Size:</string></property><property name="buddy"><cstring>stereoFixVignetteSize</cstring></property></widget>
        </item>
-       <item row="1" column="1">
+       <item row="1" column="3">
         <widget class="QDoubleSpinBox" name="stereoFixVignetteSize">
          <property name="decimals"><number>2</number></property>
          <property name="minimum"><double>0.000000000000000</double></property>
@@ -299,10 +313,10 @@
          <property name="value"><double>0.130000000000000</double></property>
         </widget>
        </item>
-       <item row="1" column="2">
+       <item row="1" column="4">
         <widget class="QLabel" name="stereoFixVignetteXLabel"><property name="text"><string>Vignette X:</string></property><property name="buddy"><cstring>stereoFixVignetteX</cstring></property></widget>
        </item>
-       <item row="1" column="3">
+       <item row="1" column="5">
         <widget class="QDoubleSpinBox" name="stereoFixVignetteX">
          <property name="decimals"><number>2</number></property>
          <property name="minimum"><double>0.000000000000000</double></property>
@@ -311,10 +325,10 @@
          <property name="value"><double>0.750000000000000</double></property>
         </widget>
        </item>
-       <item row="1" column="4">
+       <item row="1" column="6">
         <widget class="QLabel" name="stereoFixVignetteYLabel"><property name="text"><string>Vignette Y:</string></property><property name="buddy"><cstring>stereoFixVignetteY</cstring></property></widget>
        </item>
-       <item row="1" column="5">
+       <item row="1" column="7">
         <widget class="QDoubleSpinBox" name="stereoFixVignetteY">
          <property name="decimals"><number>2</number></property>
          <property name="minimum"><double>0.000000000000000</double></property>
@@ -503,8 +517,8 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="7">
-        <widget class="QDoubleSpinBox" name="stereoFixTemperature">
+        <item row="2" column="7">
+         <widget class="QDoubleSpinBox" name="stereoFixTemperature">
          <property name="decimals">
           <number>2</number>
          </property>
@@ -517,10 +531,17 @@
          <property name="singleStep">
           <double>0.010000000000000</double>
          </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QCheckBox" name="stereoFixEnableCRTFilter">
+          <property name="text">
+           <string>CRT Filter</string>
+          </property>
+         </widget>
+        </item>
+        </layout>
+       </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">

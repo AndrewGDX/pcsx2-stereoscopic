@@ -887,10 +887,13 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoFix_BlackLevel) &&
 		OpEqu(StereoFix_WhiteLevel) &&
 		OpEqu(StereoFix_Temperature) &&
+		OpEqu(StereoFix_EnableShiftTilt) &&
+		OpEqu(StereoFix_EnableVignette) &&
 		OpEqu(StereoFix_ExtendEdges) &&
 		OpEqu(StereoFix_EnableAutoGamma) &&
 		OpEqu(StereoFix_EnableLuminanceBlend) &&
 		OpEqu(StereoFix_EnableLevels) &&
+		OpEqu(StereoFix_EnableCRTFilter) &&
 		OpEqu(PNGCompressionLevel) &&
 		OpEqu(SaveDrawStart) &&
 		OpEqu(SaveDrawCount) &&
@@ -1465,10 +1468,13 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoFix_Opacity);
 	SettingsWrapEntry(StereoFix_MidpointFocus2);
 	SettingsWrapEntry(StereoFix_LuminanceMidpoint);
+	SettingsWrapEntry(StereoFix_EnableShiftTilt);
+	SettingsWrapEntry(StereoFix_EnableVignette);
 	SettingsWrapEntry(StereoFix_EnableLevels);
 	SettingsWrapEntry(StereoFix_BlackLevel);
 	SettingsWrapEntry(StereoFix_WhiteLevel);
 	SettingsWrapEntry(StereoFix_Temperature);
+	SettingsWrapEntry(StereoFix_EnableCRTFilter);
 	SettingsWrapBitfield(ExclusiveFullscreenControl);
 	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
 	SettingsWrapBitfieldEx(SaveDrawStart, "SaveDrawStart");

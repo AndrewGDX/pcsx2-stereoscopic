@@ -34,6 +34,7 @@ static float4 ps_scanlines(float4 color, int i)
 static float4 auto_gamma(float4 color, constant GSMTLPresentPSUniform& cb);
 static float3 luminance_blend(float3 color, constant GSMTLPresentPSUniform& cb);
 static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb);
+static float3 apply_crt_guest_hd(float2 uv, float3 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb);
 
 static float2 stereo_fix_adjust_uv(float2 uv, constant GSMTLPresentPSUniform& cb)
 {
@@ -102,8 +103,10 @@ static float stereo_fix_fade(float2 uv, constant GSMTLPresentPSUniform& cb)
 	return saturate(1.0f - vignette_fade - cut_fade);
 }
 
-static float4 stereo_fix_finalize(float2 uv, float4 color, constant GSMTLPresentPSUniform& cb)
+static float4 stereo_fix_finalize(float2 uv, float4 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb)
 {
+	color.rgb = apply_crt_guest_hd(uv, color.rgb, res, cb);
+
 	if (stereo_fix_is_outside(uv, cb))
 		return float4(0.0f);
 
@@ -122,25 +125,50 @@ static float4 sample_with_stereo(thread ConvertPSRes& res, float2 uv, constant G
 	return res.sample(stereo_fix_adjust_uv(uv, cb));
 }
 
+static float3 apply_crt_guest_hd(float2 uv, float3 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb)
+{
+	if (cb.crt_guest_params.x <= 0.5f)
+		return color;
+
+	(void)res;
+
+	const float beam_min = 0.6f;
+	const float beam_max = 0.3f;
+	const float scanline1 = 0.5f;
+	const float scanline2 = 1.0f;
+	const float scans = 0.5f;
+
+	const float2 source_size = max(cb.rcp_source_resolution, float2(1.0f, 1.0f));
+	float3 work = saturate(color);
+	const float mx = max(max(work.r, work.g), work.b);
+	const float line_pos = abs(fract(uv.y * source_size.y) - 0.5f) * 2.0f;
+	const float beam = mix(beam_min, beam_max, mx);
+	const float shape = mix(scanline1, scanline2, line_pos);
+	const float line = line_pos * beam;
+	const float scan = exp2(-shape * line * line * (1.0f + scans));
+	work *= scan;
+	return saturate(work);
+}
+
 // use ps_copy from convert.metal
 
 fragment float4 ps_copy_present(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), cb);
+	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), res, cb);
 }
 
 fragment float4 ps_filter_scanlines(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return stereo_fix_finalize(data.t, ps_scanlines(sample_with_stereo(res, data.t, cb), uint(data.p.y) % 2), cb);
+	return stereo_fix_finalize(data.t, ps_scanlines(sample_with_stereo(res, data.t, cb), uint(data.p.y) % 2), res, cb);
 }
 
 fragment float4 ps_filter_diagonal(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	uint4 p = uint4(data.p);
-	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), (p.x + (p.y % 3)) % 3), cb);
+	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), (p.x + (p.y % 3)) % 3), res, cb);
 }
 
 fragment float4 ps_filter_triangular(ConvertShaderData data [[stage_in]], ConvertPSRes res,
@@ -148,7 +176,7 @@ fragment float4 ps_filter_triangular(ConvertShaderData data [[stage_in]], Conver
 {
 	uint4 p = uint4(data.p);
 	uint val = ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3;
-	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), val), cb);
+	return stereo_fix_finalize(data.t, ps_crt(sample_with_stereo(res, data.t, cb), val), res, cb);
 }
 
 fragment float4 ps_filter_complex(ConvertShaderData data [[stage_in]], ConvertPSRes res,
@@ -158,7 +186,7 @@ fragment float4 ps_filter_complex(ConvertShaderData data [[stage_in]], ConvertPS
 	float factor = (0.9f - 0.4f * cos(2.f * M_PI_F * data.t.y * texdim.y));
 	float ycoord = (floor(data.t.y * texdim.y) + 0.5f) / texdim.y;
 
-	return stereo_fix_finalize(data.t, factor * sample_with_stereo(res, float2(data.t.x, ycoord), cb), cb);
+	return stereo_fix_finalize(data.t, factor * sample_with_stereo(res, float2(data.t.x, ycoord), cb), res, cb);
 }
 
 #define MaskingType 4                      //[1|2|3|4] The type of CRT shadow masking used. 1: compressed TV style, 2: Aperture-grille, 3: Stretched VGA style, 4: VGA style.
@@ -460,7 +488,7 @@ struct LottesCRTPass
 fragment float4 ps_filter_lottes(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return stereo_fix_finalize(data.t, LottesCRTPass(res, uniform).Run(data.t), uniform);
+	return stereo_fix_finalize(data.t, LottesCRTPass(res, uniform).Run(data.t), res, uniform);
 }
 
 fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res,
@@ -477,7 +505,7 @@ fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res
 	color += sample_with_stereo(res, data.t + float2(-s,-l) * dxy, cb).rgb;
 	color += sample_with_stereo(res, data.t + float2(-l, s) * dxy, cb).rgb;
 
-	return stereo_fix_finalize(data.t, float4(color * 0.25f, 1.0f), cb);
+	return stereo_fix_finalize(data.t, float4(color * 0.25f, 1.0f), res, cb);
 }
 
 fragment float4 ps_automagical_supersampling(ConvertShaderData data [[stage_in]], ConvertPSRes res,
@@ -500,7 +528,7 @@ fragment float4 ps_automagical_supersampling(ConvertShaderData data [[stage_in]]
 		}
 	}
 
-	return stereo_fix_finalize(data.t, float4(col / div, 1.0f), cb);
+	return stereo_fix_finalize(data.t, float4(col / div, 1.0f), res, cb);
 }
 
 static float3 srgb_to_linear(float3 color_srgb)
@@ -610,5 +638,5 @@ static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb)
 fragment float4 ps_stereoscopic_fixes(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), cb);
+	return stereo_fix_finalize(data.t, sample_with_stereo(res, data.t, cb), res, cb);
 }
