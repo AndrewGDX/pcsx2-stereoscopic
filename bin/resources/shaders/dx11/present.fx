@@ -158,8 +158,8 @@ float3 ApplyCRTGuestHD(float2 uv, float3 color)
 	const float linePos = abs(frac(uv.y * sourceSize.y) - 0.5f) * 2.0f;
 	const float beam = lerp(beamMin, beamMax, mx);
 	const float shape = lerp(scanline1, scanline2, linePos);
-	const float line = linePos * beam;
-	const float scan = exp2(-shape * line * line * (1.0f + scans));
+	const float lineVal = linePos * beam;
+	const float scan = exp2(-shape * lineVal * lineVal * (1.0f + scans));
 	work *= scan;
 	return saturate(work);
 }
@@ -593,13 +593,13 @@ PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
 	const float2 sourceSize = max(u_rcp_source_resolution, float2(1.0f, 1.0f));
 	const float2 uvStep = abs(float2(ddx(input.t.x), ddy(input.t.y)));
 	float2 ratio = uvStep * sourceSize * 0.5f;
-	float2 steps = floor(ratio);
+	float2 steps = clamp(floor(ratio), 0.0f, 4.0f);
 	float3 col = sample_c(input.t).rgb;
 	float div = 1.0f;
 
-	for (float y = 0; y < steps.y; y++)
+	for (int y = 0; y < (int)steps.y; y++)
 	{
-		for (float x = 0; x < steps.x; x++)
+		for (int x = 0; x < (int)steps.x; x++)
 		{
 			float2 offset = float2(x,y) - ratio * 0.5;
 			col += sample_c(input.t + offset / sourceSize * 2.0f).rgb;
