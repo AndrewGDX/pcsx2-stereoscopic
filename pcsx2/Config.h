@@ -797,6 +797,7 @@ struct Pcsx2Config
 					SaveTransferImages : 1,
 					SaveDrawStats : 1,
 					SaveFrameStats : 1,
+					SaveHWConfig : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
@@ -1001,7 +1002,7 @@ struct Pcsx2Config
 		bool operator!=(const GSOptions& right) const;
 
 		// Should we dump this draw/frame?
-		bool ShouldDump(int draw, int frame) const;
+		bool ShouldDump(u64 draw, int frame) const;
 	};
 
 	struct SPU2Options

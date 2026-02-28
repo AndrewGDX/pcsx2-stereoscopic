@@ -19,9 +19,9 @@
 #include <iomanip>
 #include <bit>
 
-int GSState::s_n = 0;
-int GSState::s_last_transfer_draw_n = 0;
-int GSState::s_transfer_n = 0;
+u64 GSState::s_n = 0;
+u64 GSState::s_last_transfer_draw_n = 0;
+u64 GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -444,7 +444,7 @@ void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
 	// Dump Register state
 	if (dump_regs)
 	{
-		s = GetDrawDumpPath("%05d_context.txt", s_n);
+		s = GetDrawDumpPath("%05lld_context.txt", s_n);
 
 		m_draw_env->Dump(s);
 		m_context->Dump(s);
@@ -453,14 +453,14 @@ void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
 	// Dump vertices
 	if (dump_verts)
 	{
-		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
+		s = GetDrawDumpPath("%05lld_vertex.txt", s_n);
 		DumpVertices(s);
 	}
 
 	// Dump transfers
 	if (dump_transfers)
 	{
-		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		s = GetDrawDumpPath("%05lld_transfers.txt", s_n);
 		DumpTransferList(s);
 	}
 }
@@ -860,14 +860,14 @@ void GSState::DumpTransferImages()
 		if ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) || transfer.zero_clear)
 		{
 			// clear or EE->GS: only the destination info is relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
+			filename = GetDrawDumpPath("%05lld_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
 				s_n, transfer_n++, (transfer.zero_clear ? "clear" : "EE_to_GS"), transfer.blit.DBP, transfer.blit.DBW,
 				GSUtil::GetPSMName(transfer.blit.DPSM), transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
 		}
 		else
 		{
 			// GS->GS: the source and destination info are both relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%04x_%d_%s_%04x_%d_%s_%d_%d_%d_%d.bmp",
+			filename = GetDrawDumpPath("%05lld_transfer%02d_GS_to_GS_%04x_%d_%s_%04x_%d_%s_%d_%d_%d_%d.bmp",
 				s_n, transfer_n++, transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
 				transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
 				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
@@ -2157,7 +2157,7 @@ void GSState::FlushPrim()
 			if (GSConfig.SaveDrawStats)
 			{
 				m_perfmon_draw = g_perfmon - m_perfmon_draw;
-				m_perfmon_draw.Dump(GetDrawDumpPath("%05d_draw_stats.txt", s_n), GSIsHardwareRenderer());
+				m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", s_n), GSIsHardwareRenderer());
 				m_perfmon_draw = g_perfmon;
 			}
 		}
@@ -2405,7 +2405,7 @@ void GSState::Write(const u8* mem, int len)
 			m_draw_transfers.push_back(new_transfer);
 		}
 
-		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
+		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %lld", s_transfer_n,
 				blit.DBP, blit.DBW, GSUtil::GetPSMName(blit.DPSM),
 				m_tr.m_pos.DIRX, m_tr.m_pos.DIRY,
 				m_tr.x, m_tr.y, m_tr.w, m_tr.h, s_n);
@@ -2466,7 +2466,7 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const std::string s(GetDrawDumpPath(
-			"%05d_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
+			"%05lld_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
 			r.left, r.top, r.right, r.bottom));
 
@@ -2492,8 +2492,7 @@ void GSState::Read(u8* mem, int len)
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
 
-	const int draw = s_n;
-
+	const u64 draw = s_n;
 
 	if (draw != s_n)
 		DevCon.Warning("Warning! Possible incorrect data download");
@@ -3754,12 +3753,11 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	const u16* RESTRICT index = m_index.buff;
 	const u32 count = m_index.tail;
 
-	// Optimize out using indices for sprites and points; probably not much difference.
-	const auto GetIndex = [&](int i) {
+	const auto GetPoint = [&](int i) -> GSVector4i {
 		if constexpr (primclass == GS_SPRITE_CLASS || primclass == GS_POINT_CLASS)
-			return i;
+			return GSVector4i(v[i].m[1]).upl16(); // Optimize out using the indices.
 		else
-			return index[i];
+			return GSVector4i(v[index[i]].m[1]).upl16();
 	};
 
 	// Batch prim into groups so that within each group the cumulative bboxes are non-overlapping.
@@ -3783,8 +3781,15 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 	u32 i = 0;
 	u32 skip = 0; // Number of indices to skip if we have the bbox from the previous iteration.
+	
+	// To cache a tristrip for the next iteration if we cannot use it in this iteration.
+	struct SavedTristrip {
+		bool saved = false;
+		u32 skip;
+		BoundingOct bbox;
+	} saved_tristrip;
 
-	GSVector4i all(INT_MAX, INT_MAX, -INT_MAX, -INT_MAX);
+	BoundingOct all;
 
 	while (i < count)
 	{
@@ -3792,149 +3797,394 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 		skip = 0;
 
-		GSVector4i bbox(INT_MAX, INT_MAX, -INT_MAX, -INT_MAX);
+		BoundingOct bbox;
 
 		while (j < count)
 		{
 			bool got_bbox = false;
 
-			// Assuming that indices 0-5 represent two triangles:
-			// Triangle strips: indices 1, 2 are identical to indices 3, 4. Indices 0, 5 are different.
-			// Triangles fans: indices 0, 2 are identical to indices 3, 4. Indices 1, 5 are different.
-			// Warning: this depends on how the vertices are arranged in the vertex kick.
-			// if that changes this detection will break.
-			constexpr std::array<std::array<std::array<int, 3>, 2>, 2> tri_order({
-				// Triangle strip expected indices.
-				std::array{ std::array<int, 3>{ 1, 2, 0 }, std::array<int, 3>{ 3, 4, 5 } },
+			// Test overlap of two adjacent triangles give the indices of the
+			// shared edge and two unshared points.
+			const auto TrianglesOverlap = [GetPoint]
+				(u32 s0, u32 s1, u32 u0, u32 u1, bool& sign_out) -> bool {
 
-				// Triangle fan expected indices.
-				std::array{ std::array<int, 3>{ 0, 2, 1 }, std::array<int, 3>{ 3, 4, 5 } },
-			});
+				const GSVector4i shared0 = GetPoint(s0);
+				const GSVector4i shared1 = GetPoint(s1) - shared0;
+				const GSVector4i unshared0 = GetPoint(u0) - shared0;
+				const GSVector4i unshared1 = GetPoint(u1) - shared0;
 
-			const auto CheckTriangleQuads = [&]<int type>() {
+				// Determine which side of the shared edge each triangle is on.
+				const bool sign0 = unshared0.x * shared1.y - unshared0.y * shared1.x >= 0;
+				const bool sign1 = unshared1.x * shared1.y - unshared1.y * shared1.x >= 0;
+
+				sign_out = sign0; // Output side of the first triangle with respect to the shared edge.
+
+				// Cross product signs comparison. If true, triangles are on same side of the shared edge.
+				return sign0 == sign1;
+			};
+
+			// Helper to detect triangles strips/fans (template 0 for strips, 1 for fans).
+			const auto CheckTriangleQuads = [index, count, TrianglesOverlap, GetPoint]
+				<int type>(u32 i, u32& skip, BoundingOct& bbox) -> bool {
+
+				// Assuming that indices 0-5 represent two triangles:
+				// Triangle strips: indices 1, 2 are identical to indices 3, 4. Indices 0, 5 are different.
+				// Triangles fans: indices 0, 2 are identical to indices 3, 4. Indices 1, 5 are different.
+				// Warning: this depends on how the vertices are arranged in the vertex kick.
+				// if that changes this detection will break.
+				constexpr std::array<std::array<std::array<int, 3>, 2>, 2> tri_order({
+					// Triangle strip expected indices.
+					std::array{ std::array<int, 3>{ 1, 2, 0 }, std::array<int, 3>{ 3, 4, 5 } },
+
+					// Triangle fan expected indices.
+					std::array{ std::array<int, 3>{ 0, 2, 1 }, std::array<int, 3>{ 3, 4, 5 } },
+				});
+
 				constexpr std::array<int, 3> tri0 = tri_order[type][0];
 				constexpr std::array<int, 3> tri1 = tri_order[type][1];
 
-				if (!got_bbox && primclass == GS_TRIANGLE_CLASS && j + 3 < count &&
-					index[j + tri0[0]] == index[j + tri1[0]] &&
-					index[j + tri0[1]] == index[j + tri1[1]])
+				// Check that the initial two triangles form a strip.
+				if (!(primclass == GS_TRIANGLE_CLASS && i + 6 <= count &&
+					index[i + tri0[0]] == index[i + tri1[0]] &&
+					index[i + tri0[1]] == index[i + tri1[1]]))
 				{
-					// Get the initial triangle bbox.
-					bbox = GSVector4i(v[index[j + 0]].m[1]).upl16().xyxy();
-					bbox = bbox.runion(GSVector4i(v[index[j + 1]].m[1]).upl16().xyxy());
-					bbox = bbox.runion(GSVector4i(v[index[j + 2]].m[1]).upl16().xyxy());
+					return false;
+				}
 
-					while (true)
+				u32 j = i;
+
+				// Get the initial triangle bbox.
+				bbox = BoundingOct::FromPoint(GetPoint(j + 0));
+				bbox = bbox.Union(GetPoint(j + 1));
+				bbox = bbox.Union(GetPoint(j + 2));
+
+				while (true)
+				{
+					// Check if the two triangles overlap.
+					[[maybe_unused]] bool sign;// ignore
+					if (TrianglesOverlap(j + tri1[0], j + tri1[1], j + tri0[2], j + tri1[2], sign))
 					{
-						// There is a shared edge between this and next triangle.
-						// Check if the unshared point is on opposite sides of the shared edge.
-						const GSVector4i shared0 = GSVector4i(v[index[j + skip + tri0[0]]].m[1]).upl16();
-						const GSVector4i shared1 = GSVector4i(v[index[j + skip + tri0[1]]].m[1]).upl16() - shared0;
-						const GSVector4i unshared0 = GSVector4i(v[index[j + skip + tri0[2]]].m[1]).upl16() - shared0;
-						const GSVector4i unshared1 = GSVector4i(v[index[j + skip + tri1[2]]].m[1]).upl16() - shared0;
+						break;
+					}
 
-						// Cross product signs comparison.
-						if ((unshared0.x * shared1.y - unshared0.y * shared1.x >= 0) ==
-							(unshared1.x * shared1.y - unshared1.y * shared1.x >= 0))
+					// Corners are on opposite sides so we can assume a non-axis-aligned quad.
+					// Take union with the single unshared point.
+					bbox = bbox.Union(GetPoint(j + tri1[2]));
+					j += 3;
+
+					if (!(j + 6 <= count &&
+						index[j + tri0[0]] == index[j + tri1[0]] &&
+						index[j + tri0[1]] == index[j + tri1[1]]))
+					{
+						// Cannot continue the strip/fan.
+						break;
+					}
+				}
+
+				if (j == i)
+				{
+					return false; // Only a single triangle in the strip.
+				}
+
+				skip = j - i + 3; // Number of vertices in the loop + first triangle.
+
+				return true;
+			};
+
+			// Helper functions to find a common edge between two triangles and check if they overlap.
+			// Template parameter indicates if the triangle is at the end of the strip or beginning.
+			const auto MatchTriangles = [v, index, TrianglesOverlap]<bool end0, bool end1>
+				(u32 tri0, u32 tri1, bool& sign) -> bool {
+
+				// For the end triangle only consider the last edge of the triangle.
+				// For the start triangle only consider the first edge of the triangle.
+				const u32 base0 = end0 ? 1 : 0;
+				const u32 base1 = end1 ? 1 : 0;
+
+				for (int i0 = base0; i0 < base0 + 2; i0++)
+				{
+					for (int i1 = base1; i1 < base1 + 2; i1++)
+					{
+						if (v[index[tri0 + i0]].XYZ.U32[0] == v[index[tri1 + i1]].XYZ.U32[0])
 						{
-							break; // Triangles are on same side of the shared edge so there's overlap.
-						}
+							// Get the index that should be shared between the adjacent triangles.
+							const int j0 = end0 ? (i0 == 2 ? 0 : i0 - 4) : (i0 == 0 ? 2 : i0 + 4);
+							const int j1 = end1 ? (i1 == 2 ? 0 : i1 - 4) : (i1 == 0 ? 2 : i1 + 4);
 
-						// Corners are on opposite sides so we can assume a non-axis-aligned quad.
-						// Take union with the single unshared point.
-						bbox = bbox.runion(GSVector4i(v[index[j + skip + tri1[2]]].m[1]).upl16().xyxy());
+							if (v[index[tri0 + j0]].XYZ.U32[0] != v[index[tri1 + j1]].XYZ.U32[0])
+							{
+								return false; // Edge is not shared.
+							}
 
-						skip += 3;
+							// Get the indices that should be unshared.
+							const int k0 = end0 ? 3 - i0 : 1 - i0;
+							const int k1 = end1 ? 3 - i1 : 1 - i1;
 
-						got_bbox = true;
+							// Get the shared edge in the order of the first strip's increasing indices.
+							// Consistency is important for the sign check to work correctly.
+							const int s0 = std::min(i0, j0);
+							const int t0 = std::max(i0, j0);
 
-						if (!(j + skip + 3 < count &&
-							index[j + skip + tri0[0]] == index[j + skip + tri1[0]] &&
-							index[j + skip + tri0[1]] == index[j + skip + tri1[1]]))
-						{
-							// Cannot continue the strip/fan. Consume the last triangle and exit.
-							skip += 3;
-							break;
+							return !TrianglesOverlap(tri0 + s0, tri0 + t0, tri0 + k0, tri1 + k1, sign);
 						}
 					}
 				}
+
+				return false;
 			};
 
-			// First check: see if the triangles are part of triangle strip/fan.
-			if (primclass == GS_TRIANGLE_CLASS)
-			{
-				CheckTriangleQuads.template operator()<0>(); // Check triangle strips.
-				CheckTriangleQuads.template operator()<1>(); // Check triangle fans.
-			}
+			// Helper function to detect triangles strips and merge them together into
+			// a grid of triangles strips.
+			const auto CheckTriangleStrips = [count, CheckTriangleQuads, MatchTriangles, GetPoint]
+				(u32 i, u32& skip, BoundingOct& bbox_all, SavedTristrip& saved_tristrip) -> bool {
 
-			// Second check: see if triangles form an axis-aligned quad.
-			if (!got_bbox && primclass == GS_TRIANGLE_CLASS && check_quads && j + 3 < count)
-			{
-				const u16* RESTRICT idx0 = &index[j + 0];
-				const u16* RESTRICT idx1 = &index[j + 3];
+				if (!(primclass == GS_TRIANGLE_CLASS && i + 6 <= count))
+				{
+					return false;
+				}
+
+				u32 j = i;
+
+				u32 prev_tri0; // First triangle of previous tristrip.
+				u32 prev_tri1; // Last triangle of previous tristrip.
+				
+				bool all_small; // Whether all strips so far have 2 triangles only.
+				
+				u32 n_tristrips = 0; // Number of tristrips merged so far.
+
+				// Used to make sure the tristrips are adjacent in the same direction so there's not overlap.
+				bool expected_sign;
+
+				// For another heuristic to determine if the tristrips are overlapping themselves.
+				// Stores the maximum difference in X/Y from the starting point.
+				GSVector4i start_pt;
+				GSVector4i max_delta(0, 0);
+
+				// Whether the current tristrip is oriented in the same direction as the first.
+				bool orientation = true;
+
+				BoundingOct bbox; // BBox of current strip.
+
+				// Check for the first tristrip in the chain.
+				if (saved_tristrip.saved)
+				{
+					// Have a tristrip saved from a previous iteration.
+					skip = saved_tristrip.skip;
+					bbox = saved_tristrip.bbox;
+					saved_tristrip.saved = false;
+				}
+				else if (!CheckTriangleQuads.template operator()<0>(j, skip, bbox))
+				{
+					return false;// Could not find a new tristrip.
+				}
+
+				// Initialize loop variables.
+				prev_tri0 = j;
+				prev_tri1 = j + skip - 3;
+				all_small = (skip <= 6);
+				bbox_all = bbox;
+				start_pt = GetPoint(prev_tri0);
+				n_tristrips++;
+				j += skip;
+
+				while (j < count)
+				{
+					if (!CheckTriangleQuads.template operator()<0>(j, skip, bbox))
+					{
+						break; // Cannot continue tristrip grid.
+					}
+
+					// Save the tristrip in case it can be used on the next iteration.
+					saved_tristrip.saved = true;
+					saved_tristrip.skip = skip;
+					saved_tristrip.bbox = bbox;
+
+					// Get first/last triangle of current tristrip.
+					const u32 tri0 = j;
+					const u32 tri1 = j + skip - 3;
+					
+					all_small = all_small && (skip <= 6);
+
+					// First heuristic: check if the previous and this tristrip are part of a grid by
+					// checking if the first/last triangles in each strip have a common edge and do not overlap.
+					bool sign0, sign1; // Orientation of how the first and last triangles are adjacent.
+					bool flip; // Whether to flip the expected orientation because the two strips are in opposite directions.
+
+					// Check the first two vertices of first triangles and last two vertices of last triangles.
+					if (MatchTriangles.template operator()<false, false>(prev_tri0, tri0, sign0) &&
+						MatchTriangles.template operator()<true, true>(prev_tri1, tri1, sign1))
+					{
+						flip = false; // Tristrips are in the same directions.
+					}
+					else if (MatchTriangles.template operator()<false, true>(prev_tri0, tri1, sign0) &&
+						MatchTriangles.template operator()<true, false>(prev_tri1, tri0, sign1))
+					{
+						flip = true; // Tristrips are in opposite directions.
+					}
+					else
+					{
+						break; // Cannot continue the tristrip chain.
+					}
+
+					// Second heuristic: make sure the new tristrip is always on the same side as the previous one.
+					if (n_tristrips >= 2)
+					{
+						if (!(sign0 == expected_sign && sign1 == expected_sign))
+						{
+							break; // New tristrip is on the wrong side.
+						}
+					}
+					else
+					{
+						if (sign0 != sign1)
+						{
+							break; // First/last triangles are on different sides.
+						}
+						expected_sign = sign0;
+					}
+
+					if (flip)
+					{
+						expected_sign = !expected_sign;
+						orientation = !orientation;
+					}
+
+					// Third heuristic: for small tristrips make sure that we never move closer to
+					// the first tristrip in the grid. Small tristrips appears to be more likely to
+					// overlap themself.
+					const GSVector4i curr_pt = GetPoint(orientation ? tri0 : tri1 + 2);
+					const GSVector4i curr_delta = (curr_pt - start_pt).abs32();
+
+					// Check if we moved closer.
+					if (n_tristrips >= 2 && all_small)
+					{
+						if (((curr_delta <= max_delta).mask() & 0xFF) == 0xFF)
+						{
+							break; // We moved closer to the start point in both X/Y so end the merging.
+						}
+					}
+
+					// Update maximum displacement from start.
+					max_delta = max_delta.max_i32(curr_delta);
+
+					prev_tri0 = tri0;
+					prev_tri1 = tri1;
+					bbox_all = bbox_all.Union(bbox);
+					j += skip;
+					saved_tristrip.saved = false; // We consumed the new tristrip.
+					n_tristrips++;
+				}
+
+				skip = j - i;
+
+				return true;
+			};
+
+			// Helper functions to detect when two triangles form an axis-aligned quad.
+			const auto GetBBoxAxisAlignedTriangles = [v, index, count, GetPoint]
+				(u32 i, u32& skip, BoundingOct& bbox) -> bool {
+
+				if (!(primclass == GS_TRIANGLE_CLASS && i + 6 <= count))
+				{
+					return false;
+				}
+
+				const u32 off0 = i + 0;
+				const u32 off1 = i + 3;
 				TriangleOrdering tri0;
 				TriangleOrdering tri1;
 
-				if (AreTrianglesQuad<0, 0>(v, idx0, idx1, &tri0, &tri1))
+				if (!AreTrianglesQuad<0, 0>(v, index + off0, index + off1, &tri0, &tri1))
 				{
-					// tri.b is right angle corner
-					bbox = GSVector4i(v[idx0[tri0.b]].m[1]).upl16().xyxy();
-					bbox = bbox.runion(GSVector4i(v[idx1[tri1.b]].m[1]).upl16().xyxy());
-					
-					skip = 6;
+					return false;
+				}
 
-					got_bbox = true;
+				// tri.b is right angle corner
+				const GSVector4i pt0 = GetPoint(off0 + tri0.b);
+				const GSVector4i pt1 = GetPoint(off1 + tri1.b);
+				bbox = BoundingOct::FromSprite(pt0, pt1);
+				skip = 6;
+
+				return true;
+			};
+
+			// Helper functions to just get the individual prim bbox.
+			const auto GetBBox = [GetPoint](u32 i, u32& skip, BoundingOct& bbox) -> bool {
+				if constexpr (primclass == GS_SPRITE_CLASS)
+				{
+					bbox = BoundingOct::FromSprite(GetPoint(i + 0), GetPoint(i + 1));
 				}
 				else
 				{
-					// If we fail a quad check assume the rest are not quads since the check is relatively expensive.
-					check_quads = false;
+					bbox = BoundingOct::FromPoint(GetPoint(i + 0));
+					for (u32 j = 1; j < n; j++) // Unroll
+					{
+						bbox = bbox.Union(GetPoint(i + j));
+					}
 				}
+				skip = n;
+				return true;
+			};
+
+			// First check: see if the triangles are part of a triangle strip.
+			if (!got_bbox)
+			{
+				got_bbox = CheckTriangleStrips(j, skip, bbox, saved_tristrip);
+			}
+
+			// Second check: see if the triangles are part of triangle fan.
+			if (!got_bbox)
+			{
+				got_bbox = CheckTriangleQuads.template operator()<1>(j, skip, bbox);
+			}
+
+			// Third check: see if a pair of triangles are an axis-aligned quad.
+			// This doesn't require indices to match like the tristrip check.
+			if (!got_bbox && check_quads)
+			{
+				got_bbox = GetBBoxAxisAlignedTriangles(j, skip, bbox);
+
+				// If we fail a quad check assume the rest are not quads since the check is relatively expensive.
+				check_quads = got_bbox;
 			}
 			
 			// Default case: just take the bbox of the prim vertices.
 			if (!got_bbox)
 			{
-				bbox = GSVector4i(v[GetIndex(j)].m[1]).upl16().xyxy();
-				for (int k = 1; k < n; k++) // Unroll
-					bbox = bbox.runion(GSVector4i(v[GetIndex(j + k)].m[1]).upl16().xyxy());
-
-				skip = n;
-
-				got_bbox = true;
+				got_bbox = GetBBox(j, skip, bbox);
 			}
 
 			// Avoid degenerate bbox.
-			bbox = bbox.blend(bbox + GSVector4i(0, 0, 1, 1), bbox.xyxy() == bbox.zwzw());
+			bbox = bbox.FixDegenerate();
 
-			if (all.rintersects(bbox))
+			if (all.Intersects(bbox))
 			{
 				overlap = PRIM_OVERLAP_YES;
 				break;
 			}
 
-			all = all.runion(bbox);
-
+			all = all.Union(bbox);
 			j += skip;
-
 			skip = 0;
 		}
 
 		if (save_drawlist)
+		{
 			m_drawlist.push_back((j - i) / n); // Prim count
+		}
 		else if (j < count)
+		{
 			return PRIM_OVERLAP_YES; // Early exit if not saving drawlist.
+		}
 
 		if (save_bbox)
 		{
-			m_drawlist_bbox.push_back(ProcessBBox(all));
+			m_drawlist_bbox.push_back(ProcessBBox(all.ToBBox()));
 		}
 
 		all = bbox;
-
 		i = j;
 	}
-
 	return overlap;
 }
 
@@ -6112,15 +6362,33 @@ void GSState::GSPCRTCRegs::CalculateFramebufferOffset(bool scanmask, GSRegDISPFB
 
 	if (GSConfig.PCRTCAntiBlur && PCRTCSameSrc && !scanmask && abs(fb1.y - fb0.y) <= 1)
 	{
-		if (framebuffer0Reg.DBY != PCRTCDisplays[0].prevFramebufferReg.DBY)
+		const bool alternating_0 = framebuffer0Reg.DBY != PCRTCDisplays[0].prevFramebufferReg.DBY;
+		const bool alternating_1 = framebuffer1Reg.DBY != PCRTCDisplays[1].prevFramebufferReg.DBY;
+
+		if (alternating_0 && alternating_1)
 		{
-			PCRTCDisplays[0].framebufferRect.y = PCRTCDisplays[1].framebufferRect.y;
-			PCRTCDisplays[0].framebufferRect.w = PCRTCDisplays[1].framebufferRect.w;
+			const int index = (static_cast<u32>(PCRTCDisplays[1].framebufferRect.y) < static_cast<u32>(PCRTCDisplays[0].framebufferRect.y)) ? 0 : 1;
+			const int offset = PCRTCDisplays[1 - index].framebufferRect.y - PCRTCDisplays[index].framebufferRect.y;
+
+			if (std::abs(offset) <= 4)
+			{
+				PCRTCDisplays[index].framebufferRect.y += offset;
+				PCRTCDisplays[index].framebufferRect.w += offset;
+			}
 		}
-		else
+		else // Only one rect is alternating
 		{
-			PCRTCDisplays[1].framebufferRect.y = PCRTCDisplays[0].framebufferRect.y;
-			PCRTCDisplays[1].framebufferRect.w = PCRTCDisplays[0].framebufferRect.w;
+			// A lot of ternary operating going on here.
+			// Basically if display 1 is alternating, use that, otherwise use 0 if display 0 is alternating
+			// if neither are alternating, pick the one with the lowest offset.
+			const int index = alternating_1 ? 1 : (alternating_0 ? 0 : ((static_cast<u32>(PCRTCDisplays[1].framebufferRect.y) < static_cast<u32>(PCRTCDisplays[0].framebufferRect.y)) ? 0 : 1));
+			const int offset = PCRTCDisplays[1 - index].framebufferRect.y - PCRTCDisplays[index].framebufferRect.y;
+
+			if (std::abs(offset) <= 4)
+			{
+				PCRTCDisplays[index].framebufferRect.y += offset;
+				PCRTCDisplays[index].framebufferRect.w += offset;
+			}
 		}
 	}
 }

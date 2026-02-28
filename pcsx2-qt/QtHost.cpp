@@ -195,7 +195,7 @@ void EmuThread::stopFullscreenUI()
 	{
 		m_run_fullscreen_ui.store(false, std::memory_order_release);
 		emit onFullscreenUIStateChange(false);
-		
+
 		// Resume and refresh background when FullscreenUI exits
 		QMetaObject::invokeMethod(g_main_window, "updateGameListBackground", Qt::QueuedConnection);
 	}
@@ -1160,7 +1160,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	if (!filters.empty())
 	{
 		filters_str.append(QStringLiteral("All File Types (%1)")
-							   .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
+				.arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
 		for (const std::string& filter : filters)
 		{
 			filters_str.append(
@@ -1369,7 +1369,6 @@ bool QtHost::InitializeConfig()
 					.arg(QString::fromStdString(error.GetDescription())));
 			return false;
 		}
-		
 	}
 
 	// Setup wizard was incomplete last time?
@@ -1738,6 +1737,11 @@ void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 	emit g_emu_thread->onMouseModeRequested(relative_mode, hide_cursor);
 }
 
+void Host::SetMouseLock(bool state)
+{
+	emit g_emu_thread->onMouseLockRequested(state);
+}
+
 void QtHost::LockVMWithDialog()
 {
 	s_vm_locked_with_dialog++;
@@ -2094,6 +2098,8 @@ void QtHost::PrintCommandLineHelp(const std::string_view progname)
 	std::fprintf(stderr, "  -testconfig: Initializes configuration and checks version, then exits.\n");
 	std::fprintf(stderr, "  -setupwizard: Forces initial setup wizard to run.\n");
 	std::fprintf(stderr, "  -debugger: Open debugger and break on entry point.\n");
+	std::fprintf(stderr, "  -turbo: Enters turbo (fast forward) mode after starting.\n");
+	std::fprintf(stderr, "  -unlimited: Enters unlimited (fast forward) mode after starting.\n");
 #ifdef ENABLE_RAINTEGRATION
 	std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
 #endif
@@ -2241,6 +2247,16 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 				s_cleanup_after_update = AutoUpdaterDialog::isSupported();
 				continue;
 			}
+			else if (CHECK_ARG(QStringLiteral("-turbo")))
+			{
+				AutoBoot(autoboot)->start_turbo = true;
+				continue;
+			}
+			else if (CHECK_ARG(QStringLiteral("-unlimited")))
+			{
+				AutoBoot(autoboot)->start_unlimited = true;
+				continue;
+			}
 #ifdef ENABLE_RAINTEGRATION
 			else if (CHECK_ARG(QStringLiteral("-raintegration")))
 			{
@@ -2275,6 +2291,12 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	{
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
+	}
+	
+	if(autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
+	{
+		Console.Warning("Both turbo and unlimited frame limit modes requested. Using unlimited.");
+		autoboot->start_turbo.reset();
 	}
 
 	// if we don't have autoboot, we definitely don't want batch mode (because that'll skip
