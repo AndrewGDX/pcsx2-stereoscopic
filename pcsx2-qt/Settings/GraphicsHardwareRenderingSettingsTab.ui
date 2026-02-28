@@ -421,78 +421,6 @@
       <item row="4" column="0" colspan="2">
        <layout class="QVBoxLayout" name="stereoMonoObjectLayout">
         <item>
-         <layout class="QHBoxLayout" name="stereoFixProfileLayout">
-          <item>
-           <widget class="QLabel" name="stereoFeedbackLoopFixLabel">
-            <property name="text">
-             <string>Feedback Loop Fix:</string>
-            </property>
-            <property name="buddy">
-             <cstring>stereoFeedbackLoopFix</cstring>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="stereoFeedbackLoopFix">
-            <item>
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Safe</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Moderate</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Full</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="stereoSbsRemapFixLabel">
-            <property name="text">
-             <string>SBS Remap Fix:</string>
-            </property>
-            <property name="buddy">
-             <cstring>stereoSbsRemapFix</cstring>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="stereoSbsRemapFix">
-            <item>
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Safe</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Moderate</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Full</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="stereoUiDetectModeLayout">
           <item>
            <widget class="QLabel" name="stereoUiDetectModeLabel">
@@ -571,7 +499,20 @@
             </property>
            </widget>
           </item>
-          </layout>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoAdditionalUiDetectionLabel">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Additional UI Detection</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoRejectZTestAlways">
@@ -640,6 +581,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="stereoUiSecondLayerDetectionLabel">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>UI Second Layer Detection</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector1">
           <property name="text">
            <string>UI Second Layer: Selector 1</string>
@@ -675,15 +629,107 @@
          </widget>
         </item>
         <item>
-         <widget class="QFrame">
-          <property name="frameShape">
-           <enum>QFrame::HLine</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-         </widget>
+		 <widget class="QFrame">
+		  <property name="frameShape">
+		   <enum>QFrame::HLine</enum>
+		  </property>
+		  <property name="frameShadow">
+		   <enum>QFrame::Sunken</enum>
+		  </property>
+		 </widget>
+		</item>
+		<item>
+		 <widget class="QLabel" name="stereoPresentationFixesLabel">
+		  <property name="font">
+		   <font>
+			<pointsize>9</pointsize>
+			<italic>true</italic>
+		   </font>
+		  </property>
+		  <property name="text">
+		   <string>Presentation Fixes</string>
+		  </property>
+		 </widget>
+		</item>
+        <item>
+         <layout class="QHBoxLayout" name="stereoFixProfileLayout">
+          <item>
+           <widget class="QLabel" name="stereoFeedbackLoopFixLabel">
+            <property name="text">
+             <string>Feedback Loop Fix:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoFeedbackLoopFix</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="stereoFeedbackLoopFix">
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Moderate</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Full</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stereoSbsRemapFixLabel">
+            <property name="text">
+             <string>SBS Remap Fix:</string>
+            </property>
+            <property name="buddy">
+             <cstring>stereoSbsRemapFix</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="stereoSbsRemapFix">
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Moderate</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Full</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
+		<item>
+		 <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
+		  <property name="text">
+		   <string>Disable full framebuffer for each eye (try!)</string>
+		  </property>
+		 </widget>
+		</item>
         <item>
 		 <widget class="QCheckBox" name="stereoDisableInstancedRendering">
 		  <property name="text">
@@ -691,27 +737,20 @@
 		  </property>
 		 </widget>
 		</item>
-        <item>
-         <widget class="QCheckBox" name="stereoSbsRemapMono">
-          <property name="text">
-           <string>Feedback Loop: Mono SBS Remap</string>
-          </property>
-         </widget>
-        </item>
 		<item>
 		 <widget class="QCheckBox" name="stereoFlipRendering">
 		  <property name="text">
-		   <string>Misalignment Fix: Flip Stereo Rendering</string>
+		   <string>Flip Stereo Rendering (not recommended)</string>
 		  </property>
 		 </widget>
 		</item>
-		<item>
-		 <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
-		  <property name="text">
-		   <string>Disable full framebuffer for each eye</string>
-		  </property>
-		 </widget>
-		</item>
+        <item>
+         <widget class="QCheckBox" name="stereoSbsRemapMono">
+          <property name="text">
+           <string>Picture-in-Picture Fix: Mono SBS Remap</string>
+          </property>
+         </widget>
+        </item>
 		<item>
 		 <widget class="QCheckBox" name="stereoEnableFullSbsAspectRatio">
 		  <property name="text">
@@ -726,6 +765,19 @@
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoRenderingFixesLabel">
+          <property name="font">
+           <font>
+			<pointsize>9</pointsize>
+			<italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Rendering Fixes</string>
           </property>
          </widget>
         </item>
@@ -785,6 +837,19 @@
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoLegacyFeedbackFixesLabel">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Separate/Legacy Feedback Loop Fixes</string>
           </property>
          </widget>
         </item>
@@ -3081,8 +3146,6 @@
 	    <tabstop>stereoConvergence</tabstop>
 	    <tabstop>stereoUiDepth</tabstop>
 	    <tabstop>stereoUiSecondLayerDepth</tabstop>
-	    <tabstop>stereoFeedbackLoopFix</tabstop>
-	    <tabstop>stereoSbsRemapFix</tabstop>
 	    <tabstop>stereoUiDetectMode</tabstop>
 	    <tabstop>stereoUiDetectThreshold</tabstop>
 	    <tabstop>stereoRejectZTestAlways</tabstop>
@@ -3098,10 +3161,12 @@
 	    <tabstop>stereoUiSecondLayerSelector3</tabstop>
 	    <tabstop>stereoUiSecondLayerSelector4</tabstop>
 	    <tabstop>stereoUiSecondLayerSelector5</tabstop>
-	    <tabstop>stereoDisableInstancedRendering</tabstop>
-	    <tabstop>stereoSbsRemapMono</tabstop>
-	    <tabstop>stereoFlipRendering</tabstop>
+	    <tabstop>stereoFeedbackLoopFix</tabstop>
+	    <tabstop>stereoSbsRemapFix</tabstop>
 	    <tabstop>stereoDisableCorrectSbsFramebufferSize</tabstop>
+	    <tabstop>stereoDisableInstancedRendering</tabstop>
+	    <tabstop>stereoFlipRendering</tabstop>
+	    <tabstop>stereoSbsRemapMono</tabstop>
 	    <tabstop>stereoEnableFullSbsAspectRatio</tabstop>
 	    <tabstop>stereoCloseDepthFix</tabstop>
 	    <tabstop>stereoSkyFix</tabstop>
