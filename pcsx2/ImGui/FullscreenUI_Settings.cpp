@@ -3189,18 +3189,24 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			s_tv_shaders, std::size(s_tv_shaders), true);
 
 		MenuHeading(FSUI_CSTR("Stereo Adjustments"));
-		const bool enable_shift_tilt = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableShiftTilt", false);
-		const bool enable_vignette = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableVignette", false);
-		const bool enable_extend_edges = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_ExtendEdges", false);
-		DrawToggleSetting(bsi, FSUI_CSTR("Shift and Tilt"), FSUI_CSTR("Enables stereo shift and tilt adjustments."), "EmuCore/GS", "StereoFix_EnableShiftTilt", false);
+		const bool stereo_adjustments_enabled =
+			(GetEffectiveIntSetting(bsi, "EmuCore/GS", "StereoMode", static_cast<int>(GSStereoMode::SideBySide)) !=
+				static_cast<int>(GSStereoMode::Off));
+		const bool enable_shift_tilt =
+			(stereo_adjustments_enabled && GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableShiftTilt", false));
+		const bool enable_vignette =
+			(stereo_adjustments_enabled && GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableVignette", false));
+		const bool enable_extend_edges =
+			(stereo_adjustments_enabled && GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_ExtendEdges", false));
+		DrawToggleSetting(bsi, FSUI_CSTR("Shift and Tilt"), FSUI_CSTR("Enables stereo shift and tilt adjustments."), "EmuCore/GS", "StereoFix_EnableShiftTilt", false, stereo_adjustments_enabled);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Shift"), FSUI_CSTR("Move screens in X axis."), "EmuCore/GS", "StereoFix_Shift", 0.0f, -30.0f, 30.0f, "%.0f", 1.0f, enable_shift_tilt);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Tilt"), FSUI_CSTR("Move screens in Y axis."), "EmuCore/GS", "StereoFix_Tilt", 0.0f, -10.0f, 10.0f, "%.0f", 1.0f, enable_shift_tilt);
-		DrawToggleSetting(bsi, FSUI_CSTR("Vignette"), FSUI_CSTR("Enables vignette fade adjustments."), "EmuCore/GS", "StereoFix_EnableVignette", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Vignette"), FSUI_CSTR("Enables vignette fade adjustments."), "EmuCore/GS", "StereoFix_EnableVignette", false, stereo_adjustments_enabled);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Size"), FSUI_CSTR("Controls vignette transition width."), "EmuCore/GS", "StereoFix_VignetteSize", 0.13f, 0.0f, 1.0f, "%.2f", 1.0f, enable_vignette);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette X"), FSUI_CSTR("Horizontal vignette strength."), "EmuCore/GS", "StereoFix_VignetteX", 0.75f, 0.0f, 2.0f, "%.2f", 1.0f, enable_vignette);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Y"), FSUI_CSTR("Vertical vignette strength."), "EmuCore/GS", "StereoFix_VignetteY", 0.50f, 0.0f, 2.0f, "%.2f", 1.0f, enable_vignette);
 
-		DrawToggleSetting(bsi, FSUI_CSTR("Extend Edges"), FSUI_CSTR("Extend edges of the screen to fill border."), "EmuCore/GS", "StereoFix_ExtendEdges", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Extend Edges"), FSUI_CSTR("Extend edges of the screen to fill border."), "EmuCore/GS", "StereoFix_ExtendEdges", false, stereo_adjustments_enabled);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Extend Border"), FSUI_CSTR("How many normalized pixels to cut at edges."), "EmuCore/GS", "StereoFix_ExtendBorder", 0.0f, 0.0f, 0.1f, "%.4f", 1.0f, enable_extend_edges);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Cut Offset"), FSUI_CSTR("Cuts extended screen edges."), "EmuCore/GS", "StereoFix_CutOffset", 0.0f, 0.0f, 200.0f, "%.0f", 1.0f, enable_extend_edges);
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("Vignette Offset"), FSUI_CSTR("Offsets vignette, useful for 4:3 screens."), "EmuCore/GS", "StereoFix_VignetteOffset", 0.0f, 0.0f, 250.0f, "%.0f", 1.0f, enable_extend_edges);

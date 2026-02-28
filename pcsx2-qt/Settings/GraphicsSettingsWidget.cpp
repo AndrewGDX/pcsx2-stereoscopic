@@ -2069,12 +2069,22 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 
 void GraphicsSettingsWidget::onStereoFixControlStateChanged()
 {
-	const bool enable_shift_tilt = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableShiftTilt", false);
-	const bool enable_vignette = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableVignette", false);
-	const bool enable_extend_edges = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_ExtendEdges", false);
+	const bool stereo_adjustments_enabled =
+		(dialog()->getEffectiveIntValue("EmuCore/GS", "StereoMode", static_cast<int>(GSStereoMode::SideBySide)) !=
+			static_cast<int>(GSStereoMode::Off));
+	const bool enable_shift_tilt =
+		(stereo_adjustments_enabled && dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableShiftTilt", false));
+	const bool enable_vignette =
+		(stereo_adjustments_enabled && dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableVignette", false));
+	const bool enable_extend_edges =
+		(stereo_adjustments_enabled && dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_ExtendEdges", false));
 	const bool enable_auto_gamma = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableAutoGamma", false);
 	const bool enable_luminance_blend = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
 	const bool enable_levels = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLevels", false);
+
+	m_post.stereoFixEnableShiftTilt->setEnabled(stereo_adjustments_enabled);
+	m_post.stereoFixEnableVignette->setEnabled(stereo_adjustments_enabled);
+	m_post.stereoFixExtendEdges->setEnabled(stereo_adjustments_enabled);
 
 	m_post.stereoFixShiftLabel->setEnabled(enable_shift_tilt);
 	m_post.stereoFixShift->setEnabled(enable_shift_tilt);
@@ -2194,6 +2204,8 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 		for (int i = start_index + 1; i < m_hw.stereoMonoObjectLayout->count(); ++i)
 			set_checkbox_enabled(m_hw.stereoMonoObjectLayout->itemAt(i), set_checkbox_enabled);
 	}
+
+	onStereoFixControlStateChanged();
 }
 
 void GraphicsSettingsWidget::onMessagesPosChanged()

@@ -47,18 +47,31 @@ float StereoFixPackedFlags()
 	return floor(u_time_and_pad.x + 0.5);
 }
 
+bool StereoFixPackedFlagEnabled(float bit)
+{
+	return (mod(floor(StereoFixPackedFlags() / bit), 2.0) > 0.5);
+}
+
 bool StereoFixExtendEdgesEnabled()
 {
-	return (mod(StereoFixPackedFlags(), 2.0) > 0.5);
+	return StereoFixPackedFlagEnabled(1.0);
 }
 
 bool StereoFixCRTFilterEnabled()
 {
-	return (StereoFixPackedFlags() >= 2.0);
+	return StereoFixPackedFlagEnabled(2.0);
+}
+
+bool StereoFixStereoModeEnabled()
+{
+	return StereoFixPackedFlagEnabled(4.0);
 }
 
 vec2 StereoFixAdjustUV(vec2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return uv;
+
 	float shift = u_source_rect.x;
 	float tilt = u_source_rect.y;
 	float extendBorder = u_target_rect.y;
@@ -79,6 +92,9 @@ vec2 StereoFixAdjustUV(vec2 uv)
 
 bool StereoFixIsOutside(vec2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return false;
+
 	float tilt = u_source_rect.y;
 	float sourceWidth = max(u_rcp_source_resolution.x, 1.0);
 	float tiltUV = tilt / sourceWidth;
@@ -91,6 +107,9 @@ bool StereoFixIsOutside(vec2 uv)
 
 float StereoFixFade(vec2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return 1.0;
+
 	float tilt = u_source_rect.y;
 	float vignetteSize = u_source_rect.z;
 	float vignetteX = u_source_rect.w;

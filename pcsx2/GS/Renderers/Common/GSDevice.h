@@ -241,9 +241,10 @@ struct alignas(16) DisplayConstantBuffer
 
 	void SetStereoFix(const GSVector2i& sourceSize)
 	{
-		const bool enableShiftTilt = GSConfig.StereoFix_EnableShiftTilt;
-		const bool enableVignette = GSConfig.StereoFix_EnableVignette;
-		const bool enableExtendEdges = GSConfig.StereoFix_ExtendEdges;
+		const bool stereoAdjustmentsEnabled = (GSConfig.StereoMode != GSStereoMode::Off);
+		const bool enableShiftTilt = (stereoAdjustmentsEnabled && GSConfig.StereoFix_EnableShiftTilt);
+		const bool enableVignette = (stereoAdjustmentsEnabled && GSConfig.StereoFix_EnableVignette);
+		const bool enableExtendEdges = (stereoAdjustmentsEnabled && GSConfig.StereoFix_ExtendEdges);
 
 		SourceRect = GSVector4(enableShiftTilt ? GSConfig.StereoFix_Shift : 0.0f,
 			enableShiftTilt ? GSConfig.StereoFix_Tilt : 0.0f,
@@ -259,8 +260,9 @@ struct alignas(16) DisplayConstantBuffer
 		RcpTargetResolution = GSVector2(GSConfig.StereoFix_LuminanceMidpoint, GSConfig.StereoFix_BlackLevel);
 		SourceResolution = GSVector2(GSConfig.StereoFix_WhiteLevel, GSConfig.StereoFix_Temperature);
 		RcpSourceResolution = GSVector2(static_cast<float>(sourceSize.x), static_cast<float>(sourceSize.y));
-		const float packedFlags = (GSConfig.StereoFix_ExtendEdges ? 1.0f : 0.0f) +
-			(GSConfig.StereoFix_EnableCRTFilter ? 2.0f : 0.0f);
+		const float packedFlags = (enableExtendEdges ? 1.0f : 0.0f) +
+			(GSConfig.StereoFix_EnableCRTFilter ? 2.0f : 0.0f) +
+			(stereoAdjustmentsEnabled ? 4.0f : 0.0f);
 		TimeAndPad = GSVector4(packedFlags,
 			GSConfig.StereoFix_EnableAutoGamma ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLuminanceBlend ? 1.0f : 0.0f,

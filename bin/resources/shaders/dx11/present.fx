@@ -41,18 +41,31 @@ float StereoFixPackedFlags()
 	return floor(u_time_and_pad.x + 0.5f);
 }
 
+bool StereoFixPackedFlagEnabled(float bit)
+{
+	return (fmod(floor(StereoFixPackedFlags() / bit), 2.0f) > 0.5f);
+}
+
 bool StereoFixExtendEdgesEnabled()
 {
-	return (fmod(StereoFixPackedFlags(), 2.0f) > 0.5f);
+	return StereoFixPackedFlagEnabled(1.0f);
 }
 
 bool StereoFixCRTFilterEnabled()
 {
-	return (StereoFixPackedFlags() >= 2.0f);
+	return StereoFixPackedFlagEnabled(2.0f);
+}
+
+bool StereoFixStereoModeEnabled()
+{
+	return StereoFixPackedFlagEnabled(4.0f);
 }
 
 float2 StereoFixAdjustUV(float2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return uv;
+
 	const float shift = u_source_rect.x;
 	const float tilt = u_source_rect.y;
 	const float extendBorder = u_target_rect.y;
@@ -77,6 +90,9 @@ float2 StereoFixAdjustUV(float2 uv)
 
 bool StereoFixIsOutside(float2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return false;
+
 	const float tilt = u_source_rect.y;
 	const float sourceWidth = max(u_rcp_source_resolution.x, 1.0f);
 	const float tiltUV = tilt / sourceWidth;
@@ -89,6 +105,9 @@ bool StereoFixIsOutside(float2 uv)
 
 float StereoFixFade(float2 uv)
 {
+	if (!StereoFixStereoModeEnabled())
+		return 1.0f;
+
 	const float tilt = u_source_rect.y;
 	const float vignetteSize = u_source_rect.z;
 	const float vignetteX = u_source_rect.w;
