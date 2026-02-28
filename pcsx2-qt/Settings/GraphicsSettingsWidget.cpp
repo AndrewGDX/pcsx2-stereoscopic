@@ -136,6 +136,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSwapEyes, "EmuCore/GS", "StereoSwapEyes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFlipRendering, "EmuCore/GS", "StereoFlipRendering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDisableCorrectSbsFramebufferSize, "EmuCore/GS", "StereoDisableCorrectSbsFramebufferSize", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoEnableFullSbsAspectRatio, "EmuCore/GS", "StereoEnableFullSbsAspectRatio", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderCheckedObjects, "EmuCore/GS", "StereoDontRenderCheckedObjects", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsMono, "EmuCore/GS", "StereoRenderCheckedObjectsMono", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsStereo, "EmuCore/GS", "StereoRenderCheckedObjectsStereo", false);
@@ -1119,6 +1120,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Force SBS remap to sample only the left half for both eyes."));
 		dialog()->registerWidgetHelp(m_hw.stereoFlipRendering, tr("Flip Stereo Rendering"), tr("Unchecked"),
 			tr("Flip the stereo rendering order to correct eye misalignment in some titles."));
+		dialog()->registerWidgetHelp(m_hw.stereoEnableFullSbsAspectRatio, tr("Enable Full-SBS Aspect Ratio"), tr("Checked"),
+			tr("Use per-eye viewport sizing for SBS/TAB to preserve aspect ratios on ultrawide displays."));
 		dialog()->registerWidgetHelp(m_hw.stereoDisableCorrectSbsFramebufferSize, tr("Disable Correct SBS Framebuffer Size"), tr("Unchecked"),
 			tr("Disable the corrected stereo framebuffer size and revert to legacy targets for debugging."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectColclip, tr("Reject Colclip"), tr("Unchecked"),
@@ -2082,6 +2085,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoSbsRemapMono->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoCloseDepthFix->setEnabled(stereo_enabled);
+	m_hw.stereoEnableFullSbsAspectRatio->setEnabled(stereo_enabled);
 	m_hw.stereoSkyFix->setEnabled(stereo_enabled);
 	m_hw.stereoRequireRtaCorrection->setEnabled(stereo_enabled);
 	m_hw.stereoFixStencilShadows1->setEnabled(stereo_enabled);

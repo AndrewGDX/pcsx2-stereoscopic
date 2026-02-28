@@ -892,6 +892,7 @@ struct Pcsx2Config
 		bool StereoSwapEyes = false;
 		bool StereoFlipRendering = false;
 		bool StereoDisableCorrectSbsFramebufferSize = false;
+		bool StereoEnableFullSbsAspectRatio = true;
 		bool StereoDontRenderCheckedObjects = false;
 		bool StereoRenderCheckedObjectsMono = false;
 		bool StereoRenderCheckedObjectsStereo = false;
