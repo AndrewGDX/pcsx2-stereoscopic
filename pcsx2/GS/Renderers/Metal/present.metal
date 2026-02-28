@@ -36,36 +36,19 @@ static float3 luminance_blend(float3 color, constant GSMTLPresentPSUniform& cb);
 static float3 levels(float3 color, constant GSMTLPresentPSUniform& cb);
 static float3 apply_crt_guest_hd(float2 uv, float3 color, thread ConvertPSRes& res, constant GSMTLPresentPSUniform& cb);
 
-static float stereo_fix_packed_flags(constant GSMTLPresentPSUniform& cb)
-{
-	return floor(cb.time_and_pad.x + 0.5f);
-}
-
-static bool stereo_fix_packed_flag_enabled(float bit, constant GSMTLPresentPSUniform& cb)
-{
-	return (fmod(floor(stereo_fix_packed_flags(cb) / bit), 2.0f) > 0.5f);
-}
-
 static bool stereo_fix_extend_edges_enabled(constant GSMTLPresentPSUniform& cb)
 {
-	return stereo_fix_packed_flag_enabled(1.0f, cb);
+	return ((cb.time_and_pad.x > 0.5f && cb.time_and_pad.x < 1.5f) ||
+		(cb.time_and_pad.x > 2.5f && cb.time_and_pad.x < 3.5f));
 }
 
 static bool stereo_fix_crt_filter_enabled(constant GSMTLPresentPSUniform& cb)
 {
-	return stereo_fix_packed_flag_enabled(2.0f, cb);
-}
-
-static bool stereo_fix_mode_enabled(constant GSMTLPresentPSUniform& cb)
-{
-	return stereo_fix_packed_flag_enabled(4.0f, cb);
+	return (cb.time_and_pad.x > 1.5f);
 }
 
 static float2 stereo_fix_adjust_uv(float2 uv, constant GSMTLPresentPSUniform& cb)
 {
-	if (!stereo_fix_mode_enabled(cb))
-		return uv;
-
 	const float shift = cb.source_rect.x;
 	const float tilt = cb.source_rect.y;
 	const float extend_border = cb.target_rect.y;
@@ -86,9 +69,6 @@ static float2 stereo_fix_adjust_uv(float2 uv, constant GSMTLPresentPSUniform& cb
 
 static bool stereo_fix_is_outside(float2 uv, constant GSMTLPresentPSUniform& cb)
 {
-	if (!stereo_fix_mode_enabled(cb))
-		return false;
-
 	const float source_width = max(cb.rcp_source_resolution.x, 1.0f);
 	const float tilt_uv = cb.source_rect.y / source_width;
 
@@ -100,9 +80,6 @@ static bool stereo_fix_is_outside(float2 uv, constant GSMTLPresentPSUniform& cb)
 
 static float stereo_fix_fade(float2 uv, constant GSMTLPresentPSUniform& cb)
 {
-	if (!stereo_fix_mode_enabled(cb))
-		return 1.0f;
-
 	const float tilt = cb.source_rect.y;
 	const float vignette_size = cb.source_rect.z;
 	const float vignette_x = cb.source_rect.w;

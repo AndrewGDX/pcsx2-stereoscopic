@@ -261,8 +261,7 @@ struct alignas(16) DisplayConstantBuffer
 		SourceResolution = GSVector2(GSConfig.StereoFix_WhiteLevel, GSConfig.StereoFix_Temperature);
 		RcpSourceResolution = GSVector2(static_cast<float>(sourceSize.x), static_cast<float>(sourceSize.y));
 		const float packedFlags = (enableExtendEdges ? 1.0f : 0.0f) +
-			(GSConfig.StereoFix_EnableCRTFilter ? 2.0f : 0.0f) +
-			(stereoAdjustmentsEnabled ? 4.0f : 0.0f);
+			(GSConfig.StereoFix_EnableCRTFilter ? 2.0f : 0.0f);
 		TimeAndPad = GSVector4(packedFlags,
 			GSConfig.StereoFix_EnableAutoGamma ? 1.0f : 0.0f,
 			GSConfig.StereoFix_EnableLuminanceBlend ? 1.0f : 0.0f,
