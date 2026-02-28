@@ -712,8 +712,15 @@
 		  </property>
 		 </widget>
 		</item>
-        <item>
-         <widget class="QFrame">
+		<item>
+		 <widget class="QCheckBox" name="stereoEnableFullSbsAspectRatio">
+		  <property name="text">
+		   <string>Enable 'Full SBS' aspect ratio</string>
+		  </property>
+		 </widget>
+		</item>
+		<item>
+		 <widget class="QFrame">
           <property name="frameShape">
            <enum>QFrame::HLine</enum>
           </property>
@@ -3094,6 +3101,8 @@
 	    <tabstop>stereoDisableInstancedRendering</tabstop>
 	    <tabstop>stereoSbsRemapMono</tabstop>
 	    <tabstop>stereoFlipRendering</tabstop>
+	    <tabstop>stereoDisableCorrectSbsFramebufferSize</tabstop>
+	    <tabstop>stereoEnableFullSbsAspectRatio</tabstop>
 	    <tabstop>stereoCloseDepthFix</tabstop>
 	    <tabstop>stereoSkyFix</tabstop>
 	    <tabstop>stereoRequireRtaCorrection</tabstop>

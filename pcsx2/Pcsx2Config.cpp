@@ -929,6 +929,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoSwapEyes) &&
 		OpEqu(StereoFlipRendering) &&
 		OpEqu(StereoDisableCorrectSbsFramebufferSize) &&
+		OpEqu(StereoEnableFullSbsAspectRatio) &&
 		OpEqu(StereoDontRenderCheckedObjects) &&
 		OpEqu(StereoRenderCheckedObjectsMono) &&
 		OpEqu(StereoRenderCheckedObjectsStereo) &&
@@ -1514,6 +1515,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoSwapEyes);
 	SettingsWrapEntry(StereoFlipRendering);
 	SettingsWrapEntry(StereoDisableCorrectSbsFramebufferSize);
+	SettingsWrapEntry(StereoEnableFullSbsAspectRatio);
 	SettingsWrapEntry(StereoDontRenderCheckedObjects);
 	SettingsWrapEntry(StereoRenderCheckedObjectsMono);
 	SettingsWrapEntry(StereoRenderCheckedObjectsStereo);
