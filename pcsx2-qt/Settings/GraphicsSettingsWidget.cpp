@@ -967,21 +967,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoUiDetectFullscreenSprite, tr("UI Detect: Fullscreen Sprite"), tr("Unchecked"),
 			tr("Mark fullscreen sprite passes as UI."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerSelector1, tr("UI Second Layer: Selector 1"), tr("Unchecked"),
-			tr("Test option for UI second layer selection."));
+			tr("Option for UI second layer selection."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerSelector2, tr("UI Second Layer: Selector 2"), tr("Unchecked"),
-			tr("Test option for UI second layer selection."));
+			tr("Option for UI second layer selection."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerSelector3, tr("UI Second Layer: Selector 3"), tr("Unchecked"),
-			tr("Test option for UI second layer selection."));
+			tr("Option for UI second layer selection."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerSelector4, tr("UI Second Layer: Selector 4"), tr("Unchecked"),
-			tr("Test option for UI second layer selection."));
+			tr("Option for UI second layer selection."));
 		dialog()->registerWidgetHelp(m_hw.stereoUiSecondLayerSelector5, tr("UI Second Layer: Selector 5"), tr("Unchecked"),
-			tr("Test option for UI second layer selection."));
+			tr("Option for UI second layer selection."));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFixTest, tr("Master FIX Test"), tr("Unchecked"),
 			tr("Experimental test toggle for stereo fixes."));
 		dialog()->registerWidgetHelp(m_hw.stereoCloseDepthFix, tr("Close Depth Fix"), tr("Unchecked"),
-			tr("Disable stereoscopy for very close depth ranges (God of War, Gun)."));
+			tr("Makes stereoscopy works with different parameter for games that uses clamped depth (God of War, Gun)."));
 		dialog()->registerWidgetHelp(m_hw.stereoSkyFix, tr("Sky Fix"), tr("Unchecked"),
-			tr("Fix for sky depth issues, when some far away objects renders as very close one"));
+			tr("Fix for sky depth issues, when some far away objects renders as very close one (fix is not perfect at the moment)"));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFix1, tr("Master FIX 1"), tr("Unchecked"),
 			tr("Additional stereo fix toggle."));
 		dialog()->registerWidgetHelp(m_hw.stereoMasterFix2, tr("Master FIX 2"), tr("Unchecked"),
@@ -1115,15 +1115,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoFeedbackLoopSourceFromTargetOnly, tr("Source From Target Only"), tr("Unchecked"),
 			tr("Detect feedback loops using only the source-from-target signal for precision."));
 		dialog()->registerWidgetHelp(m_hw.stereoDisableInstancedRendering, tr("Disable Instanced Rendering"), tr("Unchecked"),
-			tr("Disable instanced rendering, this will reduce performance."));
+			tr("Disable instanced rendering, this will reduce performance and not recommended in 99% of cases."));
 		dialog()->registerWidgetHelp(m_hw.stereoSbsRemapMono, tr("SBS Remap Mono"), tr("Unchecked"),
 			tr("Force SBS remap to sample only the left half for both eyes."));
 		dialog()->registerWidgetHelp(m_hw.stereoFlipRendering, tr("Flip Stereo Rendering"), tr("Unchecked"),
-			tr("Flip the stereo rendering order to correct eye misalignment in some titles."));
-		dialog()->registerWidgetHelp(m_hw.stereoEnableFullSbsAspectRatio, tr("Enable Full-SBS Aspect Ratio"), tr("Checked"),
-			tr("Use per-eye viewport sizing for SBS/TAB to preserve aspect ratios on ultrawide displays."));
+			tr("Flip the internal stereo rendering orientation from SBS to TAB, not recommended in 99% of cases."));
+		dialog()->registerWidgetHelp(m_hw.stereoEnableFullSbsAspectRatio, tr("Enable 'Full SBS' Aspect Ratio"), tr("Checked"),
+			tr("Sets correct aspect ratio if you want to use Full SBS mode in AR/VR glasses."));
 		dialog()->registerWidgetHelp(m_hw.stereoDisableCorrectSbsFramebufferSize, tr("Disable Correct SBS Framebuffer Size"), tr("Unchecked"),
-			tr("Disable the corrected stereo framebuffer size and revert to legacy targets for debugging."));
+			tr("Uses half of resolution per each eye, can be better option for a lot of games, but can break other games.<br> "
+			"If this is disabled, in a lot of cases you need to set 'Feedback Loop Fix' to off."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectColclip, tr("Reject Colclip"), tr("Unchecked"),
 			tr("Disable stereoscopy when color clipping is active."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectRtaCorrection, tr("Reject RTA Correction"), tr("Unchecked"),
@@ -1243,7 +1244,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoUniversalRejectScanmask, tr("Reject Scanmask"), tr("Unchecked"),
 			tr("Universal fix: disable stereoscopy when scanmask is non-zero."));
 		dialog()->registerWidgetHelp(m_hw.stereoRequireRtaCorrection, tr("Require RTA Correction"), tr("Unchecked"),
-			tr("Universal fix: only allow stereoscopy when RTA correction is active."));
+			tr("Fixes shadows in some games (fix is not perfect at the moment)"));
 		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireRtaSourceCorrection, tr("Require RTA Source Correction"), tr("Unchecked"),
 			tr("Universal fix: only allow stereoscopy when RTA source correction is active."));
 		dialog()->registerWidgetHelp(m_hw.stereoUniversalRequireColclipHw, tr("Require Colclip HW"), tr("Unchecked"),
@@ -1419,7 +1420,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFst, tr("Reject Fixed ST"), tr("Unchecked"),
 			tr("Disable stereoscopy when fixed texture coordinates are used (Gran Turismo 4, Need for Speed series)"));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows1, tr("Fix Stencil Shadows"), tr("Unchecked"),
-			tr("Disable stereoscopy for stencil shadow passes to reduce post-processing artifacts (Tekken 5, Soul Calibur 3)"));
+			tr("Disable stereoscopy for stencil shadow passes (Tekken 5, Soul Calibur 3)"));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows2, tr("Stencil Shadows 2"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for specific titles."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFixedQ, tr("Reject Fixed Q"), tr("Unchecked"),
@@ -2042,7 +2043,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 {
 	const std::string effective_mode = dialog()->getEffectiveStringValue("EmuCore/GS", "StereoMode", "Side by Side");
 	const bool stereo_enabled = (effective_mode != "Off");
-	const bool disable_correct_sbs_framebuffer_size = m_hw.stereoDisableCorrectSbsFramebufferSize->isChecked();
+	const bool sbs_mode_enabled = (effective_mode == "Side by Side");
 	const bool ui_detect_threshold_enabled = dialog()->getEffectiveIntValue("EmuCore/GS", "StereoUiDetectMode", 3) != 0;
 	const bool checked_objects_controls_enabled = m_hw.stereoDontRenderCheckedObjects->isChecked() || m_hw.stereoRenderCheckedObjectsMono->isChecked()
 			|| m_hw.stereoRenderCheckedObjectsStereo->isChecked();
@@ -2068,6 +2069,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoUiDetectThresholdLabel->setEnabled(stereo_enabled && ui_detect_threshold_enabled);
 	m_hw.stereoUiDetectThreshold->setEnabled(stereo_enabled && ui_detect_threshold_enabled);
 	m_hw.stereoUiDetectThresholdValue->setEnabled(stereo_enabled && ui_detect_threshold_enabled);
+	m_hw.stereoAdditionalUiDetectionLabel->setEnabled(stereo_enabled);
 	m_hw.stereoRejectZTestAlways->setEnabled(stereo_enabled);
 	m_hw.stereoStencilRequireZTestGequal->setEnabled(stereo_enabled);
 	m_hw.stereoRequireZVaries->setEnabled(stereo_enabled);
@@ -2076,15 +2078,19 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoUiDetectFst->setEnabled(stereo_enabled);
 	m_hw.stereoUiDetectFullscreenDrawArea->setEnabled(stereo_enabled);
 	m_hw.stereoUiDetectFullscreenSprite->setEnabled(stereo_enabled);
+	m_hw.stereoUiSecondLayerDetectionLabel->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerSelector1->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerSelector2->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerSelector3->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerSelector4->setEnabled(stereo_enabled);
 	m_hw.stereoUiSecondLayerSelector5->setEnabled(stereo_enabled);
+	m_hw.stereoPresentationFixesLabel->setEnabled(stereo_enabled);
+	m_hw.stereoDisableCorrectSbsFramebufferSize->setEnabled(sbs_mode_enabled);
 	m_hw.stereoDisableInstancedRendering->setEnabled(stereo_enabled);
 	m_hw.stereoSbsRemapMono->setEnabled(stereo_enabled);
 	m_hw.stereoFlipRendering->setEnabled(stereo_enabled);
 	m_hw.stereoCloseDepthFix->setEnabled(stereo_enabled);
+	m_hw.stereoRenderingFixesLabel->setEnabled(stereo_enabled);
 	m_hw.stereoEnableFullSbsAspectRatio->setEnabled(stereo_enabled);
 	m_hw.stereoSkyFix->setEnabled(stereo_enabled);
 	m_hw.stereoRequireRtaCorrection->setEnabled(stereo_enabled);
@@ -2093,6 +2099,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRejectRegionRect->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTfxDecal->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix1->setEnabled(stereo_enabled);
+	m_hw.stereoLegacyFeedbackFixesLabel->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix2->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix3->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix4->setEnabled(stereo_enabled);
