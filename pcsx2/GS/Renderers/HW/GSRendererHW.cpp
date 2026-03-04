@@ -8440,6 +8440,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool fifth_fix = PRIM->FST && !m_conf.ps.adjt && !m_conf.ps.rta_correction && m_conf.ps.blend_mix == 0
 						       && m_conf.ps.no_color1 && m_cached_ctx.ZBUF.ZMSK;
 
+		const bool small_z_range_fix = m_vt.m_max.p.z > 0.0f && z_range <= 0.01f && m_conf.ps.blend_mix == 0 && m_conf.ps.no_color
+			&& m_primitive_covers_without_gaps == NoGapsType::FullCover; // TODO research
+		const bool non_positive_z_fix = m_vt.m_max.p.z <= 0.0f && PRIM->FST && !m_conf.ps.adjt && !m_conf.ps.rta_source_correction && !m_conf.ps.iip
+			&& m_vt.m_eq.rgba == 0xFFFF && m_conf.ps.tfx != 0;
+		const bool full_cover_fix = GSConfig.StereoDisableCorrectSbsFramebufferSize && !m_conf.scissor.eq(fullscreen_rect); // MGS 3 - need to make this better
+
 		const bool movies_fix_override = process_texture && !tex_is_rt && !in_target_draw && !using_temp_z && !full_barrier
 								&& !depth_texture && !mipmap_active && fmv_active && fmv_sprite && fmv_texture_mapping
 								&& fmv_process_texture && !fmv_no_depth_test && fmv_no_fb_mask && fmv_no_shuffle
@@ -8450,6 +8456,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 								  || GSConfig.StereoMasterFix3 && third_fix
 								  || GSConfig.StereoMasterFix4 && fourth_fix
 								  || GSConfig.StereoMasterFix5 && fifth_fix;
+//								  || GSConfig.StereoMasterFixTest && ;
 
 		bool disable_stereo_pass = false;
 		bool fullscreen_sprite = tex_is_rt || m_conf.drawarea.eq(fullscreen_rect) && m_conf.ps.blend_mix != 0;
@@ -8623,11 +8630,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (GSConfig.StereoRejectFullCover) disable_stereo_pass |= m_primitive_covers_without_gaps == NoGapsType::FullCover;
 		if (GSConfig.StereoRejectScanmask) disable_stereo_pass |= m_conf.ps.scanmsk != 0;
 
-		if (GSConfig.StereoRejectZTestAlways) disable_stereo_pass |= m_cached_ctx.TEST.ZTST == ZTST_ALWAYS;
-		if (GSConfig.StereoRequireZVaries) disable_stereo_pass |= m_vt.m_eq.z;
-		if (GSConfig.StereoRejectFixedQ) disable_stereo_pass |= m_vt.m_eq.q;
-		if (GSConfig.StereoStencilRequireZTestGequal) disable_stereo_pass |= m_cached_ctx.TEST.ZTST != ZTST_GEQUAL && m_cached_ctx.TEST.ZTST != ZTST_GREATER;
-
 		if (GSConfig.StereoRequirePerspectiveUV) disable_stereo_pass |= !perspective_uv;
 		if (GSConfig.StereoRequireDepthActive) disable_stereo_pass |= !depth_active;
 		if (GSConfig.StereoRejectSprites) disable_stereo_pass |= m_vt.m_primclass == GS_SPRITE_CLASS;
@@ -8685,8 +8687,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (GSConfig.StereoRejectProcessTexture) disable_stereo_pass |= process_texture;
 		if (GSConfig.StereoRequireSourceFromTarget) disable_stereo_pass |= !source_from_target;
 		if (GSConfig.StereoRejectSourceFromTarget) disable_stereo_pass |= source_from_target;
-//			if (GSConfig.StereoRequireDrawUsesTarget) disable_stereo_pass |= !draw_uses_target_tex;
-//			if (GSConfig.StereoRejectDrawUsesTarget) disable_stereo_pass |= draw_uses_target_tex;
+		if (GSConfig.StereoRequireDrawUsesTarget) disable_stereo_pass |= !draw_uses_target_tex;
+		if (GSConfig.StereoRejectDrawUsesTarget) disable_stereo_pass |= draw_uses_target_tex;
 		if (GSConfig.StereoRequireTexIsRt) disable_stereo_pass |= !tex_is_rt;
 		if (GSConfig.StereoRejectTexIsRt) disable_stereo_pass |= tex_is_rt;
 		if (GSConfig.StereoRequireInTargetDraw) disable_stereo_pass |= !in_target_draw;
@@ -8811,14 +8813,15 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			safe_master_fix = false;
 			break;
 		case 1: // Safe
-			safe_master_fix = !movies_fix_override && tex && tex->m_from_target && (first_fix || second_fix || third_fix || fourth_fix || fifth_fix);
+			safe_master_fix = !movies_fix_override && (small_z_range_fix || non_positive_z_fix);
 			break;
 		case 2: // Moderate
-			safe_master_fix = !movies_fix_override && tex && tex->m_from_target && (first_fix || second_fix || third_fix || fourth_fix || fifth_fix
-						    || PRIM->FST && !m_conf.ps.adjt);
+			safe_master_fix = !movies_fix_override && (small_z_range_fix || non_positive_z_fix
+							|| tex && tex->m_from_target && (first_fix || second_fix || third_fix || fourth_fix || fifth_fix
+						    || PRIM->FST && !m_conf.ps.adjt));
 			break;
 		case 3: // Full
-			safe_master_fix = !movies_fix_override && ((third_fix || fourth_fix || fifth_fix)
+			safe_master_fix = !movies_fix_override && (small_z_range_fix || non_positive_z_fix || full_cover_fix || third_fix || fourth_fix || fifth_fix
 						     || tex && tex->m_from_target && (first_fix || second_fix || third_fix || fourth_fix || fifth_fix
 						     || PRIM->FST && !m_conf.ps.adjt)); // TODO add m_conf.ps.region_rect option for yakuza
 			break;
@@ -8829,6 +8832,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 						&& (!GSConfig.StereoRequireRtaCorrection || !m_conf.ps.rta_correction) // Tekken 4, MK shadows fix
 						&& (!GSConfig.StereoFixStencilShadows1 || !(m_vt.m_eq.q && !m_vt.m_eq.z && depth_active)) // Tekken 5 shadows fix
 						&& (!GSConfig.StereoFixStencilShadows2 || !(m_conf.ps.blend_mix == 0 && !m_conf.ps.tcc && !m_conf.ps.automatic_lod && !m_conf.ps.adjs)) // Tekken 4, Onimusha 3 shadows fix
+						&& (!GSConfig.StereoRenderCheckedObjectsMono || !disable_stereo_pass)
 						// TODO breaks Medal of Honor menu
 						|| GSConfig.StereoMasterFixMovies && movies_fix_override
 						|| GSConfig.StereoRenderCheckedObjectsStereo && disable_stereo_pass);
@@ -8933,10 +8937,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 			float ui_depth = std::min(GSConfig.StereoSeparation, GSConfig.StereoUiDepth + (increase_depth ? GSConfig.StereoUiSecondLayerDepth : 0.0f) - (ui_top_layer ? 0.5f : 0.0f));
 
-			if (GSConfig.StereoRenderCheckedObjectsMono && disable_stereo_pass) ui_detect = true;
+			if (GSConfig.StereoRenderCheckedObjectsUI && disable_stereo_pass) ui_detect = true;
 
 			if (GSConfig.StereoSkyFix && !ui_detect && m_vt.m_max.p.z > 882000
-				&& (m_conf.ps.fog && constant_color && (m_conf.ps.blend_b != 0 || m_conf.ps.blend_d != 0) || fullscreen_draw_area))
+				&& (m_conf.ps.fog && constant_color && (m_conf.ps.blend_b != 0 || m_conf.ps.blend_d != 0) || fullscreen_draw_area)
+				|| GSConfig.StereoCloseDepthFix && !ui_detect && m_vt.m_max.p.z < 2.0f)
 			{
 				ui_detect = true;
 				ui_depth = GSConfig.StereoSeparation;
@@ -8952,9 +8957,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			    separation = ui_detect ? 0.01f : (GSConfig.StereoSeparation + 0.000001f) * 0.001f;
 			}
 
-			const float convergence = ui_detect ? 1.0f : GSConfig.StereoConvergence * GSConfig.StereoConvergence * 50.0f;
+			float convergence = ui_detect ? 1.0f : GSConfig.StereoConvergence * GSConfig.StereoConvergence * 50.0f;
 			const float screen_depth = ui_detect ? ui_depth * 100.0f : GSConfig.StereoCloseDepthFix ? 1.0f : 0.0f;
 			const int dominant_mode = static_cast<int>(GSConfig.StereoDominantEye);
+
+			if (GSConfig.StereoFixStencilShadows3 && !ui_detect && m_vt.m_eq.rgba != 0xFFFF && !m_conf.ps.iip && m_vt.m_eq.q) // God of War, Gun shadows fix
+			{
+				convergence = -convergence;
+			}
 
 			if (!GSConfig.StereoDisableInstancedRendering)
 			{

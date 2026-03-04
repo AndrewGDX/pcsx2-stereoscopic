@@ -908,6 +908,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoDontRenderCheckedObjects) &&
 		OpEqu(StereoRenderCheckedObjectsMono) &&
 		OpEqu(StereoRenderCheckedObjectsStereo) &&
+		OpEqu(StereoRenderCheckedObjectsUI) &&
 		OpEqu(StereoRejectNonPositiveZ) &&
 		OpEqu(StereoRejectSmallZRange) &&
 		OpEqu(StereoCloseDepthFix) &&
@@ -928,6 +929,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRequireDisplayBuffer2) &&
 		OpEqu(StereoFixStencilShadows1) &&
 		OpEqu(StereoFixStencilShadows2) &&
+		OpEqu(StereoFixStencilShadows3) &&
 		OpEqu(StereoRequirePerspectiveUV) &&
 		OpEqu(StereoRequireZVaries) &&
 		OpEqu(StereoRequireDepthActive) &&
@@ -1469,6 +1471,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoDontRenderCheckedObjects);
 	SettingsWrapEntry(StereoRenderCheckedObjectsMono);
 	SettingsWrapEntry(StereoRenderCheckedObjectsStereo);
+	SettingsWrapEntry(StereoRenderCheckedObjectsUI);
 	SettingsWrapEntry(StereoRejectNonPositiveZ);
 	SettingsWrapEntry(StereoRejectSmallZRange);
 	SettingsWrapEntry(StereoCloseDepthFix);
@@ -1489,6 +1492,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRequireDisplayBuffer2);
 	SettingsWrapEntry(StereoFixStencilShadows1);
 	SettingsWrapEntry(StereoFixStencilShadows2);
+	SettingsWrapEntry(StereoFixStencilShadows3);
 	SettingsWrapEntry(StereoRequirePerspectiveUV);
 	SettingsWrapEntry(StereoRequireZVaries);
 	SettingsWrapEntry(StereoRequireDepthActive);

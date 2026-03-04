@@ -140,6 +140,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderCheckedObjects, "EmuCore/GS", "StereoDontRenderCheckedObjects", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsMono, "EmuCore/GS", "StereoRenderCheckedObjectsMono", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsStereo, "EmuCore/GS", "StereoRenderCheckedObjectsStereo", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsUI, "EmuCore/GS", "StereoRenderCheckedObjectsUI", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNonPositiveZ, "EmuCore/GS", "StereoRejectNonPositiveZ", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallZRange, "EmuCore/GS", "StereoRejectSmallZRange", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteBlit, "EmuCore/GS", "StereoRejectSpriteBlit", false);
@@ -151,6 +152,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDisplayBuffer2, "EmuCore/GS", "StereoRequireDisplayBuffer2", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFixStencilShadows1, "EmuCore/GS", "StereoFixStencilShadows1", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFixStencilShadows2, "EmuCore/GS", "StereoFixStencilShadows2", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFixStencilShadows3, "EmuCore/GS", "StereoFixStencilShadows3", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePerspectiveUV, "EmuCore/GS", "StereoRequirePerspectiveUV", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireZVaries, "EmuCore/GS", "StereoRequireZVaries", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireDepthActive, "EmuCore/GS", "StereoRequireDepthActive", false);
@@ -224,7 +226,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFeedbackLoopClampToDominantEye, "EmuCore/GS", "StereoFeedbackLoopClampToDominantEye", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoFeedbackLoopSourceFromTargetOnly, "EmuCore/GS", "StereoFeedbackLoopSourceFromTargetOnly", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoSbsRemapMono, "EmuCore/GS", "StereoSbsRemapMono", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDisableInstancedRendering, "EmuCore/GS", "StereoInstancedRendering", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDisableInstancedRendering, "EmuCore/GS", "StereoDisableInstancedRendering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectColclip, "EmuCore/GS", "StereoRejectColclip", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectRtaCorrection, "EmuCore/GS", "StereoRejectRtaCorrection", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoUniversalRejectRtaSourceCorrection, "EmuCore/GS", "StereoUniversalRejectRtaSourceCorrection", false);
@@ -490,6 +492,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	connect(m_hw.stereoDontRenderCheckedObjects, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	connect(m_hw.stereoRenderCheckedObjectsMono, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	connect(m_hw.stereoRenderCheckedObjectsStereo, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
+	connect(m_hw.stereoRenderCheckedObjectsUI, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	onTrilinearFilteringChanged();
 	onStereoscopicModeChanged();
 
@@ -1000,6 +1003,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Render checked draws in mono instead of skipping them."));
 		dialog()->registerWidgetHelp(m_hw.stereoRenderCheckedObjectsStereo, tr("Render Checked Objects As Stereo"), tr("Unchecked"),
 			tr("Force checked draws to render in stereo even if they would otherwise be treated as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRenderCheckedObjectsUI, tr("Render Checked Objects As UI"), tr("Unchecked"),
+			tr("Render checked draws as UI to reduce double-image artifacts."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectNonPositiveZ, tr("Reject Z <= 0"), tr("Unchecked"),
 			tr("Treat draws with non-positive Z as mono."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectSmallZRange, tr("Reject Small Z Range"), tr("Unchecked"),
@@ -1423,6 +1428,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Disable stereoscopy for stencil shadow passes (Tekken 5, Soul Calibur 3)"));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows2, tr("Stencil Shadows 2"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for specific titles."));
+		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows3, tr("Stencil Shadows 3"), tr("Unchecked"),
+			tr("Alternate stencil shadow fix for God of War."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFixedQ, tr("Reject Fixed Q"), tr("Unchecked"),
 			tr("Disable stereoscopy when Q is constant across the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectAa1, tr("Reject AA1"), tr("Unchecked"),
@@ -2046,7 +2053,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	const bool sbs_mode_enabled = (effective_mode == "Side by Side");
 	const bool ui_detect_threshold_enabled = dialog()->getEffectiveIntValue("EmuCore/GS", "StereoUiDetectMode", 3) != 0;
 	const bool checked_objects_controls_enabled = m_hw.stereoDontRenderCheckedObjects->isChecked() || m_hw.stereoRenderCheckedObjectsMono->isChecked()
-			|| m_hw.stereoRenderCheckedObjectsStereo->isChecked();
+			|| m_hw.stereoRenderCheckedObjectsStereo->isChecked() || m_hw.stereoRenderCheckedObjectsUI->isChecked();
 	m_hw.stereoDominantEyeLabel->setEnabled(stereo_enabled);
 	m_hw.stereoDominantEye->setEnabled(stereo_enabled);
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
@@ -2096,6 +2103,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoRequireRtaCorrection->setEnabled(stereo_enabled);
 	m_hw.stereoFixStencilShadows1->setEnabled(stereo_enabled);
 	m_hw.stereoFixStencilShadows2->setEnabled(stereo_enabled);
+	m_hw.stereoFixStencilShadows3->setEnabled(stereo_enabled);
 	m_hw.stereoRejectRegionRect->setEnabled(stereo_enabled);
 	m_hw.stereoRejectTfxDecal->setEnabled(stereo_enabled);
 	m_hw.stereoMasterFix1->setEnabled(stereo_enabled);
@@ -2109,8 +2117,9 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoDontRenderCheckedObjects->setEnabled(stereo_enabled);
 	m_hw.stereoRenderCheckedObjectsMono->setEnabled(stereo_enabled);
 	m_hw.stereoRenderCheckedObjectsStereo->setEnabled(stereo_enabled);
+	m_hw.stereoRenderCheckedObjectsUI->setEnabled(stereo_enabled);
 
-	const int start_index = m_hw.stereoMonoObjectLayout->indexOf(m_hw.stereoRenderCheckedObjectsStereo);
+	const int start_index = m_hw.stereoMonoObjectLayout->indexOf(m_hw.stereoRenderCheckedObjectsUI);
 	if (start_index >= 0)
 	{
 		auto set_checkbox_enabled = [&](QLayoutItem* item, auto& set_checkbox_enabled_ref) -> void {
