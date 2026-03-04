@@ -596,35 +596,35 @@
         <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector1">
           <property name="text">
-           <string>UI Second Layer: Selector 1</string>
+           <string>UI Second Layer 1: Fullscreen Draw Area</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector2">
           <property name="text">
-           <string>UI Second Layer: Selector 2</string>
+           <string>UI Second Layer 2: Require Z Varies &amp; Reject Fixed Q</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector3">
           <property name="text">
-           <string>UI Second Layer: Selector 3</string>
+           <string>UI Second Layer 3: No Blend Mix</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector4">
           <property name="text">
-           <string>UI Second Layer: Selector 4</string>
+           <string>UI Second Layer 4: No Color &amp; Blend Mix</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="stereoUiSecondLayerSelector5">
           <property name="text">
-           <string>UI Second Layer: Selector 5</string>
+           <string>UI Second Layer 5: Advanced Selector</string>
           </property>
          </widget>
         </item>
@@ -648,6 +648,13 @@
 		  </property>
 		  <property name="text">
 		   <string>Presentation Fixes</string>
+		  </property>
+		 </widget>
+		</item>
+		<item>
+		 <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
+		  <property name="text">
+		   <string>Alternative Rendering (Disable full framebuffer for each eye)</string>
 		  </property>
 		 </widget>
 		</item>
@@ -723,13 +730,6 @@
           </item>
          </layout>
         </item>
-		<item>
-		 <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
-		  <property name="text">
-		   <string>Disable full framebuffer for each eye (try!)</string>
-		  </property>
-		 </widget>
-		</item>
         <item>
 		 <widget class="QCheckBox" name="stereoDisableInstancedRendering">
 		  <property name="text">
@@ -798,7 +798,7 @@
         <item>
          <widget class="QCheckBox" name="stereoRequireRtaCorrection">
           <property name="text">
-           <string>Shadows Fix: Require RTA Correction (MK, COD shadows fix)</string>
+           <string>Shadows Fix 0: Require RTA Correction (MK, COD shadows fix)</string>
           </property>
          </widget>
         </item>
@@ -813,6 +813,13 @@
          <widget class="QCheckBox" name="stereoFixStencilShadows2">
           <property name="text">
            <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFixStencilShadows3">
+          <property name="text">
+           <string>Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)</string>
           </property>
          </widget>
         </item>
@@ -934,6 +941,20 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="stereoRenderCheckedObjectsSbsRemap">
+          <property name="text">
+           <string>RENDER CHECKED OBJECTS AS SBS REMAP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRenderCheckedObjectsUI">
+          <property name="text">
+           <string>RENDER CHECKED OBJECTS AS UI</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="stereoRejectNonPositiveZ">
           <property name="text">
            <string>Double Image Fix: Reject Z &lt;= 0</string>
@@ -1000,139 +1021,6 @@
          <widget class="QCheckBox" name="stereoRejectFeedbackLoop">
           <property name="text">
            <string>PostFX Reflections Fix: Reject Feedback Loop</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopAny">
-          <property name="text">
-           <string>Feedback Loop: Require Any</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopAny">
-          <property name="text">
-           <string>Feedback Loop: Reject Any</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopShader">
-          <property name="text">
-           <string>Feedback Loop: Require Shader Path</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopShader">
-          <property name="text">
-           <string>Feedback Loop: Reject Shader Path</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopDrawUsesTarget">
-          <property name="text">
-           <string>Feedback Loop: Require Draw Uses Target</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopDrawUsesTarget">
-          <property name="text">
-           <string>Feedback Loop: Reject Draw Uses Target</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTexIsRt">
-          <property name="text">
-           <string>Feedback Loop: Require Texture Is RT</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTexIsRt">
-          <property name="text">
-           <string>Feedback Loop: Reject Texture Is RT</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopSourceFromTarget">
-          <property name="text">
-           <string>Feedback Loop: Require Source From Target</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopSourceFromTarget">
-          <property name="text">
-           <string>Feedback Loop: Reject Source From Target</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopInTargetDraw">
-          <property name="text">
-           <string>Feedback Loop: Require In-Target Draw</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopInTargetDraw">
-          <property name="text">
-           <string>Feedback Loop: Reject In-Target Draw</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTempZ">
-          <property name="text">
-           <string>Feedback Loop: Require Temp Z</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTempZ">
-          <property name="text">
-           <string>Feedback Loop: Reject Temp Z</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRequireFeedbackLoopOverlapDrawRange">
-          <property name="text">
-           <string>Feedback Loop: Require Overlap Draw Range</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoRejectFeedbackLoopOverlapDrawRange">
-          <property name="text">
-           <string>Feedback Loop: Reject Overlap Draw Range</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoFeedbackLoopDisableStereo">
-          <property name="text">
-           <string>Feedback Loop: Disable Stereo</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoFeedbackLoopClampToDominantEye">
-          <property name="text">
-           <string>Feedback Loop: Clamp To Dominant Eye</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoFeedbackLoopSourceFromTargetOnly">
-          <property name="text">
-           <string>Feedback Loop: Source From Target Only</string>
           </property>
          </widget>
         </item>
@@ -2110,6 +1998,265 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="stereoRequireTextureDisplayBuffer2">
+          <property name="text">
+           <string>Checked Filter: Require Texture Match Display Buffer 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectTextureDisplayBuffer2">
+          <property name="text">
+           <string>Checked Filter: Reject Texture Match Display Buffer 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimTme">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.TME</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimTme">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.TME</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimFst">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.FST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimFst">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.FST</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimAbe">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.ABE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimAbe">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.ABE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimFge">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.FGE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimFge">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.FGE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimIip">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.IIP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimIip">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.IIP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimAa1">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.AA1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimAa1">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.AA1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimCtxt">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.CTXT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimCtxt">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.CTXT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequirePrimFix">
+          <property name="text">
+           <string>Checked Filter: Require PRIM.FIX</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectPrimFix">
+          <property name="text">
+           <string>Checked Filter: Reject PRIM.FIX</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Require Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopAny">
+          <property name="text">
+           <string>Feedback Loop: Reject Any</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Require Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopShader">
+          <property name="text">
+           <string>Feedback Loop: Reject Shader Path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopDrawUsesTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Draw Uses Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Require Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTexIsRt">
+          <property name="text">
+           <string>Feedback Loop: Reject Texture Is RT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Require Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopSourceFromTarget">
+          <property name="text">
+           <string>Feedback Loop: Reject Source From Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Require In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopInTargetDraw">
+          <property name="text">
+           <string>Feedback Loop: Reject In-Target Draw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Require Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopTempZ">
+          <property name="text">
+           <string>Feedback Loop: Reject Temp Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRequireFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Require Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoRejectFeedbackLoopOverlapDrawRange">
+          <property name="text">
+           <string>Feedback Loop: Reject Overlap Draw Range</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopDisableStereo">
+          <property name="text">
+           <string>Feedback Loop: Disable Stereo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopClampToDominantEye">
+          <property name="text">
+           <string>Feedback Loop: Clamp To Dominant Eye</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoFeedbackLoopSourceFromTargetOnly">
+          <property name="text">
+           <string>Feedback Loop: Source From Target Only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="stereoStencilRequireTexIsFb">
           <property name="text">
            <string>Stencil: Require Tex-is-FB</string>
@@ -2190,13 +2337,6 @@
          <widget class="QCheckBox" name="stereoStencilRequireDatm">
           <property name="text">
            <string>Stencil: Require DATM</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="stereoStencilRequireAte">
-          <property name="text">
-           <string>Stencil: Require Alpha Test</string>
           </property>
          </widget>
         </item>
@@ -3131,95 +3271,79 @@
   </layout>
  </widget>
   <tabstops>
+   <tabstop>dithering</tabstop>
+   <tabstop>enableHWFixes</tabstop>
+   <tabstop>mipmapping</tabstop>
+   <tabstop>anisotropicFiltering</tabstop>
    <tabstop>upscaleMultiplier</tabstop>
    <tabstop>textureFiltering</tabstop>
-   <tabstop>trilinearFiltering</tabstop>
-   <tabstop>anisotropicFiltering</tabstop>
-   <tabstop>dithering</tabstop>
    <tabstop>blending</tabstop>
-   <tabstop>mipmapping</tabstop>
-   <tabstop>enableHWFixes</tabstop>
-	    <tabstop>stereoscopicMode</tabstop>
-	    <tabstop>stereoDominantEye</tabstop>
-	    <tabstop>stereoSwapEyes</tabstop>
-	    <tabstop>stereoSeparation</tabstop>
-	    <tabstop>stereoConvergence</tabstop>
-	    <tabstop>stereoUiDepth</tabstop>
-	    <tabstop>stereoUiSecondLayerDepth</tabstop>
-	    <tabstop>stereoUiDetectMode</tabstop>
-	    <tabstop>stereoUiDetectThreshold</tabstop>
-	    <tabstop>stereoRejectZTestAlways</tabstop>
-	    <tabstop>stereoStencilRequireZTestGequal</tabstop>
-	    <tabstop>stereoRequireZVaries</tabstop>
-	    <tabstop>stereoRejectFixedQ</tabstop>
-	    <tabstop>stereoUiDetectSkyDepth</tabstop>
-	    <tabstop>stereoUiDetectFst</tabstop>
-	    <tabstop>stereoUiDetectFullscreenDrawArea</tabstop>
-	    <tabstop>stereoUiDetectFullscreenSprite</tabstop>
-	    <tabstop>stereoUiSecondLayerSelector1</tabstop>
-	    <tabstop>stereoUiSecondLayerSelector2</tabstop>
-	    <tabstop>stereoUiSecondLayerSelector3</tabstop>
-	    <tabstop>stereoUiSecondLayerSelector4</tabstop>
-	    <tabstop>stereoUiSecondLayerSelector5</tabstop>
-	    <tabstop>stereoFeedbackLoopFix</tabstop>
-	    <tabstop>stereoSbsRemapFix</tabstop>
-	    <tabstop>stereoDisableCorrectSbsFramebufferSize</tabstop>
-	    <tabstop>stereoDisableInstancedRendering</tabstop>
-	    <tabstop>stereoFlipRendering</tabstop>
-	    <tabstop>stereoSbsRemapMono</tabstop>
-	    <tabstop>stereoEnableFullSbsAspectRatio</tabstop>
-	    <tabstop>stereoCloseDepthFix</tabstop>
-	    <tabstop>stereoSkyFix</tabstop>
-	    <tabstop>stereoRequireRtaCorrection</tabstop>
-	    <tabstop>stereoFixStencilShadows1</tabstop>
-	    <tabstop>stereoFixStencilShadows2</tabstop>
-	    <tabstop>stereoRejectRegionRect</tabstop>
-	    <tabstop>stereoRejectTfxDecal</tabstop>
-	    <tabstop>stereoMasterFix1</tabstop>
-	    <tabstop>stereoMasterFix2</tabstop>
-	    <tabstop>stereoMasterFix3</tabstop>
-	    <tabstop>stereoMasterFix4</tabstop>
-	    <tabstop>stereoMasterFix5</tabstop>
-	    <tabstop>stereoMasterFixMovies</tabstop>
-	    <tabstop>stereoMasterFixTest</tabstop>
-	    <tabstop>stereoDontRenderCheckedObjects</tabstop>
-	    <tabstop>stereoRenderCheckedObjectsMono</tabstop>
-	    <tabstop>stereoRenderCheckedObjectsStereo</tabstop>
-	    <tabstop>stereoRejectNonPositiveZ</tabstop>
-	    <tabstop>stereoRejectSmallZRange</tabstop>
-	    <tabstop>stereoRejectSpriteBlit</tabstop>
-	    <tabstop>stereoRejectFullscreenScissor</tabstop>
-	    <tabstop>stereoRejectFullscreenDraw</tabstop>
-	    <tabstop>stereoRejectFullCover</tabstop>
-	    <tabstop>stereoRejectScanmask</tabstop>
-	    <tabstop>stereoRequireDisplayBuffer1</tabstop>
-	    <tabstop>stereoRequireDisplayBuffer2</tabstop>
-	    <tabstop>stereoRejectFeedbackLoop</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopAny</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopAny</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopShader</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopShader</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopDrawUsesTarget</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopDrawUsesTarget</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopTexIsRt</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopTexIsRt</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopSourceFromTarget</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopSourceFromTarget</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopInTargetDraw</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopInTargetDraw</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopTempZ</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopTempZ</tabstop>
-	    <tabstop>stereoRequireFeedbackLoopOverlapDrawRange</tabstop>
-	    <tabstop>stereoRejectFeedbackLoopOverlapDrawRange</tabstop>
-	    <tabstop>stereoFeedbackLoopDisableStereo</tabstop>
-	    <tabstop>stereoFeedbackLoopClampToDominantEye</tabstop>
-	    <tabstop>stereoFeedbackLoopSourceFromTargetOnly</tabstop>
-	    <tabstop>stereoRejectConstantColor</tabstop>
-	    <tabstop>stereoRejectScalingDraw</tabstop>
-	    <tabstop>stereoRejectSbsInput</tabstop>
-	    <tabstop>stereoRejectTabInput</tabstop>
-	    <tabstop>stereoRejectSpriteNoGaps</tabstop>
-	    <tabstop>stereoUniversalRequireRtaSourceCorrection</tabstop>
+   <tabstop>trilinearFiltering</tabstop>
+   <tabstop>stereoscopicMode</tabstop>
+   <tabstop>stereoDominantEye</tabstop>
+   <tabstop>stereoSwapEyes</tabstop>
+   <tabstop>stereoSeparation</tabstop>
+   <tabstop>stereoConvergence</tabstop>
+   <tabstop>stereoUiDepth</tabstop>
+   <tabstop>stereoUiSecondLayerDepth</tabstop>
+   <tabstop>stereoUiDetectMode</tabstop>
+   <tabstop>stereoUiDetectThreshold</tabstop>
+   <tabstop>stereoRejectZTestAlways</tabstop>
+   <tabstop>stereoStencilRequireZTestGequal</tabstop>
+   <tabstop>stereoRequireZVaries</tabstop>
+   <tabstop>stereoRejectFixedQ</tabstop>
+   <tabstop>stereoUiDetectSkyDepth</tabstop>
+   <tabstop>stereoUiDetectFst</tabstop>
+   <tabstop>stereoUiDetectFullscreenDrawArea</tabstop>
+   <tabstop>stereoUiDetectFullscreenSprite</tabstop>
+   <tabstop>stereoUiSecondLayerSelector1</tabstop>
+   <tabstop>stereoUiSecondLayerSelector2</tabstop>
+   <tabstop>stereoUiSecondLayerSelector3</tabstop>
+   <tabstop>stereoUiSecondLayerSelector4</tabstop>
+   <tabstop>stereoUiSecondLayerSelector5</tabstop>
+   <tabstop>stereoFeedbackLoopFix</tabstop>
+   <tabstop>stereoSbsRemapFix</tabstop>
+   <tabstop>stereoDisableCorrectSbsFramebufferSize</tabstop>
+   <tabstop>stereoDisableInstancedRendering</tabstop>
+   <tabstop>stereoFlipRendering</tabstop>
+   <tabstop>stereoSbsRemapMono</tabstop>
+   <tabstop>stereoEnableFullSbsAspectRatio</tabstop>
+   <tabstop>stereoCloseDepthFix</tabstop>
+   <tabstop>stereoSkyFix</tabstop>
+   <tabstop>stereoRequireRtaCorrection</tabstop>
+   <tabstop>stereoFixStencilShadows1</tabstop>
+   <tabstop>stereoFixStencilShadows2</tabstop>
+   <tabstop>stereoFixStencilShadows3</tabstop>
+   <tabstop>stereoRejectRegionRect</tabstop>
+   <tabstop>stereoRejectTfxDecal</tabstop>
+   <tabstop>stereoMasterFix1</tabstop>
+   <tabstop>stereoMasterFix2</tabstop>
+   <tabstop>stereoMasterFix3</tabstop>
+   <tabstop>stereoMasterFix4</tabstop>
+   <tabstop>stereoMasterFix5</tabstop>
+   <tabstop>stereoMasterFixMovies</tabstop>
+   <tabstop>stereoMasterFixTest</tabstop>
+   <tabstop>stereoDontRenderCheckedObjects</tabstop>
+   <tabstop>stereoRenderCheckedObjectsMono</tabstop>
+   <tabstop>stereoRenderCheckedObjectsStereo</tabstop>
+   <tabstop>stereoRenderCheckedObjectsSbsRemap</tabstop>
+   <tabstop>stereoRenderCheckedObjectsUI</tabstop>
+   <tabstop>stereoRejectNonPositiveZ</tabstop>
+   <tabstop>stereoRejectSmallZRange</tabstop>
+   <tabstop>stereoRejectSpriteBlit</tabstop>
+   <tabstop>stereoRejectFullscreenScissor</tabstop>
+   <tabstop>stereoRejectFullscreenDraw</tabstop>
+   <tabstop>stereoRejectFullCover</tabstop>
+   <tabstop>stereoRejectScanmask</tabstop>
+   <tabstop>stereoRequireDisplayBuffer1</tabstop>
+   <tabstop>stereoRequireDisplayBuffer2</tabstop>
+   <tabstop>stereoRejectFeedbackLoop</tabstop>
+   <tabstop>stereoRejectConstantColor</tabstop>
+   <tabstop>stereoRejectScalingDraw</tabstop>
+   <tabstop>stereoRejectSbsInput</tabstop>
+   <tabstop>stereoRejectTabInput</tabstop>
+   <tabstop>stereoRejectSpriteNoGaps</tabstop>
+   <tabstop>stereoUniversalRequireRtaSourceCorrection</tabstop>
    <tabstop>stereoRejectFst</tabstop>
    <tabstop>stereoUniversalRejectAdjt</tabstop>
    <tabstop>stereoUniversalRequireTfx</tabstop>
@@ -3353,6 +3477,43 @@
    <tabstop>stereoUniversalRequireFixedQ</tabstop>
    <tabstop>stereoUniversalRequireFixedZ</tabstop>
    <tabstop>stereoUniversalRequireConstantColor</tabstop>
+   <tabstop>stereoRequireTextureDisplayBuffer2</tabstop>
+   <tabstop>stereoRejectTextureDisplayBuffer2</tabstop>
+   <tabstop>stereoRequirePrimTme</tabstop>
+   <tabstop>stereoRejectPrimTme</tabstop>
+   <tabstop>stereoRequirePrimFst</tabstop>
+   <tabstop>stereoRejectPrimFst</tabstop>
+   <tabstop>stereoRequirePrimAbe</tabstop>
+   <tabstop>stereoRejectPrimAbe</tabstop>
+   <tabstop>stereoRequirePrimFge</tabstop>
+   <tabstop>stereoRejectPrimFge</tabstop>
+   <tabstop>stereoRequirePrimIip</tabstop>
+   <tabstop>stereoRejectPrimIip</tabstop>
+   <tabstop>stereoRequirePrimAa1</tabstop>
+   <tabstop>stereoRejectPrimAa1</tabstop>
+   <tabstop>stereoRequirePrimCtxt</tabstop>
+   <tabstop>stereoRejectPrimCtxt</tabstop>
+   <tabstop>stereoRequirePrimFix</tabstop>
+   <tabstop>stereoRejectPrimFix</tabstop>
+   <tabstop>stereoRequireFeedbackLoopAny</tabstop>
+   <tabstop>stereoRejectFeedbackLoopAny</tabstop>
+   <tabstop>stereoRequireFeedbackLoopShader</tabstop>
+   <tabstop>stereoRejectFeedbackLoopShader</tabstop>
+   <tabstop>stereoRequireFeedbackLoopDrawUsesTarget</tabstop>
+   <tabstop>stereoRejectFeedbackLoopDrawUsesTarget</tabstop>
+   <tabstop>stereoRequireFeedbackLoopTexIsRt</tabstop>
+   <tabstop>stereoRejectFeedbackLoopTexIsRt</tabstop>
+   <tabstop>stereoRequireFeedbackLoopSourceFromTarget</tabstop>
+   <tabstop>stereoRejectFeedbackLoopSourceFromTarget</tabstop>
+   <tabstop>stereoRequireFeedbackLoopInTargetDraw</tabstop>
+   <tabstop>stereoRejectFeedbackLoopInTargetDraw</tabstop>
+   <tabstop>stereoRequireFeedbackLoopTempZ</tabstop>
+   <tabstop>stereoRejectFeedbackLoopTempZ</tabstop>
+   <tabstop>stereoRequireFeedbackLoopOverlapDrawRange</tabstop>
+   <tabstop>stereoRejectFeedbackLoopOverlapDrawRange</tabstop>
+   <tabstop>stereoFeedbackLoopDisableStereo</tabstop>
+   <tabstop>stereoFeedbackLoopClampToDominantEye</tabstop>
+   <tabstop>stereoFeedbackLoopSourceFromTargetOnly</tabstop>
    <tabstop>stereoStencilRequireTexIsFb</tabstop>
    <tabstop>stereoRequirePerspectiveUV</tabstop>
    <tabstop>stereoRequireDepthActive</tabstop>
@@ -3365,7 +3526,6 @@
    <tabstop>stereoRequireFog</tabstop>
    <tabstop>stereoStencilRequireDate</tabstop>
    <tabstop>stereoStencilRequireDatm</tabstop>
-   <tabstop>stereoStencilRequireAte</tabstop>
    <tabstop>stereoStencilRequireAfailZbOnly</tabstop>
    <tabstop>stereoStencilRequireAfailNotKeep</tabstop>
    <tabstop>stereoStencilRequireZWrite</tabstop>
@@ -3403,99 +3563,99 @@
    <tabstop>stereoRejectTfxHighlight2</tabstop>
    <tabstop>stereoRejectSmallDrawArea</tabstop>
    <tabstop>stereoRejectWideDrawBand</tabstop>
-    <tabstop>stereoRejectTopDrawBand</tabstop>
-    <tabstop>stereoRejectRtSpriteNoDepth</tabstop>
-    <tabstop>stereoRejectRtSpriteAlphaBlend</tabstop>
-    <tabstop>stereoRequireProcessTexture</tabstop>
-    <tabstop>stereoRejectProcessTexture</tabstop>
-    <tabstop>stereoRequireSourceFromTarget</tabstop>
-    <tabstop>stereoRejectSourceFromTarget</tabstop>
-    <tabstop>stereoRequireDrawUsesTarget</tabstop>
-    <tabstop>stereoRejectDrawUsesTarget</tabstop>
-    <tabstop>stereoRequireTexIsRt</tabstop>
-    <tabstop>stereoRejectTexIsRt</tabstop>
-    <tabstop>stereoRequireInTargetDraw</tabstop>
-    <tabstop>stereoRejectInTargetDraw</tabstop>
-    <tabstop>stereoRequireTempZ</tabstop>
-    <tabstop>stereoRejectTempZ</tabstop>
-    <tabstop>stereoRequireOneBarrier</tabstop>
-    <tabstop>stereoRejectOneBarrier</tabstop>
-    <tabstop>stereoRequireFullBarrier</tabstop>
-    <tabstop>stereoRejectFullBarrier</tabstop>
-    <tabstop>stereoRequireSinglePass</tabstop>
-    <tabstop>stereoRejectSinglePass</tabstop>
-    <tabstop>stereoRequireFullscreenDrawArea</tabstop>
-    <tabstop>stereoRejectFullscreenDrawArea</tabstop>
-    <tabstop>stereoRequireFullscreenSprite</tabstop>
-    <tabstop>stereoRejectFullscreenSprite</tabstop>
-    <tabstop>stereoRequireTexturedSprite</tabstop>
-    <tabstop>stereoRejectTexturedSprite</tabstop>
-    <tabstop>stereoRequireRtOutput</tabstop>
-    <tabstop>stereoRejectRtOutput</tabstop>
-    <tabstop>stereoRequireDepthOutput</tabstop>
-    <tabstop>stereoRejectDepthOutput</tabstop>
-    <tabstop>stereoRequireDepthRead</tabstop>
-    <tabstop>stereoRejectDepthRead</tabstop>
-    <tabstop>stereoRequireDepthWrite</tabstop>
-    <tabstop>stereoRejectDepthWrite</tabstop>
-    <tabstop>stereoRequirePalettedTexture</tabstop>
-    <tabstop>stereoRejectPalettedTexture</tabstop>
-    <tabstop>stereoRequireDepthTexture</tabstop>
-    <tabstop>stereoRejectDepthTexture</tabstop>
-    <tabstop>stereoRequireMipmap</tabstop>
-    <tabstop>stereoRejectMipmap</tabstop>
-    <tabstop>stereoRequireLinearSampling</tabstop>
-    <tabstop>stereoRejectLinearSampling</tabstop>
-    <tabstop>stereoRequireFmvActive</tabstop>
-    <tabstop>stereoRejectFmvActive</tabstop>
-    <tabstop>stereoRequireFmvHeuristic</tabstop>
-    <tabstop>stereoRejectFmvHeuristic</tabstop>
-    <tabstop>stereoRequireFmvSprite</tabstop>
-    <tabstop>stereoRejectFmvSprite</tabstop>
-    <tabstop>stereoRequireFmvSingleSprite</tabstop>
-    <tabstop>stereoRejectFmvSingleSprite</tabstop>
-    <tabstop>stereoRequireFmvTextureMapping</tabstop>
-    <tabstop>stereoRejectFmvTextureMapping</tabstop>
-    <tabstop>stereoRequireFmvProcessTexture</tabstop>
-    <tabstop>stereoRejectFmvProcessTexture</tabstop>
-    <tabstop>stereoRequireFmvFullscreenDrawArea</tabstop>
-    <tabstop>stereoRejectFmvFullscreenDrawArea</tabstop>
-    <tabstop>stereoRequireFmvFullscreenScissor</tabstop>
-    <tabstop>stereoRejectFmvFullscreenScissor</tabstop>
-    <tabstop>stereoRequireFmvNoAlphaBlend</tabstop>
-    <tabstop>stereoRejectFmvNoAlphaBlend</tabstop>
-    <tabstop>stereoRequireFmvNoAlphaTest</tabstop>
-    <tabstop>stereoRejectFmvNoAlphaTest</tabstop>
-    <tabstop>stereoRequireFmvNoDepthTest</tabstop>
-    <tabstop>stereoRejectFmvNoDepthTest</tabstop>
-    <tabstop>stereoRequireFmvNoDepthWrite</tabstop>
-    <tabstop>stereoRejectFmvNoDepthWrite</tabstop>
-    <tabstop>stereoRequireFmvNoDepthOutput</tabstop>
-    <tabstop>stereoRejectFmvNoDepthOutput</tabstop>
-    <tabstop>stereoRequireFmvNoDepthRead</tabstop>
-    <tabstop>stereoRejectFmvNoDepthRead</tabstop>
-    <tabstop>stereoRequireFmvNoFbMask</tabstop>
-    <tabstop>stereoRejectFmvNoFbMask</tabstop>
-    <tabstop>stereoRequireFmvColorOutput</tabstop>
-    <tabstop>stereoRejectFmvColorOutput</tabstop>
-    <tabstop>stereoRequireFmvSourceNotFromTarget</tabstop>
-    <tabstop>stereoRejectFmvSourceNotFromTarget</tabstop>
-    <tabstop>stereoRequireFmvDrawMatchesTex</tabstop>
-    <tabstop>stereoRejectFmvDrawMatchesTex</tabstop>
-    <tabstop>stereoRequireFmvNoShuffle</tabstop>
-    <tabstop>stereoRejectFmvNoShuffle</tabstop>
-    <tabstop>stereoRequireFmvNoMipmap</tabstop>
-    <tabstop>stereoRejectFmvNoMipmap</tabstop>
-    <tabstop>stereoRequireFmvLinearSampling</tabstop>
-    <tabstop>stereoRejectFmvLinearSampling</tabstop>
-    <tabstop>stereoRequireFmvEeUpload</tabstop>
-    <tabstop>stereoRejectFmvEeUpload</tabstop>
-    <tabstop>stereoRequireFmvDisplayMatch</tabstop>
-    <tabstop>stereoRejectFmvDisplayMatch</tabstop>
-    <tabstop>stereoRequireFmvRecentEeUpload</tabstop>
-    <tabstop>stereoRejectFmvRecentEeUpload</tabstop>
-    <tabstop>stereoRequireFmvRecentTransferDraw</tabstop>
-    <tabstop>stereoRejectFmvRecentTransferDraw</tabstop>
+   <tabstop>stereoRejectTopDrawBand</tabstop>
+   <tabstop>stereoRejectRtSpriteNoDepth</tabstop>
+   <tabstop>stereoRejectRtSpriteAlphaBlend</tabstop>
+   <tabstop>stereoRequireProcessTexture</tabstop>
+   <tabstop>stereoRejectProcessTexture</tabstop>
+   <tabstop>stereoRequireSourceFromTarget</tabstop>
+   <tabstop>stereoRejectSourceFromTarget</tabstop>
+   <tabstop>stereoRequireDrawUsesTarget</tabstop>
+   <tabstop>stereoRejectDrawUsesTarget</tabstop>
+   <tabstop>stereoRequireTexIsRt</tabstop>
+   <tabstop>stereoRejectTexIsRt</tabstop>
+   <tabstop>stereoRequireInTargetDraw</tabstop>
+   <tabstop>stereoRejectInTargetDraw</tabstop>
+   <tabstop>stereoRequireTempZ</tabstop>
+   <tabstop>stereoRejectTempZ</tabstop>
+   <tabstop>stereoRequireOneBarrier</tabstop>
+   <tabstop>stereoRejectOneBarrier</tabstop>
+   <tabstop>stereoRequireFullBarrier</tabstop>
+   <tabstop>stereoRejectFullBarrier</tabstop>
+   <tabstop>stereoRequireSinglePass</tabstop>
+   <tabstop>stereoRejectSinglePass</tabstop>
+   <tabstop>stereoRequireFullscreenDrawArea</tabstop>
+   <tabstop>stereoRejectFullscreenDrawArea</tabstop>
+   <tabstop>stereoRequireFullscreenSprite</tabstop>
+   <tabstop>stereoRejectFullscreenSprite</tabstop>
+   <tabstop>stereoRequireTexturedSprite</tabstop>
+   <tabstop>stereoRejectTexturedSprite</tabstop>
+   <tabstop>stereoRequireRtOutput</tabstop>
+   <tabstop>stereoRejectRtOutput</tabstop>
+   <tabstop>stereoRequireDepthOutput</tabstop>
+   <tabstop>stereoRejectDepthOutput</tabstop>
+   <tabstop>stereoRequireDepthRead</tabstop>
+   <tabstop>stereoRejectDepthRead</tabstop>
+   <tabstop>stereoRequireDepthWrite</tabstop>
+   <tabstop>stereoRejectDepthWrite</tabstop>
+   <tabstop>stereoRequirePalettedTexture</tabstop>
+   <tabstop>stereoRejectPalettedTexture</tabstop>
+   <tabstop>stereoRequireDepthTexture</tabstop>
+   <tabstop>stereoRejectDepthTexture</tabstop>
+   <tabstop>stereoRequireMipmap</tabstop>
+   <tabstop>stereoRejectMipmap</tabstop>
+   <tabstop>stereoRequireLinearSampling</tabstop>
+   <tabstop>stereoRejectLinearSampling</tabstop>
+   <tabstop>stereoRequireFmvActive</tabstop>
+   <tabstop>stereoRejectFmvActive</tabstop>
+   <tabstop>stereoRequireFmvHeuristic</tabstop>
+   <tabstop>stereoRejectFmvHeuristic</tabstop>
+   <tabstop>stereoRequireFmvSprite</tabstop>
+   <tabstop>stereoRejectFmvSprite</tabstop>
+   <tabstop>stereoRequireFmvSingleSprite</tabstop>
+   <tabstop>stereoRejectFmvSingleSprite</tabstop>
+   <tabstop>stereoRequireFmvTextureMapping</tabstop>
+   <tabstop>stereoRejectFmvTextureMapping</tabstop>
+   <tabstop>stereoRequireFmvProcessTexture</tabstop>
+   <tabstop>stereoRejectFmvProcessTexture</tabstop>
+   <tabstop>stereoRequireFmvFullscreenDrawArea</tabstop>
+   <tabstop>stereoRejectFmvFullscreenDrawArea</tabstop>
+   <tabstop>stereoRequireFmvFullscreenScissor</tabstop>
+   <tabstop>stereoRejectFmvFullscreenScissor</tabstop>
+   <tabstop>stereoRequireFmvNoAlphaBlend</tabstop>
+   <tabstop>stereoRejectFmvNoAlphaBlend</tabstop>
+   <tabstop>stereoRequireFmvNoAlphaTest</tabstop>
+   <tabstop>stereoRejectFmvNoAlphaTest</tabstop>
+   <tabstop>stereoRequireFmvNoDepthTest</tabstop>
+   <tabstop>stereoRejectFmvNoDepthTest</tabstop>
+   <tabstop>stereoRequireFmvNoDepthWrite</tabstop>
+   <tabstop>stereoRejectFmvNoDepthWrite</tabstop>
+   <tabstop>stereoRequireFmvNoDepthOutput</tabstop>
+   <tabstop>stereoRejectFmvNoDepthOutput</tabstop>
+   <tabstop>stereoRequireFmvNoDepthRead</tabstop>
+   <tabstop>stereoRejectFmvNoDepthRead</tabstop>
+   <tabstop>stereoRequireFmvNoFbMask</tabstop>
+   <tabstop>stereoRejectFmvNoFbMask</tabstop>
+   <tabstop>stereoRequireFmvColorOutput</tabstop>
+   <tabstop>stereoRejectFmvColorOutput</tabstop>
+   <tabstop>stereoRequireFmvSourceNotFromTarget</tabstop>
+   <tabstop>stereoRejectFmvSourceNotFromTarget</tabstop>
+   <tabstop>stereoRequireFmvDrawMatchesTex</tabstop>
+   <tabstop>stereoRejectFmvDrawMatchesTex</tabstop>
+   <tabstop>stereoRequireFmvNoShuffle</tabstop>
+   <tabstop>stereoRejectFmvNoShuffle</tabstop>
+   <tabstop>stereoRequireFmvNoMipmap</tabstop>
+   <tabstop>stereoRejectFmvNoMipmap</tabstop>
+   <tabstop>stereoRequireFmvLinearSampling</tabstop>
+   <tabstop>stereoRejectFmvLinearSampling</tabstop>
+   <tabstop>stereoRequireFmvEeUpload</tabstop>
+   <tabstop>stereoRejectFmvEeUpload</tabstop>
+   <tabstop>stereoRequireFmvDisplayMatch</tabstop>
+   <tabstop>stereoRejectFmvDisplayMatch</tabstop>
+   <tabstop>stereoRequireFmvRecentEeUpload</tabstop>
+   <tabstop>stereoRejectFmvRecentEeUpload</tabstop>
+   <tabstop>stereoRequireFmvRecentTransferDraw</tabstop>
+   <tabstop>stereoRejectFmvRecentTransferDraw</tabstop>
    </tabstops>
  <resources/>
  <connections/>

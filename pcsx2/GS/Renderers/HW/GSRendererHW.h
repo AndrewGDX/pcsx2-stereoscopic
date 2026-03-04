@@ -194,6 +194,7 @@ private:
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;
+	float m_stereo_ui_detect_threshold_cutoff = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
 
