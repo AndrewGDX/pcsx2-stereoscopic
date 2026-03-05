@@ -14,12 +14,25 @@
 
 extern bool FMVstarted;
 
+namespace
+{
+__fi float ComputeStereoUiDetectThresholdCutoff(int threshold)
+{
+	if (threshold < 100)
+		return 9000000.0f - static_cast<float>(threshold) * 82000.0f;
+
+	const float threshold_f = static_cast<float>(threshold);
+	return static_cast<float>(2000000.0 - std::pow(static_cast<double>(threshold_f) * 3.2e28, 0.2));
+}
+}
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
 	MULTI_ISA_SELECT(GSRendererHWPopulateFunctions)(*this);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
+	m_stereo_ui_detect_threshold_cutoff = ComputeStereoUiDetectThresholdCutoff(GSConfig.StereoUiDetectThreshold);
 
 	pxAssert(!g_texture_cache);
 	g_texture_cache = std::make_unique<GSTextureCache>();
@@ -92,6 +105,7 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 	GSRenderer::UpdateSettings(old_config);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
+	m_stereo_ui_detect_threshold_cutoff = ComputeStereoUiDetectThresholdCutoff(GSConfig.StereoUiDetectThreshold);
 }
 
 void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
@@ -8840,8 +8854,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (stereo_enabled)
 		{
 			const bool ui_top_layer = m_vt.m_max.p.z > 9000000.0f;
-			const bool ui_detection_threshold = GSConfig.StereoUiDetectThreshold < 100 ? m_vt.m_max.p.z > 9000000.0f - GSConfig.StereoUiDetectThreshold * 82000.0f :
-												m_vt.m_max.p.z > 2000000.0f - std::pow(GSConfig.StereoUiDetectThreshold * 3.2e28, 0.2f);
+			const bool ui_detection_threshold = m_vt.m_max.p.z > m_stereo_ui_detect_threshold_cutoff;
 
 			const bool ui_advanced_detect = ui_detection_threshold && (m_conf.ps.blend_mix != 0 && m_vt.m_eq.z
 //					|| PRIM->FST && !PRIM->FGE && m_vt.m_eq.z
