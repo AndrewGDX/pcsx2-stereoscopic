@@ -921,6 +921,7 @@ struct Pcsx2Config
 		bool StereoDontRenderCheckedObjects = false;
 		bool StereoRenderCheckedObjectsMono = false;
 		bool StereoRenderCheckedObjectsStereo = false;
+		bool StereoRenderCheckedObjectsUI = false;
 		bool StereoRejectNonPositiveZ = false;
 		bool StereoRejectSmallZRange = false;
 		bool StereoCloseDepthFix = false;
@@ -1123,6 +1124,7 @@ struct Pcsx2Config
 		bool StereoRejectFst = false;
 		bool StereoFixStencilShadows1 = false;
 		bool StereoFixStencilShadows2 = false;
+		bool StereoFixStencilShadows3 = false;
 		bool StereoRejectFixedQ = false;
 		bool StereoRejectAa1 = false;
 		bool StereoRejectNoZTest = false;
