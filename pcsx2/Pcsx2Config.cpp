@@ -908,7 +908,39 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoDontRenderCheckedObjects) &&
 		OpEqu(StereoRenderCheckedObjectsMono) &&
 		OpEqu(StereoRenderCheckedObjectsStereo) &&
+		OpEqu(StereoRenderCheckedObjectsSbsRemap) &&
 		OpEqu(StereoRenderCheckedObjectsUI) &&
+		OpEqu(StereoRequireTextureDisplayBuffer2) &&
+		OpEqu(StereoRejectTextureDisplayBuffer2) &&
+		OpEqu(StereoRequirePrimTme) &&
+		OpEqu(StereoRejectPrimTme) &&
+		OpEqu(StereoRequirePrimFst) &&
+		OpEqu(StereoRejectPrimFst) &&
+		OpEqu(StereoRequirePrimAbe) &&
+		OpEqu(StereoRejectPrimAbe) &&
+		OpEqu(StereoRequirePrimFge) &&
+		OpEqu(StereoRejectPrimFge) &&
+		OpEqu(StereoRequirePrimIip) &&
+		OpEqu(StereoRejectPrimIip) &&
+		OpEqu(StereoRequirePrimAa1) &&
+		OpEqu(StereoRejectPrimAa1) &&
+		OpEqu(StereoRequirePrimCtxt) &&
+		OpEqu(StereoRejectPrimCtxt) &&
+		OpEqu(StereoRequirePrimFix) &&
+		OpEqu(StereoRejectPrimFix) &&
+		OpEqu(StereoRequirePrimClassPoint) &&
+		OpEqu(StereoRejectPrimClassPoint) &&
+		OpEqu(StereoRequirePrimClassLine) &&
+		OpEqu(StereoRejectPrimClassLine) &&
+		OpEqu(StereoRequirePrimClassTriangle) &&
+		OpEqu(StereoRejectPrimClassTriangle) &&
+		OpEqu(StereoRequirePrimClassSprite) &&
+		OpEqu(StereoRejectPrimClassSprite) &&
+		OpEqu(StereoRequireTfxModeModulate) &&
+		OpEqu(StereoRequireTfxModeDecal) &&
+		OpEqu(StereoRejectTfxModeDecal) &&
+		OpEqu(StereoRequireTfxModeHighlight) &&
+		OpEqu(StereoRequireTfxModeHighlight2) &&
 		OpEqu(StereoRejectNonPositiveZ) &&
 		OpEqu(StereoRejectSmallZRange) &&
 		OpEqu(StereoCloseDepthFix) &&
@@ -942,7 +974,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoRequireFog) &&
 		OpEqu(StereoStencilRequireDate) &&
 		OpEqu(StereoStencilRequireDatm) &&
-		OpEqu(StereoStencilRequireAte) &&
 		OpEqu(StereoStencilRequireAfailZbOnly) &&
 		OpEqu(StereoStencilRequireAfailNotKeep) &&
 		OpEqu(StereoStencilRequireZWrite) &&
@@ -1471,7 +1502,39 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoDontRenderCheckedObjects);
 	SettingsWrapEntry(StereoRenderCheckedObjectsMono);
 	SettingsWrapEntry(StereoRenderCheckedObjectsStereo);
+	SettingsWrapEntry(StereoRenderCheckedObjectsSbsRemap);
 	SettingsWrapEntry(StereoRenderCheckedObjectsUI);
+	SettingsWrapEntry(StereoRequireTextureDisplayBuffer2);
+	SettingsWrapEntry(StereoRejectTextureDisplayBuffer2);
+	SettingsWrapEntry(StereoRequirePrimTme);
+	SettingsWrapEntry(StereoRejectPrimTme);
+	SettingsWrapEntry(StereoRequirePrimFst);
+	SettingsWrapEntry(StereoRejectPrimFst);
+	SettingsWrapEntry(StereoRequirePrimAbe);
+	SettingsWrapEntry(StereoRejectPrimAbe);
+	SettingsWrapEntry(StereoRequirePrimFge);
+	SettingsWrapEntry(StereoRejectPrimFge);
+	SettingsWrapEntry(StereoRequirePrimIip);
+	SettingsWrapEntry(StereoRejectPrimIip);
+	SettingsWrapEntry(StereoRequirePrimAa1);
+	SettingsWrapEntry(StereoRejectPrimAa1);
+	SettingsWrapEntry(StereoRequirePrimCtxt);
+	SettingsWrapEntry(StereoRejectPrimCtxt);
+	SettingsWrapEntry(StereoRequirePrimFix);
+	SettingsWrapEntry(StereoRejectPrimFix);
+	SettingsWrapEntry(StereoRequirePrimClassPoint);
+	SettingsWrapEntry(StereoRejectPrimClassPoint);
+	SettingsWrapEntry(StereoRequirePrimClassLine);
+	SettingsWrapEntry(StereoRejectPrimClassLine);
+	SettingsWrapEntry(StereoRequirePrimClassTriangle);
+	SettingsWrapEntry(StereoRejectPrimClassTriangle);
+	SettingsWrapEntry(StereoRequirePrimClassSprite);
+	SettingsWrapEntry(StereoRejectPrimClassSprite);
+	SettingsWrapEntry(StereoRequireTfxModeModulate);
+	SettingsWrapEntry(StereoRequireTfxModeDecal);
+	SettingsWrapEntry(StereoRejectTfxModeDecal);
+	SettingsWrapEntry(StereoRequireTfxModeHighlight);
+	SettingsWrapEntry(StereoRequireTfxModeHighlight2);
 	SettingsWrapEntry(StereoRejectNonPositiveZ);
 	SettingsWrapEntry(StereoRejectSmallZRange);
 	SettingsWrapEntry(StereoCloseDepthFix);
@@ -1505,7 +1568,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoRequireFog);
 	SettingsWrapEntry(StereoStencilRequireDate);
 	SettingsWrapEntry(StereoStencilRequireDatm);
-	SettingsWrapEntry(StereoStencilRequireAte);
 	SettingsWrapEntry(StereoStencilRequireAfailZbOnly);
 	SettingsWrapEntry(StereoStencilRequireAfailNotKeep);
 	SettingsWrapEntry(StereoStencilRequireZWrite);

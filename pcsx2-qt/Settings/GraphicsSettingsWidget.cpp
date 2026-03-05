@@ -140,7 +140,26 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoDontRenderCheckedObjects, "EmuCore/GS", "StereoDontRenderCheckedObjects", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsMono, "EmuCore/GS", "StereoRenderCheckedObjectsMono", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsStereo, "EmuCore/GS", "StereoRenderCheckedObjectsStereo", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsSbsRemap, "EmuCore/GS", "StereoRenderCheckedObjectsSbsRemap", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRenderCheckedObjectsUI, "EmuCore/GS", "StereoRenderCheckedObjectsUI", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireTextureDisplayBuffer2, "EmuCore/GS", "StereoRequireTextureDisplayBuffer2", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectTextureDisplayBuffer2, "EmuCore/GS", "StereoRejectTextureDisplayBuffer2", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimTme, "EmuCore/GS", "StereoRequirePrimTme", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimTme, "EmuCore/GS", "StereoRejectPrimTme", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimFst, "EmuCore/GS", "StereoRequirePrimFst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimFst, "EmuCore/GS", "StereoRejectPrimFst", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimAbe, "EmuCore/GS", "StereoRequirePrimAbe", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimAbe, "EmuCore/GS", "StereoRejectPrimAbe", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimFge, "EmuCore/GS", "StereoRequirePrimFge", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimFge, "EmuCore/GS", "StereoRejectPrimFge", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimIip, "EmuCore/GS", "StereoRequirePrimIip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimIip, "EmuCore/GS", "StereoRejectPrimIip", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimAa1, "EmuCore/GS", "StereoRequirePrimAa1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimAa1, "EmuCore/GS", "StereoRejectPrimAa1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimCtxt, "EmuCore/GS", "StereoRequirePrimCtxt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimCtxt, "EmuCore/GS", "StereoRejectPrimCtxt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequirePrimFix, "EmuCore/GS", "StereoRequirePrimFix", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectPrimFix, "EmuCore/GS", "StereoRejectPrimFix", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectNonPositiveZ, "EmuCore/GS", "StereoRejectNonPositiveZ", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSmallZRange, "EmuCore/GS", "StereoRejectSmallZRange", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRejectSpriteBlit, "EmuCore/GS", "StereoRejectSpriteBlit", false);
@@ -183,7 +202,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoRequireFog, "EmuCore/GS", "StereoRequireFog", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireDate, "EmuCore/GS", "StereoStencilRequireDate", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireDatm, "EmuCore/GS", "StereoStencilRequireDatm", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireAte, "EmuCore/GS", "StereoStencilRequireAte", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireAfailZbOnly, "EmuCore/GS", "StereoStencilRequireAfailZbOnly", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireAfailNotKeep, "EmuCore/GS", "StereoStencilRequireAfailNotKeep", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.stereoStencilRequireZWrite, "EmuCore/GS", "StereoStencilRequireZWrite", false);
@@ -492,6 +510,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	connect(m_hw.stereoDontRenderCheckedObjects, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	connect(m_hw.stereoRenderCheckedObjectsMono, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	connect(m_hw.stereoRenderCheckedObjectsStereo, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
+	connect(m_hw.stereoRenderCheckedObjectsSbsRemap, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	connect(m_hw.stereoRenderCheckedObjectsUI, &QCheckBox::toggled, this, &GraphicsSettingsWidget::onStereoscopicModeChanged);
 	onTrilinearFilteringChanged();
 	onStereoscopicModeChanged();
@@ -1003,8 +1022,46 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Render checked draws in mono instead of skipping them."));
 		dialog()->registerWidgetHelp(m_hw.stereoRenderCheckedObjectsStereo, tr("Render Checked Objects As Stereo"), tr("Unchecked"),
 			tr("Force checked draws to render in stereo even if they would otherwise be treated as mono."));
+		dialog()->registerWidgetHelp(m_hw.stereoRenderCheckedObjectsSbsRemap, tr("Render Checked Objects As SBS Remap"), tr("Unchecked"),
+			tr("Force checked draws through SBS remap when they are classified as checked."));
 		dialog()->registerWidgetHelp(m_hw.stereoRenderCheckedObjectsUI, tr("Render Checked Objects As UI"), tr("Unchecked"),
 			tr("Render checked draws as UI to reduce double-image artifacts."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequireTextureDisplayBuffer2, tr("Checked Filter: Require Texture Match Display Buffer 2"), tr("Unchecked"),
+			tr("Only keep stereo when the texture source matches display buffer 2."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectTextureDisplayBuffer2, tr("Checked Filter: Reject Texture Match Display Buffer 2"), tr("Unchecked"),
+			tr("Mark draw as checked when the texture source matches display buffer 2."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimTme, tr("Checked Filter: Require PRIM.TME"), tr("Unchecked"),
+			tr("Only keep stereo when texture mapping is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimTme, tr("Checked Filter: Reject PRIM.TME"), tr("Unchecked"),
+			tr("Mark draw as checked when texture mapping is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimFst, tr("Checked Filter: Require PRIM.FST"), tr("Unchecked"),
+			tr("Only keep stereo when fixed ST mode is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimFst, tr("Checked Filter: Reject PRIM.FST"), tr("Unchecked"),
+			tr("Mark draw as checked when fixed ST mode is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimAbe, tr("Checked Filter: Require PRIM.ABE"), tr("Unchecked"),
+			tr("Only keep stereo when alpha blending is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimAbe, tr("Checked Filter: Reject PRIM.ABE"), tr("Unchecked"),
+			tr("Mark draw as checked when alpha blending is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimFge, tr("Checked Filter: Require PRIM.FGE"), tr("Unchecked"),
+			tr("Only keep stereo when fog is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimFge, tr("Checked Filter: Reject PRIM.FGE"), tr("Unchecked"),
+			tr("Mark draw as checked when fog is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimIip, tr("Checked Filter: Require PRIM.IIP"), tr("Unchecked"),
+			tr("Only keep stereo when Gouraud shading is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimIip, tr("Checked Filter: Reject PRIM.IIP"), tr("Unchecked"),
+			tr("Mark draw as checked when Gouraud shading is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimAa1, tr("Checked Filter: Require PRIM.AA1"), tr("Unchecked"),
+			tr("Only keep stereo when AA1 is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimAa1, tr("Checked Filter: Reject PRIM.AA1"), tr("Unchecked"),
+			tr("Mark draw as checked when AA1 is enabled in PRIM."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimCtxt, tr("Checked Filter: Require PRIM.CTXT"), tr("Unchecked"),
+			tr("Only keep stereo when PRIM selects context 1."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimCtxt, tr("Checked Filter: Reject PRIM.CTXT"), tr("Unchecked"),
+			tr("Mark draw as checked when PRIM selects context 1."));
+		dialog()->registerWidgetHelp(m_hw.stereoRequirePrimFix, tr("Checked Filter: Require PRIM.FIX"), tr("Unchecked"),
+			tr("Only keep stereo when PRIM fixed shading flag is enabled."));
+		dialog()->registerWidgetHelp(m_hw.stereoRejectPrimFix, tr("Checked Filter: Reject PRIM.FIX"), tr("Unchecked"),
+			tr("Mark draw as checked when PRIM fixed shading flag is enabled."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectNonPositiveZ, tr("Reject Z <= 0"), tr("Unchecked"),
 			tr("Treat draws with non-positive Z as mono."));
 		dialog()->registerWidgetHelp(m_hw.stereoRejectSmallZRange, tr("Reject Small Z Range"), tr("Unchecked"),
@@ -1035,8 +1092,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Only apply stereoscopy when DATE is enabled for the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoStencilRequireDatm, tr("Require DATM"), tr("Unchecked"),
 			tr("Only apply stereoscopy when DATM is enabled for the draw."));
-		dialog()->registerWidgetHelp(m_hw.stereoStencilRequireAte, tr("Require ATE"), tr("Unchecked"),
-			tr("Only apply stereoscopy when alpha testing is enabled for the draw."));
 		dialog()->registerWidgetHelp(m_hw.stereoStencilRequireAfailZbOnly, tr("Require AFAIL ZB Only"), tr("Unchecked"),
 			tr("Only apply stereoscopy when alpha fail is set to ZB only."));
 		dialog()->registerWidgetHelp(m_hw.stereoStencilRequireAfailNotKeep, tr("Require AFAIL Not Keep"), tr("Unchecked"),
@@ -2053,7 +2108,8 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	const bool sbs_mode_enabled = (effective_mode == "Side by Side");
 	const bool ui_detect_threshold_enabled = dialog()->getEffectiveIntValue("EmuCore/GS", "StereoUiDetectMode", 3) != 0;
 	const bool checked_objects_controls_enabled = m_hw.stereoDontRenderCheckedObjects->isChecked() || m_hw.stereoRenderCheckedObjectsMono->isChecked()
-			|| m_hw.stereoRenderCheckedObjectsStereo->isChecked() || m_hw.stereoRenderCheckedObjectsUI->isChecked();
+			|| m_hw.stereoRenderCheckedObjectsStereo->isChecked() || m_hw.stereoRenderCheckedObjectsSbsRemap->isChecked()
+			|| m_hw.stereoRenderCheckedObjectsUI->isChecked();
 	m_hw.stereoDominantEyeLabel->setEnabled(stereo_enabled);
 	m_hw.stereoDominantEye->setEnabled(stereo_enabled);
 	m_hw.stereoSwapEyes->setEnabled(stereo_enabled);
@@ -2117,6 +2173,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 	m_hw.stereoDontRenderCheckedObjects->setEnabled(stereo_enabled);
 	m_hw.stereoRenderCheckedObjectsMono->setEnabled(stereo_enabled);
 	m_hw.stereoRenderCheckedObjectsStereo->setEnabled(stereo_enabled);
+	m_hw.stereoRenderCheckedObjectsSbsRemap->setEnabled(stereo_enabled);
 	m_hw.stereoRenderCheckedObjectsUI->setEnabled(stereo_enabled);
 
 	const int start_index = m_hw.stereoMonoObjectLayout->indexOf(m_hw.stereoRenderCheckedObjectsUI);
