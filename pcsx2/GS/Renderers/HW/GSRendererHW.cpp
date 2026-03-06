@@ -14,12 +14,25 @@
 
 extern bool FMVstarted;
 
+namespace
+{
+__fi float ComputeStereoUiDetectThresholdCutoff(int threshold)
+{
+	if (threshold < 100)
+		return 9000000.0f - static_cast<float>(threshold) * 82000.0f;
+
+	const float threshold_f = static_cast<float>(threshold);
+	return static_cast<float>(2000000.0 - std::pow(static_cast<double>(threshold_f) * 3.2e28, 0.2));
+}
+}
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
 	MULTI_ISA_SELECT(GSRendererHWPopulateFunctions)(*this);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
+	m_stereo_ui_detect_threshold_cutoff = ComputeStereoUiDetectThresholdCutoff(GSConfig.StereoUiDetectThreshold);
 
 	pxAssert(!g_texture_cache);
 	g_texture_cache = std::make_unique<GSTextureCache>();
@@ -92,6 +105,7 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 	GSRenderer::UpdateSettings(old_config);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
+	m_stereo_ui_detect_threshold_cutoff = ComputeStereoUiDetectThresholdCutoff(GSConfig.StereoUiDetectThreshold);
 }
 
 void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
@@ -8302,10 +8316,26 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool depth_active = m_cached_ctx.TEST.ZTE && !m_cached_ctx.ZBUF.ZMSK;
 		const bool texture_mapping = PRIM->TME;
 		const bool alpha_blend = PRIM->ABE;
+		const bool fog_enabled = PRIM->FGE;
+		const bool aa1 = PRIM->AA1;
+		const bool prim_tme = PRIM->TME;
+		const bool prim_fst = PRIM->FST;
+		const bool prim_abe = PRIM->ABE;
+		const bool prim_fge = PRIM->FGE;
+		const bool prim_iip = PRIM->IIP;
+		const bool prim_aa1 = PRIM->AA1;
+		const bool prim_ctxt = PRIM->CTXT;
+		const bool prim_fix = PRIM->FIX;
+		const auto texture_matches_display = [&](const GSRegDISPFB& dispfb) {
+			return texture_mapping && m_cached_ctx.TEX0.TBP0 == dispfb.Block() &&
+				m_cached_ctx.TEX0.TBW == dispfb.FBW && m_cached_ctx.TEX0.PSM == dispfb.PSM;
+		};
+		const bool texture_matches_display_buffer2 = texture_matches_display(m_regs->DISP[1].DISPFB);
+
 		const bool alpha_test = m_cached_ctx.TEST.ATE;
 		const bool uv_varies = !(m_vt.m_eq.s && m_vt.m_eq.t);
 		const bool color_varies = !m_vt.m_eq.rgba;
-		const bool fog_enabled = PRIM->FGE;
+
 		const bool date_enabled = m_cached_ctx.TEST.DATE;
 		const bool datm_enabled = m_cached_ctx.TEST.DATM;
 		const bool afail_zb_only = m_cached_ctx.TEST.AFAIL == AFAIL_ZB_ONLY;
@@ -8333,7 +8363,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool prim_point = m_vt.m_primclass == GS_POINT_CLASS;
 		const bool prim_line = m_vt.m_primclass == GS_LINE_CLASS;
 		const bool flat_shading = m_conf.ps.iip == 0;
-		const bool aa1 = PRIM->AA1;
 		const bool z_test_off = !m_cached_ctx.TEST.ZTE;
 		const bool z_write_off = m_cached_ctx.ZBUF.ZMSK;
 		const bool z_test_never = m_cached_ctx.TEST.ZTST == ZTST_NEVER;
@@ -8342,6 +8371,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool alpha_test_always = alpha_test && m_cached_ctx.TEST.ATST == ATST_ALWAYS;
 		const bool alpha_test_never = alpha_test && m_cached_ctx.TEST.ATST == ATST_NEVER;
 		const bool tfx_modulate = m_cached_ctx.TEX0.TFX == TFX_MODULATE;
+		const bool tfx_decal = m_cached_ctx.TEX0.TFX == TFX_DECAL;
 		const bool tfx_highlight = m_cached_ctx.TEX0.TFX == TFX_HIGHLIGHT;
 		const bool tfx_highlight2 = m_cached_ctx.TEX0.TFX == TFX_HIGHLIGHT2;
 		const bool stencil_mask = alpha_test && afail_not_keep;
@@ -8392,7 +8422,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool fmv_no_mipmap = !mipmap_active;
 		const bool fmv_linear_sampling = linear_sampling;
 		const bool fmv_ee_upload = HasEEUpload(draw_rect);
-		const bool fmv_display_match = matches_display(0, m_regs->DISP[0].DISPFB) || matches_display(1, m_regs->DISP[1].DISPFB);
+		const bool frame_matches_display_buffer1 = matches_display(0, m_regs->DISP[0].DISPFB);
+		const bool frame_matches_display_buffer2 = matches_display(1, m_regs->DISP[1].DISPFB);
+		const bool fmv_display_match = frame_matches_display_buffer1 || frame_matches_display_buffer2;
 //		const bool fmv_recent_ee_upload = HasRecentEEUpload(draw_rect, 5);
 		const bool fmv_recent_transfer_draw = s_last_transfer_draw_n >= (s_n - 2);
 		const bool fmv_heuristic = fmv_sprite && fmv_single_sprite && fmv_texture_mapping && fmv_process_texture &&
@@ -8613,6 +8645,28 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (GSConfig.StereoUniversalRequireFixedZ) disable_stereo_pass |= m_cached_ctx.TEX0.TFX != TFX_DECAL;
 		if (GSConfig.StereoUniversalRequireConstantColor) disable_stereo_pass |= !(m_cached_ctx.TEX0.TFX == TFX_DECAL && !m_conf.ps.region_rect);
 
+		if (GSConfig.StereoRequireTextureDisplayBuffer2) disable_stereo_pass |= !texture_matches_display_buffer2;
+		if (GSConfig.StereoRejectTextureDisplayBuffer2) disable_stereo_pass |= texture_matches_display_buffer2;
+		if (GSConfig.StereoRequireDisplayBuffer1) disable_stereo_pass |= !frame_matches_display_buffer1;
+		if (GSConfig.StereoRequireDisplayBuffer2) disable_stereo_pass |= !frame_matches_display_buffer2;
+
+		if (GSConfig.StereoRequirePrimTme) disable_stereo_pass |= !prim_tme;
+		if (GSConfig.StereoRejectPrimTme) disable_stereo_pass |= prim_tme;
+		if (GSConfig.StereoRequirePrimFst) disable_stereo_pass |= !prim_fst;
+		if (GSConfig.StereoRejectPrimFst) disable_stereo_pass |= prim_fst;
+		if (GSConfig.StereoRequirePrimAbe) disable_stereo_pass |= !prim_abe;
+		if (GSConfig.StereoRejectPrimAbe) disable_stereo_pass |= prim_abe;
+		if (GSConfig.StereoRequirePrimFge) disable_stereo_pass |= !prim_fge;
+		if (GSConfig.StereoRejectPrimFge) disable_stereo_pass |= prim_fge;
+		if (GSConfig.StereoRequirePrimIip) disable_stereo_pass |= !prim_iip;
+		if (GSConfig.StereoRejectPrimIip) disable_stereo_pass |= prim_iip;
+		if (GSConfig.StereoRequirePrimAa1) disable_stereo_pass |= !prim_aa1;
+		if (GSConfig.StereoRejectPrimAa1) disable_stereo_pass |= prim_aa1;
+		if (GSConfig.StereoRequirePrimCtxt) disable_stereo_pass |= !prim_ctxt;
+		if (GSConfig.StereoRejectPrimCtxt) disable_stereo_pass |= prim_ctxt;
+		if (GSConfig.StereoRequirePrimFix) disable_stereo_pass |= !prim_fix;
+		if (GSConfig.StereoRejectPrimFix) disable_stereo_pass |= prim_fix;
+
 		if (GSConfig.StereoRejectScalingDraw) disable_stereo_pass |= scaling_draw;
 		if (GSConfig.StereoRejectSbsInput) disable_stereo_pass |= sbs_input;
 		if (GSConfig.StereoRejectTabInput) disable_stereo_pass |= tab_input;
@@ -8641,7 +8695,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (GSConfig.StereoRequireFog) disable_stereo_pass |= !fog_enabled;
 		if (GSConfig.StereoStencilRequireDate) disable_stereo_pass |= !date_enabled;
 		if (GSConfig.StereoStencilRequireDatm) disable_stereo_pass |= !datm_enabled;
-		if (GSConfig.StereoStencilRequireAte) disable_stereo_pass |= !alpha_test;
 		if (GSConfig.StereoStencilRequireAfailZbOnly) disable_stereo_pass |= !afail_zb_only;
 		if (GSConfig.StereoStencilRequireAfailNotKeep) disable_stereo_pass |= !afail_not_keep;
 		if (GSConfig.StereoStencilRequireZWrite) disable_stereo_pass |= !z_write;
@@ -8797,10 +8850,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool postfx_fix = false; // GSConfig.StereoRejectFeedbackLoop && m_conf.ps.IsFeedbackLoop();
 		const bool mono_postfx = false; //GSConfig.StereoRejectSpriteNoGaps && m_primitive_covers_without_gaps == NoGapsType::SpriteNoGaps ||
 							   //GSConfig.StereoRejectRegionRect && m_conf.ps.region_rect;
+		const bool checked_objects_stereo_override = GSConfig.StereoRenderCheckedObjectsStereo && disable_stereo_pass;
+		const bool checked_objects_sbs_remap_override = GSConfig.StereoRenderCheckedObjectsSbsRemap && disable_stereo_pass;
 
 		if ((GSConfig.StereoRejectTfxDecal && m_cached_ctx.TEX0.TFX == TFX_DECAL && !m_conf.ps.region_rect
 			      || GSConfig.StereoRejectRegionRect && m_conf.ps.region_rect
-			      || GSConfig.StereoDontRenderCheckedObjects && disable_stereo_pass) && !(GSConfig.StereoRenderCheckedObjectsStereo && disable_stereo_pass))
+			      || GSConfig.StereoDontRenderCheckedObjects && disable_stereo_pass) && !(checked_objects_stereo_override || checked_objects_sbs_remap_override))
 		{
 			m_last_rt = rt;
 			return;
@@ -8835,13 +8890,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 						&& (!GSConfig.StereoRenderCheckedObjectsMono || !disable_stereo_pass)
 						// TODO breaks Medal of Honor menu
 						|| GSConfig.StereoMasterFixMovies && movies_fix_override
-						|| GSConfig.StereoRenderCheckedObjectsStereo && disable_stereo_pass);
+						|| checked_objects_stereo_override || checked_objects_sbs_remap_override);
 
 		if (stereo_enabled)
 		{
 			const bool ui_top_layer = m_vt.m_max.p.z > 9000000.0f;
-			const bool ui_detection_threshold = GSConfig.StereoUiDetectThreshold < 100 ? m_vt.m_max.p.z > 9000000.0f - GSConfig.StereoUiDetectThreshold * 82000.0f :
-												m_vt.m_max.p.z > 2000000.0f - std::pow(GSConfig.StereoUiDetectThreshold * 3.2e28, 0.2f);
+			const bool ui_detection_threshold = m_vt.m_max.p.z > m_stereo_ui_detect_threshold_cutoff;
 
 			const bool ui_advanced_detect = ui_detection_threshold && (m_conf.ps.blend_mix != 0 && m_vt.m_eq.z
 //					|| PRIM->FST && !PRIM->FGE && m_vt.m_eq.z
@@ -8917,15 +8971,18 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			    break;
 			}
 
-			if (sbs_remap_fix && !(GSConfig.StereoRenderCheckedObjectsStereo && disable_stereo_pass))
+			if (checked_objects_sbs_remap_override)
+				sbs_remap_fix = true;
+
+			if (sbs_remap_fix && !checked_objects_stereo_override)
 			{
 			    const float forced_eye = GSConfig.StereoSbsRemapMono ? 0.0f : -1.0f;
-			    m_conf.cb_ps.StereoRemap = GSVector4(1.0f, 0.0f, forced_eye, 0.0f);
+			    m_conf.cb_ps.StereoRemap = GSVector4(1.0f, GSConfig.StereoFlipRendering ? 1.0f : 0.0f, forced_eye, 0.0f);
 			    ui_detect = false;
 			}
 			else
 			{
-			    m_conf.cb_ps.StereoRemap = GSVector4(0.0f, 0.0f, -1.0f, 0.0f);
+			    m_conf.cb_ps.StereoRemap = GSVector4(0.0f, GSConfig.StereoFlipRendering ? 1.0f : 0.0f, -1.0f, 0.0f);
 			}
 
 			const bool increase_depth = GSConfig.StereoUiSecondLayerSelector1 && m_conf.drawarea.eq(fullscreen_rect)
