@@ -214,7 +214,7 @@ static void _rcntFireInterrupt(int i, bool isOverflow)
 		{
 			// IRQ fired
 			//DevCon.Warning("Counter %d %s IRQ Fired count %x target %x psx Cycle %d", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count, psxCounters[i].target, psxRegs.cycle);
-			psxHu32(0x1070) |= psxCounters[i].interrupt;
+			psxHu32(HW_ISTAT) |= psxCounters[i].interrupt;
 			iopTestIntc();
 		}
 
@@ -782,8 +782,8 @@ void psxRcntSetNewIntrMode(int index)
 	psxCounters[index].mode.overflowFlag = false;
 	psxCounters[index].mode.intrEnable = true;
 
-	if (psxCounters[index].mode.repeatIntr != psxCounters[index].currentIrqMode.repeatInterrupt || psxCounters[index].mode.toggleIntr != psxCounters[index].currentIrqMode.toggleInterrupt)
-		DevCon.Warning("Updating psxCounter[%d] mode old repeat %d new %d old toggle %d new %d", index, psxCounters[index].mode.repeatIntr, psxCounters[index].currentIrqMode.repeatInterrupt, psxCounters[index].mode.toggleIntr, psxCounters[index].currentIrqMode.toggleInterrupt);
+	//if (psxCounters[index].mode.repeatIntr != psxCounters[index].currentIrqMode.repeatInterrupt || psxCounters[index].mode.toggleIntr != psxCounters[index].currentIrqMode.toggleInterrupt)
+	//	DevCon.Warning("Updating psxCounter[%d] mode old repeat %d new %d old toggle %d new %d", index, psxCounters[index].mode.repeatIntr, psxCounters[index].currentIrqMode.repeatInterrupt, psxCounters[index].mode.toggleIntr, psxCounters[index].currentIrqMode.toggleInterrupt);
 	
 	psxCounters[index].currentIrqMode.repeatInterrupt = psxCounters[index].mode.repeatIntr;
 	psxCounters[index].currentIrqMode.toggleInterrupt = psxCounters[index].mode.toggleIntr;

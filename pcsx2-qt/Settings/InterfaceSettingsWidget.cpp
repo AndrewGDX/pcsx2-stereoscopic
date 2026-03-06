@@ -197,8 +197,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		   "and unpauses when you switch back."));
 	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
 		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
-	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Pause On State Load/Save Failure"),
-		tr("Checked"), tr("Display a modal dialog when a save state load/save operation fails."));
+	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Prompt On State Load/Save Failure"),
+		tr("Checked"), tr("Displays a modal dialog when a save state load/save operation fails."));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
 	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
@@ -248,6 +248,12 @@ void InterfaceSettingsWidget::updatePromptOnStateLoadSaveFailureCheckbox(Qt::Che
 {
 	QSignalBlocker blocker(m_ui.promptOnStateLoadSaveFailure);
 	m_ui.promptOnStateLoadSaveFailure->setCheckState(state);
+}
+
+void InterfaceSettingsWidget::updateMouseLockCheckbox(Qt::CheckState state)
+{
+	QSignalBlocker blocker(m_ui.mouseLock);
+	m_ui.mouseLock->setCheckState(state);
 }
 
 void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()

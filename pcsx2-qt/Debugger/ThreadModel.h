@@ -24,15 +24,16 @@ public:
 		PRIORITY,
 		STATE,
 		WAIT_TYPE,
+		WAIT_ID,
 		COLUMN_COUNT
 	};
 
-	static constexpr QHeaderView::ResizeMode HeaderResizeModes[ThreadColumns::COLUMN_COUNT] =
-	{
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[ThreadColumns::COLUMN_COUNT] = {
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
 		QHeaderView::ResizeMode::Stretch,
 		QHeaderView::ResizeMode::Stretch,
 	};

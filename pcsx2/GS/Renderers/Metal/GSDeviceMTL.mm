@@ -1589,6 +1589,7 @@ void GSDeviceMTL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 	[m_current_render.encoder drawPrimitives:MTLPrimitiveTypeTriangleStrip
 	                             vertexStart:0
 	                             vertexCount:4];
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
@@ -1599,6 +1600,7 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 	MRESetPipeline(pipeline);
 	MRESetTexture(sTex, GSMTLTextureIndexNonHW);
 	[m_current_render.encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
@@ -2175,7 +2177,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		{
 			BeginRenderPass(@"ColorClip Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
 			RenderCopy(colclip_rt, m_colclip_resolve_pipeline, config.colclip_update_area);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			Recycle(colclip_rt);
 			
@@ -2205,7 +2206,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 				case GSTexture::State::Dirty:
 					BeginRenderPass(@"ColorClip Init", colclip_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
 					RenderCopy(config.rt, m_colclip_init_pipeline, copy_rect);
-					g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					break;
 
 				case GSTexture::State::Cleared:
@@ -2317,7 +2317,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		{
 			BeginRenderPass(@"ColorClip Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
 			RenderCopy(colclip_rt, m_colclip_resolve_pipeline, config.colclip_update_area);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			Recycle(colclip_rt);
 			
