@@ -75,6 +75,9 @@ namespace Host
 	/// Copies the provided text to the host's clipboard, if present.
 	bool CopyTextToClipboard(const std::string_view text);
 
+	/// Returns the current text from the host's clipboard, if present.
+	std::string GetTextFromClipboard();
+
 	/// Requests settings reset. Can be called from any thread, will call back and apply on the CPU thread.
 	bool RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui);
 
@@ -83,6 +86,9 @@ namespace Host
 
 	/// Safely executes a function on the VM thread.
 	void RunOnCPUThread(std::function<void()> function, bool block = false);
+
+	/// Safely executes a function on the GS thread.
+	void RunOnGSThread(std::function<void()> function);
 
 	/// Asynchronously starts refreshing the game list.
 	void RefreshGameListAsync(bool invalidate_cache);
@@ -143,6 +149,9 @@ namespace Host
 
 	/// Creates a progress callback that displays in the host.
 	std::unique_ptr<ProgressCallback> CreateHostProgressCallback();
+
+	/// Compare strings in the locale of the current UI language from any thread.  Prefer the QtHost version if you can use it.
+	int LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs);
 
 	namespace Internal
 	{

@@ -94,6 +94,10 @@ static constexpr const char* s_sdl_trigger_ps_icons[] = {
 	ICON_PF_LEFT_TRIGGER_L2, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
 	ICON_PF_RIGHT_TRIGGER_R2, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
 };
+static constexpr const char* s_sdl_trigger_nintendo_icons[] = {
+	ICON_PF_LEFT_TRIGGER_ZL, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	ICON_PF_RIGHT_TRIGGER_ZR, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
 
 static const char* const* s_sdl_trigger_icons_list[] = {
 	s_sdl_trigger_icons, // SDL_GAMEPAD_TYPE_UNKNOWN
@@ -103,7 +107,7 @@ static const char* const* s_sdl_trigger_icons_list[] = {
 	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS3
 	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS4
 	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS5
-	// Switch
+	s_sdl_trigger_nintendo_icons, // SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
 };
 
 static constexpr const char* s_sdl_ps3_pressure_icons[] = {
@@ -221,6 +225,38 @@ static constexpr const char* s_sdl_button_names[] = {
 	"Misc 5", // SDL_GAMEPAD_BUTTON_MISC5
 	"Misc 6", // SDL_GAMEPAD_BUTTON_MISC6
 };
+static constexpr const char* s_sdl_button_standard_names[] = {
+	"A", // SDL_GAMEPAD_BUTTON_SOUTH
+	"B", // SDL_GAMEPAD_BUTTON_EAST
+	"X", // SDL_GAMEPAD_BUTTON_WEST
+	"Y", // SDL_GAMEPAD_BUTTON_NORTH
+};
+static constexpr const char* s_sdl_button_xbox360_names[] = {
+	nullptr, // SDL_GAMEPAD_BUTTON_SOUTH
+	nullptr, // SDL_GAMEPAD_BUTTON_EAST
+	nullptr, // SDL_GAMEPAD_BUTTON_WEST
+	nullptr, // SDL_GAMEPAD_BUTTON_NORTH
+	nullptr, // SDL_GAMEPAD_BUTTON_BACK
+	nullptr, // SDL_GAMEPAD_BUTTON_GUIDE
+	nullptr, // SDL_GAMEPAD_BUTTON_START
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"LB", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"RB", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+};
+static constexpr const char* s_sdl_button_xboxone_names[] = {
+	nullptr, // SDL_GAMEPAD_BUTTON_SOUTH
+	nullptr, // SDL_GAMEPAD_BUTTON_EAST
+	nullptr, // SDL_GAMEPAD_BUTTON_WEST
+	nullptr, // SDL_GAMEPAD_BUTTON_NORTH
+	"View", // SDL_GAMEPAD_BUTTON_BACK
+	"Xbox", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Menu", // SDL_GAMEPAD_BUTTON_START
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"LB", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"RB", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+};
 static constexpr const char* s_sdl_button_ps3_names[] = {
 	"Cross", // SDL_GAMEPAD_BUTTON_SOUTH
 	"Circle", // SDL_GAMEPAD_BUTTON_EAST
@@ -265,26 +301,39 @@ static constexpr const char* s_sdl_button_ps5_names[] = {
 	nullptr, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
 	"Mute", // SDL_GAMEPAD_BUTTON_MISC1
 };
+static constexpr const char* s_sdl_button_nintendo_names[] = {
+	"B", // SDL_GAMEPAD_BUTTON_SOUTH
+	"A", // SDL_GAMEPAD_BUTTON_EAST
+	"Y", // SDL_GAMEPAD_BUTTON_WEST
+	"X", // SDL_GAMEPAD_BUTTON_NORTH
+	"Minus", // SDL_GAMEPAD_BUTTON_BACK
+	"Home", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Plus", // SDL_GAMEPAD_BUTTON_START
+	"Left Stick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"Right Stick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"L", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"R", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+};
 
 static constexpr const char* const* s_sdl_button_names_list[] = {
 	s_sdl_button_names, // SDL_GAMEPAD_TYPE_UNKNOWN
-	s_sdl_button_names, // SDL_GAMEPAD_TYPE_STANDARD
-	s_sdl_button_names, // SDL_GAMEPAD_TYPE_XBOX360
-	s_sdl_button_names, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_button_standard_names, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_button_xbox360_names, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_button_xboxone_names, // SDL_GAMEPAD_TYPE_XBOXONE
 	s_sdl_button_ps3_names, // SDL_GAMEPAD_TYPE_PS3
 	s_sdl_button_ps4_names, // SDL_GAMEPAD_TYPE_PS4
 	s_sdl_button_ps5_names, // SDL_GAMEPAD_TYPE_PS5
-	// Switch
+	s_sdl_button_nintendo_names, // SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
 };
 static constexpr size_t s_sdl_button_namesize_list[] = {
 	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_UNKNOWN
-	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_STANDARD
-	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_XBOX360
-	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_XBOXONE
+	std::size(s_sdl_button_standard_names), // SDL_GAMEPAD_TYPE_STANDARD
+	std::size(s_sdl_button_xbox360_names), // SDL_GAMEPAD_TYPE_XBOX360
+	std::size(s_sdl_button_xboxone_names), // SDL_GAMEPAD_TYPE_XBOXONE
 	std::size(s_sdl_button_ps3_names), // SDL_GAMEPAD_TYPE_PS3
 	std::size(s_sdl_button_ps4_names), // SDL_GAMEPAD_TYPE_PS4
 	std::size(s_sdl_button_ps5_names), // SDL_GAMEPAD_TYPE_PS5
-	// Switch
+	std::size(s_sdl_button_nintendo_names), // SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
 };
 
 static constexpr const char* s_sdl_face_button_icons[] = {
@@ -304,12 +353,52 @@ static constexpr const char* s_sdl_button_icons[] = {
 	ICON_PF_BUTTON_LEFT_X, // SDL_GAMEPAD_BUTTON_WEST
 	ICON_PF_BUTTON_UP_Y, // SDL_GAMEPAD_BUTTON_NORTH
 	ICON_PF_SHARE_CAPTURE, // SDL_GAMEPAD_BUTTON_BACK
-	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_HOME_MENU, // SDL_GAMEPAD_BUTTON_GUIDE
 	ICON_PF_BURGER_MENU, // SDL_GAMEPAD_BUTTON_START
 	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
 	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
 	ICON_PF_LEFT_SHOULDER_LB, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
 	ICON_PF_RIGHT_SHOULDER_RB, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+};
+static constexpr const char* s_sdl_button_standard_icons[] = {
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_NORTH
+};
+static constexpr const char* s_sdl_button_xbox360_icons[] = {
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_JOYCON_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_JOYCON_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_START
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_XBOX_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_XBOX_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_XBOX_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_XBOX_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+};
+static constexpr const char* s_sdl_button_xboxone_icons[] = {
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_NORTH
+	nullptr, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	nullptr, // SDL_GAMEPAD_BUTTON_START
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
 	ICON_PF_XBOX_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
 	ICON_PF_XBOX_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
 	ICON_PF_XBOX_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
@@ -379,25 +468,42 @@ static constexpr const char* s_sdl_button_ps5_icons[] = {
 	ICON_PF_DUALSENSE_TOUCHPAD, // SDL_GAMEPAD_BUTTON_TOUCHPAD
 };
 
+static constexpr const char* s_sdl_button_nintendo_icons[] = {
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_MINUS, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_HOME_MENU, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_PLUS, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_L, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_R, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_JOYCON_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_JOYCON_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_JOYCON_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_JOYCON_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+};
 static constexpr const char* const* s_sdl_button_icons_list[] = {
 	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_UNKNOWN
-	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_STANDARD
-	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOX360
-	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_button_standard_icons, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_button_xbox360_icons, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_button_xboxone_icons, // SDL_GAMEPAD_TYPE_XBOXONE
 	s_sdl_button_ps3_icons, // SDL_GAMEPAD_TYPE_PS3
 	s_sdl_button_ps4_icons, // SDL_GAMEPAD_TYPE_PS4
 	s_sdl_button_ps5_icons, // SDL_GAMEPAD_TYPE_PS5
-	// Switch
+	s_sdl_button_nintendo_icons, // SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
 };
 static constexpr size_t s_sdl_button_iconsize_list[] = {
 	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_UNKNOWN
-	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_STANDARD
-	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOX360
-	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOXONE
+	std::size(s_sdl_button_standard_icons), // SDL_GAMEPAD_TYPE_STANDARD
+	std::size(s_sdl_button_xbox360_icons), // SDL_GAMEPAD_TYPE_XBOX360
+	std::size(s_sdl_button_xboxone_icons), // SDL_GAMEPAD_TYPE_XBOXONE
 	std::size(s_sdl_button_ps3_icons), // SDL_GAMEPAD_TYPE_PS3
 	std::size(s_sdl_button_ps4_icons), // SDL_GAMEPAD_TYPE_PS4
 	std::size(s_sdl_button_ps5_icons), // SDL_GAMEPAD_TYPE_PS5
-	// Switch
+	std::size(s_sdl_button_nintendo_icons), // SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
 };
 
 static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
@@ -1013,7 +1119,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display,
 				if (it != m_controllers.end())
 					type = SDL_GetRealGamepadType(it->gamepad);
 
-				if (type > SDL_GAMEPAD_TYPE_STANDARD && type < std::size(s_sdl_button_names_list) &&
+				if (type > SDL_GAMEPAD_TYPE_UNKNOWN && type < std::size(s_sdl_button_names_list) &&
 					key.data < s_sdl_button_namesize_list[type] && s_sdl_button_names_list[type][key.data] != nullptr)
 				{
 					ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_button_names_list[type][key.data]);
@@ -1083,6 +1189,16 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 		if (it != m_controllers.end())
 			type = SDL_GetRealGamepadType(it->gamepad);
 
+		const InputLayout glyph_preference = InputManager::GetGamepadIconPreference();
+		if (glyph_preference == InputLayout::Xbox)
+			type = SDL_GAMEPAD_TYPE_XBOXONE;
+		else if (glyph_preference == InputLayout::Playstation)
+			type = SDL_GAMEPAD_TYPE_PS5;
+		else if (glyph_preference == InputLayout::Nintendo)
+			type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+		else if (glyph_preference == InputLayout::Generic)
+			type = SDL_GAMEPAD_TYPE_UNKNOWN;
+
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			if (key.modifier != InputModifier::FullAxis)
@@ -1112,7 +1228,7 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			if (type > SDL_GAMEPAD_TYPE_STANDARD && type < std::size(s_sdl_button_icons_list) &&
+			if (type > SDL_GAMEPAD_TYPE_UNKNOWN && type < std::size(s_sdl_button_icons_list) &&
 				key.data < s_sdl_button_iconsize_list[type] && s_sdl_button_icons_list[type][key.data] != nullptr)
 			{
 				ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_button_icons_list[type][key.data]);
@@ -1120,7 +1236,7 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 			else if (key.data < 4)
 			{
 				SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
-				if (it != m_controllers.end() && it->gamepad)
+				if (glyph_preference != InputLayout::Generic && it != m_controllers.end() && it->gamepad)
 					label = SDL_GetGamepadButtonLabel(it->gamepad, static_cast<SDL_GamepadButton>(key.data));
 
 				if (label > SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN && label < std::size(s_sdl_face_button_icons))
@@ -1460,7 +1576,19 @@ bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+	const float value = NormalizeS16(ev->value);
+
+	if (ev->axis < std::size(s_sdl_generic_binding_axis_mapping))
+	{
+		InputManager::InvokeEvents(key, value, GenericInputBinding::Unknown,
+			s_sdl_generic_binding_axis_mapping[ev->axis][0],
+			s_sdl_generic_binding_axis_mapping[ev->axis][1]);
+	}
+	else
+	{
+		InputManager::InvokeEvents(key, value);
+	}
+
 	return true;
 }
 
@@ -1472,8 +1600,8 @@ bool SDLInputSource::HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev)
 
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
-												s_sdl_generic_binding_button_mapping[ev->button] :
-												GenericInputBinding::Unknown;
+	                                            s_sdl_generic_binding_button_mapping[ev->button] :
+	                                            GenericInputBinding::Unknown;
 	InputManager::InvokeEvents(key, static_cast<float>(ev->down), generic_key);
 	return true;
 }
@@ -1736,6 +1864,6 @@ bool SDLInputSource::IsControllerSixaxis(const ControllerData& cd)
 	// This differing layout also isn't mapped correctly in SDL, I think due to how L2/R2 are exposed.
 	// Also see SetHints regarding reading the pressure sense from DsHidMini's SDF mode.
 	return type == SDL_GAMEPAD_TYPE_PS3 &&
-		   SDL_GetNumJoystickAxes(cd.joystick) == 16 &&
-		   SDL_GetNumJoystickButtons(cd.joystick) == 11;
+	       SDL_GetNumJoystickAxes(cd.joystick) == 16 &&
+	       SDL_GetNumJoystickButtons(cd.joystick) == 11;
 }

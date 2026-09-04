@@ -155,6 +155,8 @@ The clamp modes are also numerically based.
 
 ### GS Hardware Renderer Fixes
 
+* accurateAlphaTest                     [`0` or `1`]    {Off, On}                   Default: Off
+
 * autoFlush                   [`0` or `1` or `2`]          {Disabled, Enabled (Sprites Only), Enabled (All Primitives)}                            Default: Off (`0`)
 * partialTargetInvalidation         [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * PCRTCOffsets    [`0` or `1`]          {Off, On}                               Default: Off (`0`)
@@ -172,6 +174,7 @@ The clamp modes are also numerically based.
 * cpuSpriteRenderBW           [Value between `0` to `10`]   {Disabled, 1 (64), 2 (128), 3 (192), 4 (256), 5 (320), 6 (384), 7 (448), 8 (512), 9 (576), 10 (640)} Default: Off (`0`)
 * cpuSpriteRenderLevel        [`0` or `1` or `2`]    {Sprites only, Sprites/Triangles, Blended Sprites/Triangles}  Default: Off unless cpuSpriteRenderBW has value other than Off then it is 'Sprites only' (`0`)
 * estimateTextureRegion       [`0` or `1`]          {Off, On}                               Default: Off (`0`)
+* drawBuffering			      [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * getSkipCount                {`GSC` with suffix }  {None unless specific game GSC}         Default: Disabled (`0`) unless valid variable name (ex. GSC_PolyphonyDigitalGames, GSC_UrbanReign, ...)
 * gpuPaletteConversion        [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * gpuTargetCLUT               [`0` or `1` or `2`]   {Disabled, Enabled (Exact Match), Enabled (Check Inside Target)}                     Default: Disabled (`0`)
@@ -179,6 +182,9 @@ The clamp modes are also numerically based.
 * maximumBlendingLevel        [`0` or `1` or `2` or `3` or `4` or `5`]      {Minimum, Basic, Medium, High, Full(Slow), Maximum (Very Slow)}    Default: Automatic (No value, looks up GameDB)
 * recommendedBlendingLevel    [`0` or `1` or `2` or `3` or `4` or `5`]      {Minimum, Basic, Medium, High, Full(Slow), Maximum (Very Slow)}    Default: Automatic (No value, looks up GameDB)
 * readTCOnClose               [`0` or `1`]          {Off, On}                               Default: Off (`0`) // Tab 3 Hardware Fixes (4th checkbox on right row 2)
+* limit24BitDepth             [`0` or `1`or `2`]    {Disabled, Prioritise Upper Bits, Prioritise Lower Bits}                                Default: Off (`0`)
+* recommendedAccurateAlphaTest             [`0` or `1`]    {Disabled, Advise to use AAT}                                Default: Off (`0`)
+* recommendedHWAA1             [`0` or `1`]    {Disabled, Advise to use AA1}                                Default: Off (`0`)
 
 ### GS Hardware Upscaling Fixes
 

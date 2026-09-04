@@ -3,6 +3,7 @@
 
 #include "Common.h"
 
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "ps2/BiosTools.h"
 #include "R5900.h"
@@ -32,7 +33,7 @@
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
-u32 EEoCycle;
+u64 EEoCycle;
 
 alignas(16) cpuRegistersPack _cpuRegistersPack;
 alignas(16) tlbs tlb[48];
@@ -168,7 +169,7 @@ void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 {
 	// Avoid too much spamming on the interpreter
 	if (Cpu != &intCpu || IsDebugBuild) {
-		Console.Error("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x",
+		Console.Error("cpuTlbMiss pc:%x, cycl:%llx, addr: %x, status=%x, code=%x",
 				cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
 	}
 
@@ -190,7 +191,7 @@ void cpuTlbMissW(u32 addr, u32 bd) {
 }
 
 // sets a branch test to occur some time from an arbitrary starting point.
-__fi void cpuSetNextEvent( u32 startCycle, s32 delta )
+__fi void cpuSetNextEvent( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't blow up
 	// if startCycle is greater than our next branch cycle.
@@ -221,7 +222,7 @@ __fi int cpuGetCycles(int interrupt)
 
 // tests the cpu cycle against the given start and delta values.
 // Returns true if the delta time has passed.
-__fi int cpuTestCycle( u32 startCycle, s32 delta )
+__fi int cpuTestCycle( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't explode
 	// if the startCycle is ahead of our current cpu cycle.
@@ -671,7 +672,8 @@ void eeloadHook()
 		const std::string& elf_override = VMManager::Internal::GetELFOverride();
 		if (!elf_override.empty())
 		{
-			elfname = fmt::format("host:{}", elf_override);
+			// The host: root should be directory containg the elf, so get only the filename part
+			elfname = fmt::format("host:{}", Path::GetFileName(elf_override));
 		}
 		else
 		{
@@ -700,6 +702,7 @@ void eeloadHook()
 				{
 					// Overwrite OSDSYS with game's ELF name
 					strcpy((char*)PSM(g_osdsys_str), elfname.c_str());
+					break;
 				}
 			}
 		}

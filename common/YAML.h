@@ -5,9 +5,8 @@
 
 #include "Error.h"
 
+#include "ryml.hpp"
 #include "ryml_std.hpp"
-#include "ryml.hpp"
-#include "ryml.hpp"
 
 #include <optional>
 
@@ -15,4 +14,6 @@
 /// parsing errors (as is recommended by the documentation for cases where
 /// exceptions are disabled). The file_name parameter is only used for error
 /// messages, which are returned via the error parameter.
-std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr file_name, Error* error);
+/// If resolve_anchors is set to true, YAML anchors and aliases will be resolved.
+/// It's a potentially slow operation, so it's opt-in.
+std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr file_name, Error* error, bool resolve_anchors = false);

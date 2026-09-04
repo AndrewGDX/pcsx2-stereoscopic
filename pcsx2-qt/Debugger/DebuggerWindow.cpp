@@ -115,6 +115,28 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	setMenuWidget(m_dock_manager->createMenuBar(menu_bar));
 
+	connect(m_dock_manager, &DockManager::focusedViewForNavigationChanged,
+		this, &DebuggerWindow::updateNavigationButtons);
+
+	m_ui.actionNavigateBack->setEnabled(false);
+	m_ui.actionNavigateForward->setEnabled(false);
+
+	connect(m_ui.actionNavigateBack, &QAction::triggered, this, [this]() {
+		DebuggerView* view = m_dock_manager->focusedViewForNavigation();
+		if (!view)
+			return;
+
+		view->navigateBack();
+	});
+
+	connect(m_ui.actionNavigateForward, &QAction::triggered, this, [this]() {
+		DebuggerView* view = m_dock_manager->focusedViewForNavigation();
+		if (!view)
+			return;
+
+		view->navigateForward();
+	});
+
 	updateTheme();
 
 	Host::RunOnCPUThread([]() {
@@ -307,6 +329,21 @@ void DebuggerWindow::updateFromSettings()
 	}
 }
 
+void DebuggerWindow::updateNavigationButtons()
+{
+	DebuggerView* view = m_dock_manager->focusedViewForNavigation();
+	if (view)
+	{
+		m_ui.actionNavigateBack->setEnabled(view->canNavigateBack());
+		m_ui.actionNavigateForward->setEnabled(view->canNavigateForward());
+	}
+	else
+	{
+		m_ui.actionNavigateBack->setEnabled(false);
+		m_ui.actionNavigateForward->setEnabled(false);
+	}
+}
+
 void DebuggerWindow::onVMStarting()
 {
 	m_ui.actionRun->setEnabled(true);
@@ -450,7 +487,7 @@ void DebuggerWindow::onStepInto()
 		cpu->resumeCpu();
 	});
 
-	repaint();
+	update();
 }
 
 void DebuggerWindow::onStepOver()
@@ -500,7 +537,7 @@ void DebuggerWindow::onStepOver()
 		cpu->resumeCpu();
 	});
 
-	this->repaint();
+	update();
 }
 
 void DebuggerWindow::onStepOut()
@@ -525,8 +562,7 @@ void DebuggerWindow::onStepOut()
 				cpu->getPC(),
 				cpu->getRegister(0, 31),
 				cpu->getRegister(0, 29),
-				thread->EntryPoint(),
-				thread->StackTop());
+				thread->EntryPoint());
 			break;
 		}
 	}
@@ -541,7 +577,7 @@ void DebuggerWindow::onStepOut()
 		cpu->resumeCpu();
 	});
 
-	this->repaint();
+	update();
 }
 
 void DebuggerWindow::changeEvent(QEvent* event)
@@ -573,3 +609,5 @@ DebugInterface* DebuggerWindow::currentCPU()
 
 	return &DebugInterface::get(*maybe_cpu);
 }
+
+#include "moc_DebuggerWindow.cpp"

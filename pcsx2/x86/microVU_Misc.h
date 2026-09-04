@@ -25,10 +25,10 @@ struct mVU_Globals
 	u32   one     [4] = __four(0x3f800000);
 	u32   Pi4     [4] = __four(0x3f490fdb);
 	u32   T1      [4] = __four(0x3f7ffff5);
-	u32   T5      [4] = __four(0xbeaaa61c);
-	u32   T2      [4] = __four(0x3e4c40a6);
-	u32   T3      [4] = __four(0xbe0e6c63);
-	u32   T4      [4] = __four(0x3dc577df);
+	u32   T2      [4] = __four(0xbeaaa61c);
+	u32   T3      [4] = __four(0x3e4c40a6);
+	u32   T4      [4] = __four(0xbe0e6c63);
+	u32   T5      [4] = __four(0x3dc577df);
 	u32   T6      [4] = __four(0xbd6501c4);
 	u32   T7      [4] = __four(0x3cb31652);
 	u32   T8      [4] = __four(0xbb84d7e7);
@@ -141,10 +141,10 @@ static const char branchSTR[16][8] = {
 #define gprT1b ax  // Low 16-bit of gprT1 (eax)
 #define gprT2b cx  // Low 16-bit of gprT2 (ecx)
 
-#define gprF0  ebx // Status Flag 0
-#define gprF1 r12d // Status Flag 1
-#define gprF2 r13d // Status Flag 2
-#define gprF3 r14d // Status Flag 3
+#define gprF0 r12d // Status Flag 0
+#define gprF1 r13d // Status Flag 1
+#define gprF2 r14d // Status Flag 2
+#define gprF3 r15d // Status Flag 3
 
 // Function Params
 #define mP microVU& mVU, int recPass

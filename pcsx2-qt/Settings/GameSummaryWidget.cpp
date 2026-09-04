@@ -364,7 +364,7 @@ void GameSummaryWidget::onSearchHashClicked()
 	if (m_redump_search_keyword.empty())
 		return;
 
-	QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+	QtUtils::OpenURL(this, fmt::format("https://redump.info/discs?q={}", m_redump_search_keyword).c_str());
 }
 
 void GameSummaryWidget::onCheckWikiClicked(const std::string& serial)
@@ -418,3 +418,5 @@ void GameSummaryWidget::setCustomRegion(int region)
 	GameList::SaveCustomRegionForPath(m_entry_path, region);
 	repopulateCurrentDetails();
 }
+
+#include "moc_GameSummaryWidget.cpp"

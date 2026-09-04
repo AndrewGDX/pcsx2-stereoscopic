@@ -264,7 +264,7 @@ static bool match_sm(const char* start, const char* end, struct cpuinfo_arm_chip
 	/* Return parsed chipset. */
 	*chipset = (struct cpuinfo_arm_chipset){
 		.vendor = cpuinfo_arm_chipset_vendor_qualcomm,
-		.series = cpuinfo_arm_chipset_series_qualcomm_snapdragon,
+		.series = cpuinfo_arm_chipset_series_qualcomm_sm,
 		.model = model,
 	};
 	return true;
@@ -1314,7 +1314,7 @@ static bool match_omap(const char* start, const char* end, struct cpuinfo_arm_ch
  * ro.board.platform) to match.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  * @param[out] chipset - location where chipset information will be stored upon
  * a successful match and decoding.
  *
@@ -1607,7 +1607,7 @@ static bool match_and_parse_sunxi(
  * @param end - end of the /proc/cpuinfo Hardware string to match.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  * @param[out] chipset - location where chipset information will be stored upon
  * a successful match and decoding.
  *
@@ -2456,7 +2456,7 @@ static const struct special_map_entry tegra_hardware_map_entries[] = {
  * @param[in] platform - /proc/cpuinfo Hardware string.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -2857,7 +2857,7 @@ static const struct special_map_entry special_board_map_entries[] = {
  * @param[in] platform - ro.product.board value.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -3162,7 +3162,7 @@ static const struct special_map_entry special_platform_map_entries[] = {
  * @param[in] platform - ro.board.platform value.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -3491,6 +3491,65 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_chipname(
 		.series = cpuinfo_arm_chipset_series_unknown,
 	};
 }
+
+/*
+ * Decodes chipset name from ro.soc.model Android system property.
+ *
+ * @param[in] soc_model - ro.soc.model value.
+ *
+ * @returns Decoded chipset name. If chipset could not be decoded, the resulting
+ * structure would use `unknown` vendor and series identifiers.
+ */
+struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_soc_model(
+	const char soc_model[restrict static CPUINFO_BUILD_PROP_VALUE_MAX]) {
+	struct cpuinfo_arm_chipset chipset = {
+		.vendor = cpuinfo_arm_chipset_vendor_unknown,
+		.series = cpuinfo_arm_chipset_series_unknown,
+	};
+	const size_t soc_model_length = strnlen(soc_model, CPUINFO_BUILD_PROP_VALUE_MAX);
+	const char* soc_model_end = soc_model + soc_model_length;
+
+	/* Check Qualcomm SMxxxx signature */
+	if (match_sm(soc_model, soc_model_end, &chipset)) {
+		cpuinfo_log_debug(
+			"matched Qualcomm SM signature in ro.soc.model string \"%.*s\"",
+			(int)soc_model_length,
+			soc_model);
+		return chipset;
+	}
+
+	/* Check Qualcomm MSM/APQ signatures */
+	if (match_msm_apq(soc_model, soc_model_end, &chipset)) {
+		cpuinfo_log_debug(
+			"matched Qualcomm MSM/APQ signature in ro.soc.model string \"%.*s\"",
+			(int)soc_model_length,
+			soc_model);
+		return chipset;
+	}
+
+	if (soc_model[0] != '\0') {
+		if (strncmp(soc_model, "Tensor", 6) == 0) {
+			chipset.vendor = cpuinfo_arm_chipset_vendor_google;
+			chipset.series = cpuinfo_arm_chipset_series_google_tensor;
+			const char* suffix_start = soc_model + 6;
+			while (*suffix_start == ' ') {
+				suffix_start++;
+			}
+			const size_t suffix_length = strnlen(suffix_start, CPUINFO_ARM_CHIPSET_SUFFIX_MAX);
+			if (suffix_length > 0) {
+				strncpy(chipset.suffix, suffix_start, suffix_length);
+			}
+			return chipset;
+		} else if (strncmp(soc_model, "GS201", 5) == 0) {
+			chipset.vendor = cpuinfo_arm_chipset_vendor_google;
+			chipset.series = cpuinfo_arm_chipset_series_google_tensor;
+			strncpy(chipset.suffix, "G2", 2);
+			return chipset;
+		}
+	}
+
+	return chipset;
+}
 #endif /* __ANDROID__ */
 
 /*
@@ -3499,7 +3558,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_chipname(
  * @param[in,out] chipset - chipset name to fix.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  */
 void cpuinfo_arm_fixup_chipset(
 	struct cpuinfo_arm_chipset chipset[restrict static 1],
@@ -3828,6 +3887,7 @@ static const char* chipset_vendor_string[cpuinfo_arm_chipset_vendor_max] = {
 	[cpuinfo_arm_chipset_vendor_texas_instruments] = "Texas Instruments",
 	[cpuinfo_arm_chipset_vendor_unisoc] = "Unisoc",
 	[cpuinfo_arm_chipset_vendor_wondermedia] = "WonderMedia",
+	[cpuinfo_arm_chipset_vendor_google] = "Google",
 };
 
 /* Map from ARM chipset series ID to its string representation */
@@ -3837,6 +3897,7 @@ static const char* chipset_series_string[cpuinfo_arm_chipset_series_max] = {
 	[cpuinfo_arm_chipset_series_qualcomm_msm] = "MSM",
 	[cpuinfo_arm_chipset_series_qualcomm_apq] = "APQ",
 	[cpuinfo_arm_chipset_series_qualcomm_snapdragon] = "Snapdragon ",
+	[cpuinfo_arm_chipset_series_qualcomm_sm] = "SM",
 	[cpuinfo_arm_chipset_series_mediatek_mt] = "MT",
 	[cpuinfo_arm_chipset_series_samsung_exynos] = "Exynos ",
 	[cpuinfo_arm_chipset_series_hisilicon_k3v] = "K3V",
@@ -3864,6 +3925,7 @@ static const char* chipset_series_string[cpuinfo_arm_chipset_series_max] = {
 	[cpuinfo_arm_chipset_series_unisoc_t] = "T",
 	[cpuinfo_arm_chipset_series_unisoc_ums] = "UMS",
 	[cpuinfo_arm_chipset_series_wondermedia_wm] = "WM",
+	[cpuinfo_arm_chipset_series_google_tensor] = "Tensor",
 };
 
 /* Convert chipset name represented by cpuinfo_arm_chipset structure to a string
@@ -3882,14 +3944,35 @@ void cpuinfo_arm_chipset_to_string(
 	const char* vendor_string = chipset_vendor_string[vendor];
 	const char* series_string = chipset_series_string[series];
 	const uint32_t model = chipset->model;
+	const size_t suffix_length = strnlen(chipset->suffix, CPUINFO_ARM_CHIPSET_SUFFIX_MAX);
 	if (model == 0) {
-		if (series == cpuinfo_arm_chipset_series_unknown) {
-			strncpy(name, vendor_string, CPUINFO_ARM_CHIPSET_NAME_MAX);
+		if (suffix_length > 0) {
+			if (series == cpuinfo_arm_chipset_series_unknown) {
+				snprintf(
+					name,
+					CPUINFO_ARM_CHIPSET_NAME_MAX,
+					"%s %.*s",
+					vendor_string,
+					(int)suffix_length,
+					chipset->suffix);
+			} else {
+				snprintf(
+					name,
+					CPUINFO_ARM_CHIPSET_NAME_MAX,
+					"%s %s %.*s",
+					vendor_string,
+					series_string,
+					(int)suffix_length,
+					chipset->suffix);
+			}
 		} else {
-			snprintf(name, CPUINFO_ARM_CHIPSET_NAME_MAX, "%s %s", vendor_string, series_string);
+			if (series == cpuinfo_arm_chipset_series_unknown) {
+				strncpy(name, vendor_string, CPUINFO_ARM_CHIPSET_NAME_MAX);
+			} else {
+				snprintf(name, CPUINFO_ARM_CHIPSET_NAME_MAX, "%s %s", vendor_string, series_string);
+			}
 		}
 	} else {
-		const size_t suffix_length = strnlen(chipset->suffix, CPUINFO_ARM_CHIPSET_SUFFIX_MAX);
 		snprintf(
 			name,
 			CPUINFO_ARM_CHIPSET_NAME_MAX,
@@ -4020,7 +4103,6 @@ static enum cpuinfo_arm_chipset_vendor disambiguate_chipset_vendor(
 	    (vendor_a == cpuinfo_arm_chipset_vendor_spreadtrum && vendor_b == cpuinfo_arm_chipset_vendor_unisoc)) {
 		return cpuinfo_arm_chipset_vendor_unisoc;
 	}
-
 	return cpuinfo_arm_chipset_vendor_unknown;
 }
 
@@ -4038,7 +4120,7 @@ static enum cpuinfo_arm_chipset_vendor disambiguate_chipset_vendor(
  * described above.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -4074,6 +4156,8 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset(
 			cpuinfo_arm_android_decode_chipset_from_ro_chipname(properties->ro_chipname),
 		[cpuinfo_android_chipset_property_ro_hardware_chipname] =
 			cpuinfo_arm_android_decode_chipset_from_ro_chipname(properties->ro_hardware_chipname),
+		[cpuinfo_android_chipset_property_ro_soc_model] =
+			cpuinfo_arm_android_decode_chipset_from_ro_soc_model(properties->ro_soc_model),
 	};
 	enum cpuinfo_arm_chipset_vendor vendor = cpuinfo_arm_chipset_vendor_unknown;
 	for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {
@@ -4291,7 +4375,7 @@ void cpuinfo_arm_fixup_raspberry_pi_chipset(
  * @param[in] hardware - /proc/cpuinfo Hardware string.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.

@@ -6,6 +6,7 @@
 #include "DebugTools/Breakpoints.h"
 #include "Elfheader.h"
 #include "GS.h"
+#include "Host.h"
 #include "Memory.h"
 #include "Patch.h"
 #include "R3000A.h"
@@ -71,6 +72,7 @@ eeProfiler EE::Profiler;
 
 static DynamicHeapArray<u8, 4096> recRAMCopy;
 static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve_RAM;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutUnmapped;
 static size_t recLutEntries;
 static bool extraRam;
 
@@ -119,6 +121,120 @@ static void pauseAAA()
 
 #ifdef DUMP_BLOCKS
 static ZydisFormatterFunc s_old_print_address;
+static ZydisFormatterFunc s_old_print_disp;
+
+static bool Address2Symbol(u64 address, SmallString &buf)
+{
+
+#define A(x) ((u64)(x))
+
+	if (address >= A(eeMem->Main) && address < A(eeMem->Scratch))
+	{
+		buf.append_format("eeMem+0x{:08X}", static_cast<u32>(address - A(eeMem->Main)));
+	}
+	else if (address >= A(eeMem->Scratch) && address < A(eeMem->ROM))
+	{
+
+		buf.append_format("eeScratchpad+0x{:08X}", static_cast<u32>(address - A(eeMem->Scratch)));
+	}
+	else if (address >= A(&cpuRegs.GPR) && address < A(&cpuRegs.HI))
+	{
+		const u32 offset = static_cast<u32>(address - A(&cpuRegs)) % 16u;
+		if (offset != 0)
+			buf.append_format("cpuRegs.GPR.{}+{}", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u], offset);
+		else
+			buf.append_format("cpuRegs.GPR.{}", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u]);
+	}
+	else if (address >= A(&cpuRegs.HI) && address < A(&cpuRegs.CP0))
+	{
+		const u32 offset = static_cast<u32>(address - A(&cpuRegs.HI)) % 16u;
+		if (offset != 0)
+			buf.append_format("cpuRegs.{}+{}", (address >= A(&cpuRegs.LO) ? "LO" : "HI"), offset);
+		else
+			buf.append_format("cpuRegs.{}", (address >= A(&cpuRegs.LO) ? "LO" : "HI"));
+	}
+	else if (address == A(&cpuRegs.pc))
+	{
+		buf.append_format("cpuRegs.pc");
+	}
+	else if (address == A(&cpuRegs.cycle))
+	{
+		buf.append_format("cpuRegs.cycle");
+	}
+	else if (address == A(&cpuRegs.nextEventCycle))
+	{
+		buf.append_format("cpuRegs.nextEventCycle");
+	}
+	else if (address >= A(fpuRegs.fpr) && address < A(fpuRegs.fprc))
+	{
+		buf.append_format("fpuRegs.f{:02}", static_cast<u32>(address - A(fpuRegs.fpr)) / 4u);
+	}
+	else if (address >= A(&VU0.VF[0]) && address < A(&VU0.VI[0]))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.VF[0])) % 16u;
+		if (offset != 0)
+			buf.append_format("VU0.VF[{:02}]+{}", static_cast<u32>(address - A(&VU0.VF[0])) / 16u, offset);
+		else
+			buf.append_format("VU0.VF[{:02}]", static_cast<u32>(address - A(&VU0.VF[0])) / 16u);
+	}
+	else if (address >= A(&VU0.VI[0]) && address < A(&VU0.ACC))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.VI[0])) % 16u;
+		const u32 vi = static_cast<u32>(address - A(&VU0.VI[0])) / 16u;
+		if (offset != 0)
+			buf.append_format("VU0.{}+{}", COP2_REG_CTL[vi], offset);
+		else
+			buf.append_format("VU0.{}", COP2_REG_CTL[vi]);
+	}
+	else if (address >= A(&VU0.ACC) && address < A(&VU0.q))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.ACC));
+		if (offset != 0)
+			buf.append_format("VU0.ACC+{}", offset);
+		else
+			buf.append("VU0.ACC");
+	}
+	else if (address >= A(&VU0.q) && address < A(&VU0.idx))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.q)) % 16u;
+		const char* reg = (address >= A(&VU0.p)) ? "p" : "q";
+		if (offset != 0)
+			buf.append_format("VU0.{}+{}", reg, offset);
+		else
+			buf.append_format("VU0.{}", reg);
+	}
+	else
+	{
+		return false;
+	}
+
+#undef A
+
+	return true;
+}
+
+static ZyanStatus ZydisFormatterPrintDisplacement(const ZydisFormatter* formatter,
+	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
+{
+	u64 address = (u64)R5900_TEXTPTR + context->operand->mem.disp.value;
+	bool did_print = false;
+	SmallString buf;
+
+	// hardcoded RTEXTPTR
+	if (context->operand->mem.base == ZYDIS_REGISTER_RBX) {
+		did_print = Address2Symbol(address, buf);
+	}
+
+	if (did_print)
+	{
+		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
+		ZyanString* string;
+		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
+		return ZyanStringAppendFormat(string, "-%s+&%s", "R5900_TEXTPTR", buf.c_str());
+	}
+
+	return s_old_print_disp(formatter, buffer, context);
+}
 
 static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* formatter,
 	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
@@ -127,94 +243,17 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	ZYAN_CHECK(ZydisCalcAbsoluteAddress(context->instruction, context->operand,
 		context->runtime_address, &address));
 
-	char buf[128];
-	u32 len = 0;
+	bool did_print = false;
+	SmallString buf;
 
-#define A(x) ((u64)(x))
+	did_print = Address2Symbol(address, buf);
 
-	if (address >= A(eeMem->Main) && address < A(eeMem->Scratch))
-	{
-		len = snprintf(buf, sizeof(buf), "eeMem+0x%08X", static_cast<u32>(address - A(eeMem->Main)));
-	}
-	else if (address >= A(eeMem->Scratch) && address < A(eeMem->ROM))
-	{
-		len = snprintf(buf, sizeof(buf), "eeScratchpad+0x%08X", static_cast<u32>(address - A(eeMem->Scratch)));
-	}
-	else if (address >= A(&cpuRegs.GPR) && address < A(&cpuRegs.HI))
-	{
-		const u32 offset = static_cast<u32>(address - A(&cpuRegs)) % 16u;
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "cpuRegs.GPR.%s+%u", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u], offset);
-		else
-			len = snprintf(buf, sizeof(buf), "cpuRegs.GPR.%s", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u]);
-	}
-	else if (address >= A(&cpuRegs.HI) && address < A(&cpuRegs.CP0))
-	{
-		const u32 offset = static_cast<u32>(address - A(&cpuRegs.HI)) % 16u;
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "cpuRegs.%s+%u", (address >= A(&cpuRegs.LO) ? "LO" : "HI"), offset);
-		else
-			len = snprintf(buf, sizeof(buf), "cpuRegs.%s", (address >= A(&cpuRegs.LO) ? "LO" : "HI"));
-	}
-	else if (address == A(&cpuRegs.pc))
-	{
-		len = snprintf(buf, sizeof(buf), "cpuRegs.pc");
-	}
-	else if (address == A(&cpuRegs.cycle))
-	{
-		len = snprintf(buf, sizeof(buf), "cpuRegs.cycle");
-	}
-	else if (address == A(&cpuRegs.nextEventCycle))
-	{
-		len = snprintf(buf, sizeof(buf), "cpuRegs.nextEventCycle");
-	}
-	else if (address >= A(fpuRegs.fpr) && address < A(fpuRegs.fprc))
-	{
-		len = snprintf(buf, sizeof(buf), "fpuRegs.f%02u", static_cast<u32>(address - A(fpuRegs.fpr)) / 4u);
-	}
-	else if (address >= A(&VU0.VF[0]) && address < A(&VU0.VI[0]))
-	{
-		const u32 offset = static_cast<u32>(address - A(&VU0.VF[0])) % 16u;
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "VU0.VF[%02u]+%u", static_cast<u32>(address - A(&VU0.VF[0])) / 16u, offset);
-		else
-			len = snprintf(buf, sizeof(buf), "VU0.VF[%02u]", static_cast<u32>(address - A(&VU0.VF[0])) / 16u);
-	}
-	else if (address >= A(&VU0.VI[0]) && address < A(&VU0.ACC))
-	{
-		const u32 offset = static_cast<u32>(address - A(&VU0.VI[0])) % 16u;
-		const u32 vi = static_cast<u32>(address - A(&VU0.VI[0])) / 16u;
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "VU0.%s+%u", COP2_REG_CTL[vi], offset);
-		else
-			len = snprintf(buf, sizeof(buf), "VU0.%s", COP2_REG_CTL[vi]);
-	}
-	else if (address >= A(&VU0.ACC) && address < A(&VU0.q))
-	{
-		const u32 offset = static_cast<u32>(address - A(&VU0.ACC));
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "VU0.ACC+%u", offset);
-		else
-			len = snprintf(buf, sizeof(buf), "VU0.ACC");
-	}
-	else if (address >= A(&VU0.q) && address < A(&VU0.idx))
-	{
-		const u32 offset = static_cast<u32>(address - A(&VU0.q)) % 16u;
-		const char* reg = (address >= A(&VU0.p)) ? "p" : "q";
-		if (offset != 0)
-			len = snprintf(buf, sizeof(buf), "VU0.%s+%u", reg, offset);
-		else
-			len = snprintf(buf, sizeof(buf), "VU0.%s", reg);
-	}
-
-#undef A
-
-	if (len > 0)
+	if (did_print)
 	{
 		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
 		ZyanString* string;
 		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
-		return ZyanStringAppendFormat(string, "&%s", buf);
+		return ZyanStringAppendFormat(string, "&%s", buf.c_str());
 	}
 
 	return s_old_print_address(formatter, buffer, context);
@@ -326,8 +365,8 @@ void recBranchCall(void (*func)())
 	// In order to make sure a branch test is performed, the nextBranchCycle is set
 	// to the current cpu cycle.
 
-	xMOV(eax, ptr[&cpuRegs.cycle]);
-	xMOV(ptr[&cpuRegs.nextEventCycle], eax);
+	xMOV(rax, ptr64[&cpuRegs.cycle]);
+	xMOV(ptr64[&cpuRegs.nextEventCycle], rax);
 
 	recCall(func);
 	g_branch = 2;
@@ -346,6 +385,7 @@ void recCall(void (*func)())
 static void recRecompile(const u32 startpc);
 static void dyna_block_discard(u32 start, u32 sz);
 static void dyna_page_reset(u32 start, u32 sz);
+static void recError(u32 error);
 
 static const void* DispatcherEvent = nullptr;
 static const void* DispatcherReg = nullptr;
@@ -353,6 +393,7 @@ static const void* JITCompile = nullptr;
 static const void* EnterRecompiledCode = nullptr;
 static const void* DispatchBlockDiscard = nullptr;
 static const void* DispatchPageReset = nullptr;
+static const void* UnmappedRecLUTPage = nullptr;
 
 static void recEventTest()
 {
@@ -380,10 +421,10 @@ static const void* _DynGen_JITCompile()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -398,10 +439,10 @@ static const void* _DynGen_DispatcherReg()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -435,6 +476,9 @@ static const void* _DynGen_EnterRecompiledCode()
 	// We never return through this function, instead we fastjmp() out.
 	// So we don't need to worry about preserving callee-saved registers, but we do need to align the stack.
 	xSUB(rsp, stack_size);
+
+	if (u8* ptr = xGetTextPtr())
+		xLoadFarAddr(RTEXTPTR, ptr);
 #endif
 
 	if (CHECK_FASTMEM)
@@ -461,6 +505,13 @@ static const void* _DynGen_DispatchPageReset()
 	return retval;
 }
 
+static const void* _DynGen_UnmappedRecLUTPage()
+{
+	u8* retval = xGetPtr();
+	xFastCall((const void*)recError, 0);
+	return retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	const u8* start = xGetAlignedCallTarget();
@@ -474,6 +525,7 @@ static void _DynGen_Dispatchers()
 	EnterRecompiledCode = _DynGen_EnterRecompiledCode();
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset = _DynGen_DispatchPageReset();
+	UnmappedRecLUTPage = _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(JITCompile);
 
@@ -483,6 +535,22 @@ static void _DynGen_Dispatchers()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
+
+static void recError(u32 error)
+{
+	switch (error)
+	{
+		case 0:
+			Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", cpuRegs.pc));
+			break;
+		case 1:
+			Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unaligned address (PC: 0x{:08x})", cpuRegs.pc));
+			break;
+	}
+
+	VMManager::SetPaused(true);
+	recExitExecution();
+}
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
@@ -501,6 +569,9 @@ static void recReserveRAM()
 	if (recLutReserve_RAM.size() != recLutEntries)
 		recLutReserve_RAM.resize(recLutEntries);
 
+	// Allocate one LUT page of memory for unmapped pages to reference
+	recLutUnmapped.resize(_64kb / 4);
+
 	BASEBLOCK* basepos = recLutReserve_RAM.data();
 	recRAM = basepos;
 	basepos += (Ps2MemSize::ExposedRam / 4);
@@ -511,8 +582,11 @@ static void recReserveRAM()
 	recROM2 = basepos;
 	basepos += (Ps2MemSize::Rom2 / 4);
 
+	BASEBLOCK* unmapped = recLutUnmapped.data();
 	for (int i = 0; i < 0x10000; i++)
-		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
+	{
+		recLUT_SetPage(recLUT, hwLUT, unmapped, i, 0, 0);
+	}
 
 	for (int i = 0x0000; i < (int)(Ps2MemSize::ExposedRam / 0x10000); i++)
 	{
@@ -577,6 +651,7 @@ static void recResetRaw()
 
 	EE::Profiler.Reset();
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(SysMemory::GetEERec());
 	_DynGen_Dispatchers();
 	vtlb_DynGenDispatchers();
@@ -584,6 +659,10 @@ static void recResetRaw()
 
 	ClearRecLUT(recLutReserve_RAM.data(),
 		Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
+
+	for (int i = 0; i < _64kb / 4; i++)
+		recLutUnmapped.data()[i].SetFnptr((uptr)UnmappedRecLUTPage);
+
 	recRAMCopy.fill(0);
 
 	maxrecmem = 0;
@@ -800,77 +879,25 @@ void recClear(u32 addr, u32 size)
 
 static int* s_pCode;
 
-void SetBranchReg(u32 reg)
+
+// Branch to a runtime variable target
+// pass the target in eax
+void SetBranchReg()
 {
 	g_branch = 1;
 
-	if (reg != 0xffffffff)
-	{
-		//		if (GPR_IS_CONST1(reg))
-		//			xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[reg].UL[0]);
-		//		else
-		//		{
-		//			int mmreg;
-		//
-		//			if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0)
-		//			{
-		//				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
-		//			}
-		//			else
-		//			{
-		//				xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[reg].UL[0])]);
-		//				xMOV(ptr[&cpuRegs.pc], eax);
-		//			}
-		//		}
-		const bool swap = EmuConfig.Gamefixes.GoemonTlbHack ? false : TrySwapDelaySlot(reg, 0, 0, true);
-		if (!swap)
-		{
-			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
-			_eeMoveGPRtoR(xRegister32(wbreg), reg);
+	xMOV(ptr32[&cpuRegs.pc], eax);
 
-			if (EmuConfig.Gamefixes.GoemonTlbHack)
-			{
-				xMOV(ecx, xRegister32(wbreg));
-				vtlb_DynV2P();
-				xMOV(xRegister32(wbreg), eax);
-			}
-
-			recompileNextInstruction(true, false);
-
-			// the next instruction may have flushed the register.. so reload it if so.
-			if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
-			{
-				xMOV(ptr[&cpuRegs.pc], xRegister32(wbreg));
-				x86regs[wbreg].inuse = 0;
-			}
-			else
-			{
-				xMOV(eax, ptr[&cpuRegs.pcWriteback]);
-				xMOV(ptr[&cpuRegs.pc], eax);
-			}
-		}
-		else
-		{
-			if (GPR_IS_DIRTY_CONST(reg) || _hasX86reg(X86TYPE_GPR, reg, 0))
-			{
-				const int x86reg = _allocX86reg(X86TYPE_GPR, reg, MODE_READ);
-				xMOV(ptr32[&cpuRegs.pc], xRegister32(x86reg));
-			}
-			else
-			{
-				_eeMoveGPRtoM((uptr)&cpuRegs.pc, reg);
-			}
-		}
-	}
-
-	//	xCMP(ptr32[&cpuRegs.pc], 0);
-	//	j8Ptr[5] = JNE8(0);
-	//	xFastCall((void*)(uptr)tempfn);
-	//	x86SetJ8(j8Ptr[5]);
+	// Test for jump to unaligned, only needed for register branches
+	//  since unaligned targets can't be encoded with imm
+	xTEST(eax, 3);
+	xForwardJNZ32 unaligned;
 
 	iFlushCall(FLUSH_EVERYTHING);
-
 	iBranchTest();
+
+	unaligned.SetTarget();
+	xFastCall((const void*)recError, 1);
 }
 
 void SetBranchImm(u32 imm)
@@ -891,6 +918,7 @@ u8* recBeginThunk()
 	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -1362,20 +1390,20 @@ static void iBranchTest(u32 newpc)
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&cpuRegs.nextEventCycle]);
-		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-		xCMP(eax, ptr32[&cpuRegs.cycle]);
-		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
-		xMOV(ptr32[&cpuRegs.cycle], eax);
+		xMOV(rax, ptr64[&cpuRegs.nextEventCycle]);
+		xADD(ptr64[&cpuRegs.cycle], scaleblockcycles());
+		xCMP(rax, ptr64[&cpuRegs.cycle]);
+		xCMOVS(rax, ptr64[&cpuRegs.cycle]);
+		xMOV(ptr64[&cpuRegs.cycle], rax);
 
 		xJMP((void*)DispatcherEvent);
 	}
 	else
 	{
-		xMOV(eax, ptr[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		xSUB(eax, ptr[&cpuRegs.nextEventCycle]);
+		xMOV(rax, ptr64[&cpuRegs.cycle]);
+		xADD(rax, scaleblockcycles());
+		xMOV(ptr64[&cpuRegs.cycle], rax); // update cycles
+		xSUB(rax, ptr64[&cpuRegs.nextEventCycle]);
 
 		if (newpc == 0xffffffff)
 			xJS(DispatcherReg);
@@ -1568,7 +1596,8 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+	// Do not cache reg, we'll call outside jit here
+	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F, false);
 	if (static_cast<s16>(op) != 0)
 		xADD(ecx, static_cast<s16>(op));
 	if (bits == 128)
@@ -2141,28 +2170,19 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	// if new_v0 > 0 { jump to dispatcher because loop exited early }
 	// else new_v0 is 0, so exit loop
 
-	xMOV(ebx, ptr32[&cpuRegs.cycle]); // ebx = cycle
-	xMOV(ecx, ptr32[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
-	xCMP(ebx, ecx);
-	//xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
-
-	// TODO: In the case where nextEventCycle < cycle because it's overflowed, tack 8
-	// cycles onto the event count, so hopefully it'll wrap around. This is pretty
-	// gross, but until we switch to 64-bit counters, not many better options.
-	xForwardJB8 not_dispatcher;
-	xADD(ebx, 8);
-	xMOV(ptr32[&cpuRegs.cycle], ebx);
-	xJMP((void*)DispatcherEvent);
-	not_dispatcher.SetTarget();
+	xMOV(r12, ptr64[&cpuRegs.cycle]); // ebx = cycle
+	xMOV(rcx, ptr64[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
+	xCMP(r12, rcx);
+	xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
 
 	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
-	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
+	xLEA(rax, ptrNative[rdx * 8 + r12]); // edx = v0 * 8 + cycle
 	xCMP(rcx, rax);
 	xCMOVB(rax, rcx); // eax = new_cycles = min(v8 * 8, nextEventCycle)
-	xMOV(ptr32[&cpuRegs.cycle], eax); // writeback new_cycles
-	xSUB(eax, ebx); // new_cycles -= cycle
-	xSHR(eax, 3); // compute new v0 value
-	xSUB(edx, eax); // v0 -= cycle_diff
+	xMOV(ptr64[&cpuRegs.cycle], rax); // writeback new_cycles
+	xSUB(rax, r12); // new_cycles -= cycle
+	xSHR(rax, 3); // compute new v0 value
+	xSUB(rdx, rax); // v0 -= cycle_diff
 	xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], edx); // write back new value of v0
 	xJNZ((void*)DispatcherEvent); // jump to dispatcher if new v0 is not zero (i.e. an event)
 	xMOV(ptr32[&cpuRegs.pc], s_nEndBlock); // otherwise end of loop
@@ -2194,6 +2214,7 @@ static void recRecompile(const u32 startpc)
 		recResetRaw();
 	}
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -2579,6 +2600,8 @@ StartRecomp:
 
 	s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
 	ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
+	s_old_print_disp = (ZydisFormatterFunc)&ZydisFormatterPrintDisplacement;
+	ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_DISP, (const void**)&s_old_print_disp);
 
 #if 0
 	const bool dump_block = (startpc == 0x00000000);
@@ -2716,7 +2739,7 @@ StartRecomp:
 			else
 			{
 				xMOV(ptr32[&cpuRegs.pc], pc);
-				xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
+				xADD(ptr64[&cpuRegs.cycle], scaleblockcycles());
 				recBlocks.Link(HWADDR(pc), xJcc32());
 			}
 		}

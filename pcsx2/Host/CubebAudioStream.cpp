@@ -165,7 +165,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 		}};
 
 	cubeb_stream_params params = {};
-	params.format = CUBEB_SAMPLE_S16LE;
+	params.format = CUBEB_SAMPLE_FLOAT32LE;
 	params.rate = m_sample_rate;
 	params.channels = m_output_channels;
 	params.layout = channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].first;
@@ -205,7 +205,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 	}
 
 	cubeb_devid selected_device = nullptr;
-	cubeb_device_collection devices;
+	cubeb_device_collection devices = {};
 	bool devices_valid = false;
 	if (device_name && *device_name)
 	{
@@ -278,7 +278,7 @@ void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb
 long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const void* input_buffer, void* output_buffer,
 	long nframes)
 {
-	static_cast<CubebAudioStream*>(user_ptr)->ReadFrames(static_cast<s16*>(output_buffer), static_cast<u32>(nframes));
+	static_cast<CubebAudioStream*>(user_ptr)->ReadFrames(static_cast<float*>(output_buffer), static_cast<u32>(nframes));
 	return nframes;
 }
 
@@ -350,7 +350,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
 
 	ScopedGuard context_cleanup([context]() { cubeb_destroy(context); });
 
-	cubeb_device_collection devices;
+	cubeb_device_collection devices = {};
 	rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
 	if (rv != CUBEB_OK)
 	{
@@ -362,7 +362,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
 
 	// we need stream parameters to query latency
 	cubeb_stream_params params = {};
-	params.format = CUBEB_SAMPLE_S16LE;
+	params.format = CUBEB_SAMPLE_FLOAT32LE;
 	params.rate = 48000;
 	params.channels = 2;
 	params.layout = CUBEB_LAYOUT_UNDEFINED;

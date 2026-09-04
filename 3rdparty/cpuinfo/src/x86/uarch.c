@@ -171,6 +171,12 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 						case 0x8C: // Tiger U
 						case 0x8D: // Tiger H
 							return cpuinfo_uarch_willow_cove;
+						case 0x8F: // Sapphire Rapids
+							return cpuinfo_uarch_golden_cove;
+						case 0xCF: // Emerald Rapids
+							return cpuinfo_uarch_raptor_cove;
+						case 0xAD: // Granite Rapids
+							return cpuinfo_uarch_redwood_cove;
 						/* Low-power cores */
 						case 0x1C: // Diamondville,
 							   // Silverthorne,
@@ -264,8 +270,15 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 							return cpuinfo_uarch_prescott;
 					}
 					break;
+				case 0x12:
+					switch (model_info->model) {
+						case 0x01: // Nova Lake P-core (Coyote Cove)
+							return cpuinfo_uarch_coyote_cove;
+					}
+					break;
 			}
 			break;
+
 		case cpuinfo_vendor_amd:
 			switch (model_info->family) {
 #if CPUINFO_ARCH_X86
@@ -402,7 +415,21 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 					}
 					break;
 				case 0x1a:
-					return cpuinfo_uarch_zen5;
+					switch (model_info->extended_model) {
+						case 0x0: // model 00h..2Fh
+						case 0x1:
+						case 0x2:
+						case 0x4: // model 40h..4Fh
+							return cpuinfo_uarch_zen5;
+
+						case 0x5: // model 50h..5Fh
+						case 0x8: // model 80h..AFh
+						case 0x9:
+						case 0xA:
+						case 0xC: // model C0h..CFh
+							return cpuinfo_uarch_zen6;
+					}
+					break;
 			}
 			break;
 		case cpuinfo_vendor_hygon:

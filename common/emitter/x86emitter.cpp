@@ -49,6 +49,7 @@
 
 
 thread_local u8* x86Ptr;
+thread_local u8* xTextPtr;
 thread_local XMMSSEType g_xmmtypes[iREGCNT_XMM] = {XMMT_INT};
 
 bool x86Emitter::use_avx;
@@ -297,12 +298,26 @@ const xRegister32
 	void EmitSibMagic(uint regfield, const void* address, int extraRIPOffset)
 	{
 		sptr displacement = (sptr)address;
+		sptr textRelative = (sptr)address - (sptr)xTextPtr;
 		sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32) + extraRIPOffset);
+		// Can we use an 8-bit offset from the text pointer?
+		if (textRelative == (s8)textRelative && xTextPtr)
+		{
+			ModRM(1, regfield, RTEXTPTR.GetId());
+			xWrite<s8>((s8)textRelative);
+			return;
+		}
 		// Can we use a rip-relative address?  (Prefer this over eiz because it's a byte shorter)
-		if (ripRelative == (s32)ripRelative)
+		else if (ripRelative == (s32)ripRelative)
 		{
 			ModRM(0, regfield, ModRm_UseDisp32);
 			displacement = ripRelative;
+		}
+		// How about from the text pointer?
+		else if (textRelative == (s32)textRelative && xTextPtr)
+		{
+			ModRM(2, regfield, RTEXTPTR.GetId());
+			displacement = textRelative;
 		}
 		else
 		{
@@ -664,12 +679,24 @@ const xRegister32
 		x86Ptr = (u8*)ptr;
 	}
 
+	// Assigns the current emitter text base address.
+	__emitinline void xSetTextPtr(void* ptr)
+	{
+		xTextPtr = (u8*)ptr;
+	}
+
 	// Retrieves the current emitter buffer target address.
 	// This is provided instead of using x86Ptr directly, since we may in the future find
 	// a need to change the storage class system for the x86Ptr 'under the hood.'
 	__emitinline u8* xGetPtr()
 	{
 		return x86Ptr;
+	}
+
+	// Retrieves the current emitter text base address.
+	__emitinline u8* xGetTextPtr()
+	{
+		return xTextPtr;
 	}
 
 	__emitinline void xAlignPtr(uint bytes)
@@ -1018,7 +1045,7 @@ const xRegister32
 			}
 			else if (displacement_size == 0)
 			{
-				_xMovRtoR(to, src.Index.MatchSizeTo(to));
+				xMOV(to, src.Index.MatchSizeTo(to));
 				return;
 			}
 			else if (!preserve_flags)
@@ -1026,7 +1053,7 @@ const xRegister32
 				// encode as MOV and ADD combo.  Make sure to use the immediate on the
 				// ADD since it can encode as an 8-bit sign-extended value.
 
-				_xMovRtoR(to, src.Index.MatchSizeTo(to));
+				xMOV(to, src.Index.MatchSizeTo(to));
 				xADD(to, src.Displacement);
 				return;
 			}
@@ -1044,7 +1071,7 @@ const xRegister32
 					// (this does not apply to older model P4s with the broken barrel shifter,
 					//  but we currently aren't optimizing for that target anyway).
 
-					_xMovRtoR(to, src.Index);
+					xMOV(to, src.Index);
 					xSHL(to, src.Scale);
 					return;
 				}
@@ -1058,14 +1085,14 @@ const xRegister32
 						if (src.Index == rsp)
 						{
 							// ESP is not encodable as an index (ix86 ignores it), thus:
-							_xMovRtoR(to, src.Base.MatchSizeTo(to)); // will do the trick!
+							xMOV(to, src.Base.MatchSizeTo(to)); // will do the trick!
 							if (src.Displacement)
 								xADD(to, src.Displacement);
 							return;
 						}
 						else if (src.Displacement == 0)
 						{
-							_xMovRtoR(to, src.Base.MatchSizeTo(to));
+							xMOV(to, src.Base.MatchSizeTo(to));
 							xADD(to, src.Index.MatchSizeTo(to));
 							return;
 						}
@@ -1075,7 +1102,7 @@ const xRegister32
 						// special case handling of ESP as Index, which is replaceable with
 						// a single MOV even when preserve_flags is set! :D
 
-						_xMovRtoR(to, src.Base.MatchSizeTo(to));
+						xMOV(to, src.Base.MatchSizeTo(to));
 						return;
 					}
 				}
@@ -1362,6 +1389,8 @@ const xRegister32
 		// Align for any following instructions
 		stackAlign(m_offset, true);
 #endif
+		if (u8* ptr = xGetTextPtr())
+			xLoadFarAddr(RTEXTPTR, ptr);
 	}
 
 	xScopedStackFrame::~xScopedStackFrame()
@@ -1423,11 +1452,14 @@ const xRegister32
 		{
 			return offset + base;
 		}
-		else
+		if (u8* ptr = xGetTextPtr())
 		{
-			xLEA(tmpRegister, ptr[base]);
-			return offset + tmpRegister;
+			sptr tbase = (sptr)base - (sptr)ptr;
+			if (tbase == (s32)tbase)
+				return offset + RTEXTPTR + tbase;
 		}
+		xLEA(tmpRegister, ptr[base]);
+		return offset + tmpRegister;
 	}
 
 	void xLoadFarAddr(const xAddressReg& dst, void* addr)
@@ -1435,9 +1467,23 @@ const xRegister32
 		sptr iaddr = (sptr)addr;
 		sptr rip = (sptr)xGetPtr() + 7; // LEA will be 7 bytes
 		sptr disp = iaddr - rip;
-		if (disp == (s32)disp)
+		u8* textPtr = xGetTextPtr();
+		sptr textdisp = iaddr - (sptr)textPtr;
+		bool isRTextPtr = dst == RTEXTPTR;
+		bool canUseTextPtr = textPtr && !isRTextPtr;
+		if (disp == (s32)disp || (canUseTextPtr && (textdisp == (s32)textdisp)))
 		{
-			xLEA(dst, ptr[addr]);
+			if (isRTextPtr && textPtr)
+			{
+				// Prevent LEA from trying to use RTEXTPTR to load RTEXTPTR
+				xSetTextPtr(nullptr);
+				xLEA(dst, ptr[addr]);
+				xSetTextPtr(textPtr);
+			}
+			else
+			{
+				xLEA(dst, ptr[addr]);
+			}
 		}
 		else
 		{

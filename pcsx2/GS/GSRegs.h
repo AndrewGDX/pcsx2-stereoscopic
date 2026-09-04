@@ -5,22 +5,22 @@
 
 // clang-format off
 
-#define VM_SIZE 4194304u
-#define HALF_VM_SIZE (VM_SIZE / 2u)
-#define GS_PAGE_SIZE 8192u
-#define GS_BLOCK_SIZE 256u
-#define GS_COLUMN_SIZE 64u
-#define GS_BLOCKS_PER_PAGE (GS_PAGE_SIZE / GS_BLOCK_SIZE)
-
-#define GS_MAX_PAGES (VM_SIZE / GS_PAGE_SIZE)
-#define GS_MAX_BLOCKS (VM_SIZE / GS_BLOCK_SIZE)
-#define GS_MAX_COLUMNS (VM_SIZE / GS_COLUMN_SIZE)
-
 //if defined, will send much info in reply to the API title info queri from PCSX2
 //default should be undefined
 //#define GSTITLEINFO_API_FORCE_VERBOSE
 
 #include "GSVector.h"
+
+constexpr u32 VM_SIZE = 4194304u;
+constexpr u32 HALF_VM_SIZE = (VM_SIZE / 2u);
+constexpr u32 GS_PAGE_SIZE = 8192u;
+constexpr u32 GS_BLOCK_SIZE = 256u;
+constexpr u32 GS_COLUMN_SIZE = 64u;
+constexpr u32 GS_BLOCKS_PER_PAGE = (GS_PAGE_SIZE / GS_BLOCK_SIZE);
+
+constexpr u32 GS_MAX_PAGES =  (VM_SIZE / GS_PAGE_SIZE);
+constexpr u32 GS_MAX_BLOCKS = (VM_SIZE / GS_BLOCK_SIZE);
+constexpr u32 GS_MAX_COLUMNS = (VM_SIZE / GS_COLUMN_SIZE);
 
 #pragma pack(push, 1)
 
@@ -199,6 +199,15 @@ enum GS_AFAIL
 	AFAIL_FB_ONLY  = 1,
 	AFAIL_ZB_ONLY  = 2,
 	AFAIL_RGB_ONLY = 3,
+};
+
+enum GS_ALPHA_BITS
+{
+	ALPHA_ABD_CS = 0,
+	ALPHA_ABD_CD = 1,
+	ALPHA_C_AS   = 0,
+	ALPHA_C_AD   = 1,
+	ALPHA_C_FIX  = 2,
 };
 
 enum class GS_MIN_FILTER : uint8_t
@@ -773,9 +782,6 @@ REG64_(GIFReg, TEST)
 	u32 _PAD1 : 13;
 	u32 _PAD2 : 32;
 REG_END2
-	__forceinline bool DoFirstPass() const { return !ATE || ATST != ATST_NEVER; } // not all pixels fail automatically
-	__forceinline bool DoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
-	__forceinline bool NoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; } // pixels may fail, no output
 	__forceinline u32 GetAFAIL(u32 fpsm) const { return (AFAIL == AFAIL_RGB_ONLY && (fpsm & 0xF) != 0) ? static_cast<u32>(AFAIL_FB_ONLY) : AFAIL; } // FB Only when not 32bit Framebuffer
 REG_END2
 

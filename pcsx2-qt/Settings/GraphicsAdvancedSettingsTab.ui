@@ -45,6 +45,11 @@
         </item>
         <item>
          <property name="text">
+          <string>Accurate Force Full (Can Reduce Readbacks)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Disable Readbacks (Synchronize GS Thread)</string>
          </property>
         </item>
@@ -91,27 +96,6 @@
       </item>
       <item row="10" column="0" colspan="2">
        <layout class="QGridLayout" name="advancedLayout">
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="extendedUpscales">
-          <property name="text">
-           <string>Extended Upscaling Multipliers</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="disableMailboxPresentation">
-          <property name="text">
-           <string extracomment="Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.">Disable Mailbox Presentation</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="useBlitSwapChain">
-          <property name="text">
-           <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.">Use Blit Swap Chain</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <widget class="QCheckBox" name="spinCPUDuringReadbacks">
           <property name="text">
@@ -119,10 +103,38 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="2" column="0">
          <widget class="QCheckBox" name="spinGPUDuringReadbacks">
           <property name="text">
            <string>Spin GPU During Readbacks</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="useBlitSwapChain">
+          <property name="text">
+           <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.">Use Blit Swap Chain</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="rovBarriersVK">
+          <property name="text">
+           <string>ROV Barriers Vulkan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="disableMailboxPresentation">
+          <property name="text">
+           <string extracomment="Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.">Disable Mailbox Presentation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="extendedUpscales">
+          <property name="text">
+           <string>Extended Upscaling Multipliers</string>
           </property>
          </widget>
         </item>
@@ -321,6 +333,13 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="useDebugBlend">
+          <property name="text">
+           <string>Use Debug Blend</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -346,11 +365,12 @@
   <tabstop>gsDumpCompression</tabstop>
   <tabstop>texturePreloading</tabstop>
   <tabstop>exclusiveFullscreenControl</tabstop>
-  <tabstop>useBlitSwapChain</tabstop>
   <tabstop>extendedUpscales</tabstop>
-  <tabstop>disableMailboxPresentation</tabstop>
-  <tabstop>spinCPUDuringReadbacks</tabstop>
   <tabstop>spinGPUDuringReadbacks</tabstop>
+  <tabstop>spinCPUDuringReadbacks</tabstop>
+  <tabstop>useBlitSwapChain</tabstop>
+  <tabstop>disableMailboxPresentation</tabstop>
+  <tabstop>rovBarriersVK</tabstop>
   <tabstop>ntscFrameRate</tabstop>
   <tabstop>palFrameRate</tabstop>
   <tabstop>overrideTextureBarriers</tabstop>
@@ -358,6 +378,7 @@
   <tabstop>disableFramebufferFetch</tabstop>
   <tabstop>disableShaderCache</tabstop>
   <tabstop>disableVertexShaderExpand</tabstop>
+  <tabstop>useDebugBlend</tabstop>
  </tabstops>
  <resources/>
  <connections/>

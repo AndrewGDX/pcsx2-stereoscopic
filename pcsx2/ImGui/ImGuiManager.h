@@ -5,6 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <span>
 #include <string>
 #include <vector>
 
@@ -16,8 +17,16 @@ enum class InputLayout : u8;
 
 namespace ImGuiManager
 {
-	/// Sets the path to the font to use. Empty string means to use the default.
-	void SetFontPath(std::string path);
+	struct FontInfo
+	{
+		std::span<const u8> data;
+		std::span<const u32> exclude_ranges;
+		const char* face_name;
+		bool is_emoji_font;
+	};
+
+	/// Sets a list of fonts to use.
+	void SetFonts(std::vector<FontInfo> info);
 
 	/// Initializes ImGui, creates fonts, etc.
 	bool Initialize();
@@ -38,6 +47,9 @@ namespace ImGuiManager
 	/// Updates scaling of the on-screen elements.
 	void RequestScaleUpdate();
 
+	/// Rebuilds the ImGui font atlas using current settings.
+	void ReloadFonts();
+
 	/// Call at the beginning of the frame to set up ImGui state.
 	void NewFrame();
 
@@ -55,6 +67,9 @@ namespace ImGuiManager
 
 	/// Returns the fixed-width font for external drawing.
 	ImFont* GetFixedFont();
+
+	/// Returns the On-screen Display font for external drawing.
+	ImFont* GetOSDFont();
 
 	// Returns the standard font size for external drawing.
 	float GetFontSizeStandard();
@@ -90,7 +105,10 @@ namespace ImGuiManager
 	bool ProcessHostKeyEvent(InputBindingKey key, float value);
 
 	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
-	bool ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value);
+	bool ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value, u32 controller_id = 0);
+
+	/// Called on the CPU thread for a bidirectional analog axis event.
+	void ProcessGenericAxisEvent(GenericInputBinding negative_key, GenericInputBinding positive_key, InputLayout layout, float value, u32 controller_id = 0);
 
 	/// Called to swap North/West gamepad buttons within ImGui
 	void SwapGamepadNorthWest(bool value);

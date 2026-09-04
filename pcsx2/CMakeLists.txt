@@ -470,12 +470,12 @@ set(pcsx2GSSourcesUnshared
 	GS/Renderers/SW/GSRendererSW.cpp
 )
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2GSSourcesUnshared
 		GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.cpp
 		GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
 	)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2GSSourcesUnshared
 		GS/Renderers/SW/GSDrawScanlineCodeGenerator.arm64.cpp
 		GS/Renderers/SW/GSSetupPrimCodeGenerator.arm64.cpp
@@ -544,6 +544,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSFastList.h
 	GS/Renderers/Common/GSFunctionMap.h
 	GS/Renderers/Common/GSRenderer.h
+	GS/Renderers/Common/GSShaderEnums.h
 	GS/Renderers/Common/GSTexture.h
 	GS/Renderers/Common/GSVertex.h
 	GS/Renderers/Common/GSVertexTrace.h
@@ -564,14 +565,14 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSVertexSW.h
 	)
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2GSHeaders
 		GS/GSVector4.h
 		GS/GSVector4i.h
 		GS/GSVector8.h
 		GS/GSVector8i.h
 	)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2GSHeaders
 		GS/GSVector4_arm64.h
 		GS/GSVector4i_arm64.h
@@ -746,7 +747,7 @@ set(pcsx2IPUHeaders
 	IPU/yuv2rgb.h
 )
 
-if(DISABLE_ADVANCE_SIMD)
+if(DISABLE_ADVANCE_SIMD AND ARCH_X86)
 	target_compile_definitions(PCSX2 PUBLIC MULTI_ISA_SHARED_COMPILATION)
 	if(USE_GCC)
 		target_link_options(PCSX2_FLAGS INTERFACE -Wno-odr)
@@ -1071,10 +1072,10 @@ set(pcsx2LTOSources
 	${pcsx2GSHeaders}
 )
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2LTOSources ${pcsx2x86Sources} ${pcsx2x86Headers})
 	target_link_libraries(PCSX2_FLAGS INTERFACE zydis)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2LTOSources ${pcsx2arm64Sources} ${pcsx2arm64Headers})
 	target_link_libraries(PCSX2_FLAGS INTERFACE vixl)
 endif()
@@ -1157,6 +1158,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	discord-rpc
 	simpleini
 	freesurround
+	Freetype::Freetype
 	SDL3::SDL3
 	ZLIB::ZLIB
 	LZ4::LZ4
@@ -1201,7 +1203,7 @@ else()
 endif()
 
 # additonal include directories
-if(_M_X86)
+if(ARCH_X86)
 	target_include_directories(PCSX2_FLAGS INTERFACE "${CMAKE_SOURCE_DIR}/3rdparty/xbyak")
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XBYAK_NO_EXCEPTION)
 endif()
@@ -1275,6 +1277,9 @@ function(setup_main_executable target)
 		if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
 			continue()
 		endif()
+		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/Twemoji")
+			continue()
+		endif()
 		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 	endforeach()
 
@@ -1306,7 +1311,7 @@ function(setup_main_executable target)
 
 		# Copy dependency libraries.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
-		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll plutovg.dll plutosvg.dll)
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lz4.dll SDL3.dll shaderc_shared.dll z.dll zstd.dll plutovg.dll plutosvg.dll ryml.dll)
 		set(DEPS_TO_COPY
 			$<IF:$<CONFIG:Debug>,kddockwidgets-qt6d.dll,kddockwidgets-qt6.dll>
 			${DEPS_TO_COPY}
@@ -1315,7 +1320,12 @@ function(setup_main_executable target)
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()
 
-		set(SYMBOLS_TO_COPY ${DEPS_TO_COPY})
+		set(OPT_DEPS_TO_COPY avcodec-62.dll avformat-62.dll avutil-60.dll swresample-6.dll swscale-9.dll)
+		foreach(OPT_DEP_TO_COPY ${OPT_DEPS_TO_COPY})
+			install(FILES "${DEPS_BINDIR}/${OPT_DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
+		endforeach()
+
+		set(SYMBOLS_TO_COPY ${DEPS_TO_COPY} ${OPT_DEPS_TO_COPY})
 		list(TRANSFORM SYMBOLS_TO_COPY REPLACE "[.]dll" ".pdb")
 		foreach(SYMBOL_TO_COPY ${SYMBOLS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/${SYMBOL_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
@@ -1328,7 +1338,7 @@ function(setup_main_executable target)
 		endforeach()
 
 		get_target_property(WINDEPLOYQT_EXE Qt6::windeployqt IMPORTED_LOCATION)
-		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --pdb --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --no-translations COMMAND_ERROR_IS_FATAL ANY)")
+		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --pdb --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --no-translations --no-network COMMAND_ERROR_IS_FATAL ANY)")
 		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
 	endif()
 
@@ -1428,7 +1438,8 @@ function(setup_main_executable target)
 	endif()
 
 	if(ENABLE_SETCAP AND UNIX AND NOT APPLE)
-		message(WARNING "Networking capabilities enabled, building will require temporary root elevation.")
+		message(WARNING "Networking capabilities enabled on the main executable, building will require temporary root elevation.")
+		message(WARNING "File capabilities can disable LD_PRELOAD-based integrations such as the Steam overlay and Steam Input.")
 		add_custom_target(
 			pcsx2-enable-setcap
 			ALL

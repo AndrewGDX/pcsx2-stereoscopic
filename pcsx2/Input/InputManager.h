@@ -52,7 +52,8 @@ enum class InputLayout : u8
 	Unknown,
 	Xbox,
 	Playstation,
-	Nintendo
+	Nintendo,
+	Generic
 };
 
 enum class InputModifier : u32
@@ -222,6 +223,10 @@ namespace InputManager
 	/// Represents a binding with icon fonts, if available.
 	bool PrettifyInputBinding(SmallStringBase& binding, bool use_icons = true);
 
+	/// Sets the preferred button icon style for UI and binding displays, overriding per-device detection.
+	void SetGamepadIconPreference(InputLayout layout);
+	InputLayout GetGamepadIconPreference();
+
 	/// Splits a chord into individual bindings.
 	std::vector<std::string_view> SplitChord(const std::string_view binding);
 
@@ -267,7 +272,9 @@ namespace InputManager
 
 	/// Updates internal state for any binds for this key, and fires callbacks as needed.
 	/// Returns true if anything was bound to this key, otherwise false.
-	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
+	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown,
+		GenericInputBinding axis_neg_key = GenericInputBinding::Unknown,
+		GenericInputBinding axis_pos_key = GenericInputBinding::Unknown);
 
 	/// Clears internal state for any binds with a matching source/index.
 	void ClearBindStateFromSource(InputBindingKey key);

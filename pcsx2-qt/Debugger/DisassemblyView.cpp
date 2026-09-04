@@ -76,7 +76,11 @@ bool DisassemblyView::fromJson(const JsonValueWrapper& json)
 
 	auto start_address = json.value().FindMember("startAddress");
 	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+	{
 		m_visibleStart = start_address->value.GetUint() & ~3;
+		m_navigation_history.clear();
+		m_navigation_history.pushInstantly(m_visibleStart);
+	}
 
 	auto go_to_pc_on_pause = json.value().FindMember("goToPCOnPause");
 	if (go_to_pc_on_pause != json.value().MemberEnd() && go_to_pc_on_pause->value.IsBool())
@@ -86,7 +90,7 @@ bool DisassemblyView::fromJson(const JsonValueWrapper& json)
 	if (show_instruction_bytes != json.value().MemberEnd() && show_instruction_bytes->value.IsBool())
 		m_showInstructionBytes = show_instruction_bytes->value.GetBool();
 
-	repaint();
+	update();
 
 	return true;
 }
@@ -204,7 +208,7 @@ void DisassemblyView::contextRestoreInstruction()
 		{
 			u32 address = start + i * 4;
 			if (original_instructions[i].has_value())
-				cpu->write32(address, *original_instructions[i]);
+				cpu->Write32(address, *original_instructions[i]);
 		}
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
@@ -222,7 +226,7 @@ void DisassemblyView::contextRunToCursor()
 void DisassemblyView::contextJumpToCursor()
 {
 	cpu().setPc(m_selectedAddressStart);
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::contextToggleBreakpoint()
@@ -332,11 +336,11 @@ void DisassemblyView::contextStubFunction()
 
 	const QPointer<DisassemblyView> view(this);
 	Host::RunOnCPUThread([view, address, cpu = &cpu()] {
-		const u32 first_instruction = cpu->read32(address);
-		const u32 second_instruction = cpu->read32(address + 4);
+		const u32 first_instruction = cpu->Read32(address);
+		const u32 second_instruction = cpu->Read32(address + 4);
 
-		cpu->write32(address, 0x03E00008); // jr ra
-		cpu->write32(address + 4, 0x00000000); // nop
+		cpu->Write32(address, 0x03E00008); // jr ra
+		cpu->Write32(address + 4, 0x00000000); // nop
 
 		QtHost::RunOnUIThread([view, address, first_instruction, second_instruction]() {
 			if (!view)
@@ -364,8 +368,8 @@ void DisassemblyView::contextRestoreFunction()
 		m_stubbedFunctions.erase(stub);
 
 		Host::RunOnCPUThread([address, cpu = &cpu(), first_instruction, second_instruction] {
-			cpu->write32(address, first_instruction);
-			cpu->write32(address + 4, second_instruction);
+			cpu->Write32(address, first_instruction);
+			cpu->Write32(address + 4, second_instruction);
 			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	}
@@ -378,7 +382,7 @@ void DisassemblyView::contextRestoreFunction()
 void DisassemblyView::contextShowInstructionBytes()
 {
 	m_showInstructionBytes = !m_showInstructionBytes;
-	this->repaint();
+	update();
 }
 
 QString DisassemblyView::GetLineDisasm(u32 address)
@@ -387,6 +391,41 @@ QString DisassemblyView::GetLineDisasm(u32 address)
 	m_disassemblyManager.getLine(address, true, lineInfo);
 	return QString("%1 %2").arg(lineInfo.name.c_str()).arg(lineInfo.params.c_str());
 };
+
+bool DisassemblyView::supportsNavigation()
+{
+	return true;
+}
+
+bool DisassemblyView::canNavigateBack()
+{
+	return m_navigation_history.canGoBack();
+}
+
+bool DisassemblyView::canNavigateForward()
+{
+	return m_navigation_history.canGoForward();
+}
+
+void DisassemblyView::navigateBack()
+{
+	std::optional<u32> address = m_navigation_history.back();
+	if (!address.has_value())
+		return;
+
+	m_visibleStart = *address;
+	update();
+}
+
+void DisassemblyView::navigateForward()
+{
+	std::optional<u32> address = m_navigation_history.forward();
+	if (!address.has_value())
+		return;
+
+	m_visibleStart = *address;
+	update();
+}
 
 // Here we go!
 void DisassemblyView::paintEvent(QPaintEvent* event)
@@ -610,7 +649,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent* event)
 				m_selectedAddressEnd = selectedAddress;
 			}
 		}
-		this->repaint();
+		update();
 	}
 }
 
@@ -629,19 +668,21 @@ void DisassemblyView::mouseDoubleClickEvent(QMouseEvent* event)
 
 void DisassemblyView::wheelEvent(QWheelEvent* event)
 {
-	if (event->angleDelta().y() < 0) // todo: max address bounds check?
-	{
+	if (event->angleDelta().y() < 0)
 		m_visibleStart += 4;
-	}
 	else if (event->angleDelta().y() && m_visibleStart > 0)
-	{
 		m_visibleStart -= 4;
-	}
-	this->repaint();
+
+	m_navigation_history.pushWithDelay(m_visibleStart);
+	update();
 }
 
 void DisassemblyView::keyPressEvent(QKeyEvent* event)
 {
+	// Alt is used for the global navigation shortcuts.
+	if (event->modifiers() & Qt::AltModifier)
+		return;
+
 	switch (event->key())
 	{
 		case Qt::Key_Up:
@@ -653,15 +694,19 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			// Auto scroll
 			if (m_visibleStart > m_selectedAddressStart)
 				m_visibleStart -= 4;
+
+			m_navigation_history.pushWithDelay(m_visibleStart);
+			break;
 		}
-		break;
 		case Qt::Key_PageUp:
 		{
 			m_selectedAddressStart -= m_visibleRows * 4;
 			m_selectedAddressEnd = m_selectedAddressStart;
 			m_visibleStart -= m_visibleRows * 4;
+
+			m_navigation_history.pushWithDelay(m_visibleStart);
+			break;
 		}
-		break;
 		case Qt::Key_Down:
 		{
 			m_selectedAddressEnd += 4;
@@ -673,6 +718,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			if (m_visibleStart + ((m_visibleRows - 1) * 4) < m_selectedAddressEnd)
 				m_visibleStart += 4;
 
+			m_navigation_history.pushWithDelay(m_visibleStart);
 			break;
 		}
 		case Qt::Key_PageDown:
@@ -680,6 +726,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			m_selectedAddressStart += m_visibleRows * 4;
 			m_selectedAddressEnd = m_selectedAddressStart;
 			m_visibleStart += m_visibleRows * 4;
+			m_navigation_history.pushWithDelay(m_visibleStart);
 			break;
 		}
 		case Qt::Key_G:
@@ -709,7 +756,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			break;
 	}
 
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::openContextMenu(QPoint pos)
@@ -919,7 +966,7 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 
 	if (showOpcode)
 	{
-		const u32 opcode = cpu().read32(address);
+		const u32 opcode = cpu().Read32(address);
 		lineString = lineString.arg(QtUtils::FilledQStringFromValue(opcode, 16));
 	}
 
@@ -989,7 +1036,7 @@ QString DisassemblyView::FetchSelectionInfo(SelectionInfo selInfo)
 		}
 		else // INSTRUCTIONHEX
 		{
-			infoBlock += FilledQStringFromValue(cpu().read32(i), 16);
+			infoBlock += FilledQStringFromValue(cpu().Read32(i), 16);
 		}
 	}
 	return infoBlock;
@@ -1014,9 +1061,11 @@ void DisassemblyView::gotoAddress(u32 address, bool should_set_focus)
 	m_selectedAddressStart = destAddress;
 	m_selectedAddressEnd = destAddress;
 
-	this->repaint();
+	m_navigation_history.pushInstantly(m_visibleStart);
+
+	update();
 	if (should_set_focus)
-		this->setFocus();
+		setFocus();
 }
 
 void DisassemblyView::toggleBreakpoint(u32 address)
@@ -1034,7 +1083,7 @@ void DisassemblyView::toggleBreakpoint(u32 address)
 		QtHost::RunOnUIThread([view, cpu]() {
 			BreakpointModel::getInstance(*cpu)->refreshData();
 			if (view)
-				view->repaint();
+				view->update();
 		});
 	});
 }
@@ -1050,8 +1099,8 @@ void DisassemblyView::setInstructions(u32 start, u32 end, u32 value)
 		for (u32 i = 0; i < count; i++)
 		{
 			const u32 address = start + i * 4;
-			original_instructions.emplace_back(cpu->read32(address));
-			cpu->write32(address, value);
+			original_instructions.emplace_back(cpu->Read32(address));
+			cpu->Write32(address, value);
 		}
 
 		QtHost::RunOnUIThread([view, start, count, original_instructions = std::move(original_instructions)]() {
@@ -1089,3 +1138,5 @@ bool DisassemblyView::FunctionCanRestore(u32 address)
 
 	return m_stubbedFunctions.find(address) != m_stubbedFunctions.end();
 }
+
+#include "moc_DisassemblyView.cpp"

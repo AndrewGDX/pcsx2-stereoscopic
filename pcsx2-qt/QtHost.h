@@ -165,10 +165,6 @@ Q_SIGNALS:
 	/// Called when hardcore mode is enabled or disabled.
 	void onAchievementsHardcoreModeChanged(bool enabled);
 
-	/// Big Picture UI requests.
-	void onCoverDownloaderOpenRequested();
-	void onCreateMemoryCardOpenRequested();
-
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);
 	void onCaptureStopped();
@@ -216,11 +212,16 @@ private:
 	bool m_was_paused_by_focus_loss = false;
 
 	float m_last_speed = 0.0f;
+	float m_last_gpu_usage = 0.0f;
 	float m_last_game_fps = 0.0f;
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
+	float m_last_upscale = 0.0f;
+	u32 m_last_volume = 0;
+	bool m_last_muted = false;
 	GSRendererType m_last_renderer = GSRendererType::Auto;
+	LimiterModeType m_last_limiter_mode = LimiterModeType::Nominal;
 };
 
 extern EmuThread* g_emu_thread;
@@ -274,6 +275,9 @@ namespace QtHost
 
 	/// Saves a game settings interface.
 	bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
+
+	/// Downloads the specified URL into memory.
+	std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 
 	/// Downloads the specified URL to the provided path.
 	bool DownloadFile(QWidget* parent, const QString& title, std::string url, const std::string& path);

@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "iR3000A.h"
+#include "Host.h"
 #include "R3000A.h"
 #include "BaseblockEx.h"
 #include "R5900OpcodeTables.h"
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
+#include "common/HeapArray.h"
 #include "VMManager.h"
 
 #include <time.h>
@@ -86,6 +88,7 @@ extern void (*rpsxBSC[64])();
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 
 static void iopClearRecLUT(BASEBLOCK* base, int count);
+static void iopRecError(int err);
 
 #define PSX_GETBLOCK(x) PC_GETBLOCK_(x, psxRecLUT)
 
@@ -96,6 +99,65 @@ static void iopClearRecLUT(BASEBLOCK* base, int count);
 
 #ifdef DUMP_BLOCKS
 static ZydisFormatterFunc s_old_print_address;
+static ZydisFormatterFunc s_old_print_disp;
+
+static bool Address2Symbol(u64 address, SmallString &buf)
+{
+
+#define A(x) ((u64)(x))
+
+	if (address >= A(iopMem->Main) && address < A(iopMem->P))
+	{
+		buf.append_format("iopMem+0x{:08X}", static_cast<u32>(address - A(iopMem->Main)));
+	}
+	else if (address >= A(&psxRegs.GPR) && address < A(&psxRegs.CP0))
+	{
+		buf.append_format("psxRegs.GPR.{}", R3000A::disRNameGPR[static_cast<u32>(address - A(&psxRegs)) / 4u]);
+	}
+	else if (address == A(&psxRegs.pc))
+	{
+		buf.append("psxRegs.pc");
+	}
+	else if (address == A(&psxRegs.cycle))
+	{
+		buf.append("psxRegs.cycle");
+	}
+	else if (address == A(&psxRegs.iopNextEventCycle))
+	{
+		buf.append("psxRegs.iopNextEventCycle");
+	}
+	else
+	{
+		return false;
+	}
+
+#undef A
+
+	return true;
+}
+
+static ZyanStatus ZydisFormatterPrintDisplacement(const ZydisFormatter* formatter,
+	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
+{
+	u64 address = (u64)R3000A_TEXTPTR + context->operand->mem.disp.value;
+	bool did_print = false;
+	SmallString buf;
+
+	// hardcoded RTEXTPTR
+	if (context->operand->mem.base == ZYDIS_REGISTER_RBX) {
+		did_print = Address2Symbol(address, buf);
+	}
+
+	if (did_print)
+	{
+		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
+		ZyanString* string;
+		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
+		return ZyanStringAppendFormat(string, "-%s+&%s", "R3000A_TEXTPTR", buf.c_str());
+	}
+
+	return s_old_print_disp(formatter, buffer, context);
+}
 
 static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* formatter,
 	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
@@ -104,40 +166,17 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	ZYAN_CHECK(ZydisCalcAbsoluteAddress(context->instruction, context->operand,
 		context->runtime_address, &address));
 
-	char buf[128];
-	u32 len = 0;
+	SmallString buf;
+	bool did_print = false;
 
-#define A(x) ((u64)(x))
+	did_print = Address2Symbol(address, buf);
 
-	if (address >= A(iopMem->Main) && address < A(iopMem->P))
-	{
-		len = snprintf(buf, sizeof(buf), "iopMem+0x%08X", static_cast<u32>(address - A(iopMem->Main)));
-	}
-	else if (address >= A(&psxRegs.GPR) && address < A(&psxRegs.CP0))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.GPR.%s", R3000A::disRNameGPR[static_cast<u32>(address - A(&psxRegs)) / 4u]);
-	}
-	else if (address == A(&psxRegs.pc))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.pc");
-	}
-	else if (address == A(&psxRegs.cycle))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.cycle");
-	}
-	else if (address == A(&psxRegs.iopNextEventCycle))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.iopNextEventCycle");
-	}
-
-#undef A
-
-	if (len > 0)
+	if (did_print)
 	{
 		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
 		ZyanString* string;
 		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
-		return ZyanStringAppendFormat(string, "&%s", buf);
+		return ZyanStringAppendFormat(string, "&%s", buf.c_str());
 	}
 
 	return s_old_print_address(formatter, buffer, context);
@@ -155,6 +194,7 @@ static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
+static const void* iopUnmappedRecLUTPage = nullptr;
 
 static void recEventTest()
 {
@@ -172,10 +212,10 @@ static const void* _DynGen_JITCompile()
 	xFastCall((void*)iopRecRecompile, ptr32[&psxRegs.pc]);
 
 	xMOV(eax, ptr[&psxRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -186,10 +226,10 @@ static const void* _DynGen_DispatcherReg()
 	u8* retval = xGetPtr();
 
 	xMOV(eax, ptr[&psxRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -223,6 +263,19 @@ static const void* _DynGen_EnterRecompiledCode()
 	return retval;
 }
 
+static const void* _DynGen_UnmappedRecLUTPage()
+{
+	u8* retval = xGetPtr();
+
+	xFastCall(iopRecError, 0);
+
+	// Ideally iopRecERror should not return, but it might if the EE rec's
+	// ExitExecution deferred stopping until later
+	xJMP(iopExitRecompiledCode);
+
+	return retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	const u8* start = xGetAlignedCallTarget();
@@ -235,10 +288,27 @@ static void _DynGen_Dispatchers()
 
 	iopJITCompile = _DynGen_JITCompile();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
+	iopUnmappedRecLUTPage =  _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(iopJITCompile);
 
 	Perf::any.Register(start, xGetPtr() - start, "IOP Dispatcher");
+}
+
+static void iopRecError(int err)
+{
+	switch (err)
+	{
+		case 0:
+			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", psxRegs.pc));
+			break;
+		case 1:
+			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unaligned address (PC: 0x{:08x})", psxRegs.pc));
+			break;
+	}
+
+	VMManager::SetPaused(true);
+	Cpu->ExitExecution();
 }
 
 ////////////////////////////////////////////////////
@@ -840,37 +910,42 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	noconstcode(info);
 }
 
-static u8* m_recBlockAlloc = NULL;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutUnmapped;
+static size_t recLutEntries;
+static bool extraRam = false;
 
-static const uint m_recBlockAllocSize =
-	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
+static void recReserveRAM()
+{
+	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
+	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
+	// always 4 bytes long).
+
+	recLutEntries =
+		((Ps2MemSize::ExposedIopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4);
+
+	if (recLutReserve.size() != recLutEntries)
+		recLutReserve.resize(recLutEntries);
+
+	recLutUnmapped.resize(_64kb / 4);
+
+	BASEBLOCK* curpos = recLutReserve.data();
+	recRAM = curpos;
+	curpos += (Ps2MemSize::ExposedIopRam / 4);
+	recROM = curpos;
+	curpos += (Ps2MemSize::Rom / 4);
+	recROM1 = curpos;
+	curpos += (Ps2MemSize::Rom1 / 4);
+	recROM2 = curpos;
+	curpos += (Ps2MemSize::Rom2 / 4);
+}
 
 static void recReserve()
 {
 	recPtr = SysMemory::GetIOPRec();
 	recPtrEnd = SysMemory::GetIOPRecEnd() - _64kb;
 
-	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
-	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
-	// always 4 bytes long).
-
-	if (!m_recBlockAlloc)
-	{
-		// We're on 64-bit, if these memory allocations fail, we're in real trouble.
-		m_recBlockAlloc = (u8*)_aligned_malloc(m_recBlockAllocSize, 4096);
-		if (!m_recBlockAlloc)
-			pxFailRel("Failed to allocate R3000A BASEBLOCK lookup tables");
-	}
-
-	u8* curpos = m_recBlockAlloc;
-	recRAM = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
-	recROM = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
-	recROM1 = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
-	recROM2 = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
+	recReserveRAM();
 
 	pxAssertRel(!s_pInstCache, "InstCache not allocated");
 	s_nInstCacheSize = 128;
@@ -883,15 +958,31 @@ void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
 
+	if (CHECK_EXTRAMEM != extraRam)
+	{
+		recReserveRAM();
+		extraRam = !extraRam;
+	}
+
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(SysMemory::GetIOPRec());
 	_DynGen_Dispatchers();
 	recPtr = xGetPtr();
 
-	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
-		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
+	iopClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve.data()),
+		Ps2MemSize::ExposedIopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
+
+	BASEBLOCK* unmapped = recLutUnmapped.data();
 
 	for (int i = 0; i < 0x10000; i++)
-		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
+	{
+		recLUT_SetPage(psxRecLUT, psxhwLUT, unmapped, i, 0, 0);
+	}
+
+	for (int i = 0; i < _64kb / 4; i++)
+	{
+		unmapped[i].SetFnptr((uptr)iopUnmappedRecLUTPage);
+	}
 
 	// IOP knows 64k pages, hence for the 0x10000's
 
@@ -899,13 +990,15 @@ void recResetIOP()
 	// the pc indexer into it's lower common denominator.
 
 	// We're only mapping 20 pages here in 4 places.
-	// 0x80 comes from : (Ps2MemSize::IopRam / 0x10000) * 4
+	// 0x80 comes from : (Ps2MemSize::IopRam / _64kb) * 4
 
 	for (int i = 0; i < 0x80; i++)
 	{
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & 0x1f);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & 0x1f);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & 0x1f);
+		u32 mask = (Ps2MemSize::ExposedIopRam / _64kb) - 1;
+
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & mask);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & mask);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & mask);
 	}
 
 	for (int i = 0x1fc0; i < 0x2000; i++)
@@ -940,7 +1033,7 @@ void recResetIOP()
 
 static void recShutdown()
 {
-	safe_aligned_free(m_recBlockAlloc);
+	recLutReserve.deallocate();
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
@@ -951,7 +1044,7 @@ static void recShutdown()
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
 {
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < count / 4; i++)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
@@ -1039,7 +1132,7 @@ static __fi u32 psxRecClearMem(u32 pc)
 		}
 	}
 
-	iopClearRecLUT(PSX_GETBLOCK(lowerextent), (upperextent - lowerextent) / 4);
+	iopClearRecLUT(PSX_GETBLOCK(lowerextent), upperextent - lowerextent);
 
 	return upperextent - pc;
 }
@@ -1051,50 +1144,26 @@ static __fi void recClearIOP(u32 Addr, u32 Size)
 		pc += PSXREC_CLEARM(pc);
 }
 
-void psxSetBranchReg(u32 reg)
+void psxSetBranchReg()
 {
 	psxbranch = 1;
 
-	if (reg != 0xffffffff)
-	{
-		const bool swap = psxTrySwapDelaySlot(reg, 0, 0);
+	xMOV(ptr32[&psxRegs.pc], eax);
 
-		if (!swap)
-		{
-			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
-			_psxMoveGPRtoR(xRegister32(wbreg), reg);
-
-			psxRecompileNextInstruction(true, false);
-
-			if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
-			{
-				xMOV(ptr32[&psxRegs.pc], xRegister32(wbreg));
-				x86regs[wbreg].inuse = 0;
-			}
-			else
-			{
-				xMOV(eax, ptr32[&psxRegs.pcWriteback]);
-				xMOV(ptr32[&psxRegs.pc], eax);
-			}
-		}
-		else
-		{
-			if (PSX_IS_DIRTY_CONST(reg) || _hasX86reg(X86TYPE_PSX, reg, 0))
-			{
-				const int x86reg = _allocX86reg(X86TYPE_PSX, reg, MODE_READ);
-				xMOV(ptr32[&psxRegs.pc], xRegister32(x86reg));
-			}
-			else
-			{
-				_psxMoveGPRtoM((uptr)&psxRegs.pc, reg);
-			}
-		}
-	}
+	xTEST(eax, 3);
+	xForwardJNZ32 unaligned;
 
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(0xffffffff, 1);
 
-	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
+	xJMP(iopDispatcherReg);
+
+	unaligned.SetTarget();
+
+	xFastCall(iopRecError, 1);
+	// Ideally iopRecERror should not return, but it might if the EE rec's
+	// ExitExecution deferred stopping until later
+	xJMP(iopExitRecompiledCode);
 }
 
 void psxSetBranchImm(u32 imm)
@@ -1146,17 +1215,17 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&psxRegs.cycle]);
-		xMOV(ecx, eax);
-		xMOV(edx, ptr32[&psxRegs.iopCycleEE]);
-		xADD(edx, 7);
-		xSHR(edx, 3);
-		xADD(eax, edx);
-		xCMP(eax, ptr32[&psxRegs.iopNextEventCycle]);
-		xCMOVNS(eax, ptr32[&psxRegs.iopNextEventCycle]);
-		xMOV(ptr32[&psxRegs.cycle], eax);
-		xSUB(eax, ecx);
-		xSHL(eax, 3);
+		xMOV(rax, ptr64[&psxRegs.cycle]);
+		xMOV(rcx, rax);
+		xMOV(rdx, ptr32[&psxRegs.iopCycleEE]);
+		xADD(rdx, 7);
+		xSHR(rdx, 3);
+		xADD(rax, rdx);
+		xCMP(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xCMOVNS(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xMOV(ptr64[&psxRegs.cycle], rax);
+		xSUB(rax, rcx);
+		xSHL(rax, 3);
 		iPsxAddEECycles(0xFFFFFFFF);
 		xJLE(iopExitRecompiledCode);
 
@@ -1170,16 +1239,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
-		xMOV(ebx, ptr32[&psxRegs.cycle]);
-		xADD(ebx, blockCycles);
-		xMOV(ptr32[&psxRegs.cycle], ebx); // update cycles
+		xMOV(r12, ptr64[&psxRegs.cycle]);
+		xADD(r12, blockCycles);
+		xMOV(ptr64[&psxRegs.cycle], r12); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
 		iPsxAddEECycles(blockCycles);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
-		xSUB(ebx, ptr32[&psxRegs.iopNextEventCycle]);
+		xSUB(r12, ptr64[&psxRegs.iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
 		xFastCall((void*)iopEventTest);
@@ -1225,7 +1294,7 @@ void rpsxSYSCALL()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 
-	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
@@ -1247,7 +1316,7 @@ void rpsxBREAK()
 
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
-	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
@@ -1438,6 +1507,8 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 			ZydisFormatterInit(&disas_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
 			s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
 			ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
+			s_old_print_disp = (ZydisFormatterFunc)&ZydisFormatterPrintDisplacement;
+			ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_DISP, (const void**)&s_old_print_disp);
 		}
 	}
 #endif
@@ -1566,6 +1637,13 @@ static void iopRecRecompile(const u32 startpc)
 		}
 	}
 
+	// Override the memory size argument to IOPBOOT
+	if (startpc == 0xbfc4a000) {
+		// Don't bother emitting assembly for this, it'll only run once
+		// per boot so this is fine
+		psxRegs.GPR.n.a0 = Ps2MemSize::ExposedIopRam >> 20;
+	}
+
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem
@@ -1574,6 +1652,7 @@ static void iopRecRecompile(const u32 startpc)
 		recResetIOP();
 	}
 
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -1742,7 +1821,7 @@ StartRecomp:
 			pxAssert(!link_next_block);
 		else
 		{
-			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+			xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 

@@ -16,6 +16,8 @@ static const int psxInstCycles_Peephole_Store = 0;
 static const int psxInstCycles_Store = 0;
 static const int psxInstCycles_Load = 0;
 
+#define R3000A_TEXTPTR (&psxRegs.GPR.r[33])
+
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
@@ -41,7 +43,7 @@ extern u32 g_iopCyclePenalty;
 void psxSaveBranchState();
 void psxLoadBranchState();
 
-extern void psxSetBranchReg(u32 reg);
+extern void psxSetBranchReg();
 extern void psxSetBranchImm(u32 imm);
 extern void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot);
 

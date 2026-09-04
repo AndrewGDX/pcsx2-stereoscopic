@@ -36,6 +36,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="pauseOnFocusLoss">
+        <property name="text">
+         <string>Pause On Focus Loss</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="confirmShutdown">
         <property name="text">
@@ -43,17 +50,17 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="savestateSelector">
+        <property name="text">
+         <string>Use Save State Selector</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="discordPresence">
         <property name="text">
          <string>Enable Discord Presence</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="mouseLock">
-        <property name="text">
-         <string>Enable Mouse Lock</string>
         </property>
        </widget>
       </item>
@@ -71,17 +78,24 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="pauseOnFocusLoss">
-        <property name="text">
-         <string>Pause On Focus Loss</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="1">
        <widget class="QCheckBox" name="promptOnStateLoadSaveFailure">
         <property name="text">
          <string>Prompt On State Load/Save Failure</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="preferEnglishGameList">
+        <property name="text">
+         <string>Prefer English Game Titles</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="mouseLock">
+        <property name="text">
+         <string>Enable Mouse Lock</string>
         </property>
        </widget>
       </item>
@@ -139,7 +153,7 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="startFullscreenUI">
         <property name="text">
-         <string>Start Big Picture UI</string>
+         <string>Start In Big Picture Mode</string>
         </property>
        </widget>
       </item>
@@ -386,8 +400,10 @@
   <tabstop>pauseOnStart</tabstop>
   <tabstop>discordPresence</tabstop>
   <tabstop>pauseOnControllerDisconnection</tabstop>
-  <tabstop>mouseLock</tabstop>
+  <tabstop>savestateSelector</tabstop>
   <tabstop>promptOnStateLoadSaveFailure</tabstop>
+  <tabstop>preferEnglishGameList</tabstop>
+  <tabstop>mouseLock</tabstop>
   <tabstop>startFullscreen</tabstop>
   <tabstop>doubleClickTogglesFullscreen</tabstop>
   <tabstop>renderToSeparateWindow</tabstop>

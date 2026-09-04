@@ -112,12 +112,20 @@ bool GSRenderer::Merge(int field)
 				(!(m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0) || // Blend RC1 with non-zero alpha.
 				(m_regs->PMODE.AMOD == 0) ||                             // Use alpha of RC1.
 				(feedback_merge && m_regs->EXTBUF.FBIN == 0));           // Use RC1 for feedback merge.
+
+		// The following two flags determine if RC1 output completely overwrites RC2 output
+		// due to the alpha used for blending and the respective rectangles of the outputs.
+		const bool rc1_contains_rc2 =
+			PCRTCDisplays.PCRTCDisplays[0].displayRect.rcontains(PCRTCDisplays.PCRTCDisplays[1].displayRect);
+
+		const bool rc1_overwrites_rc2 = use_rc1 && rc1_contains_rc2 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255;
+
 		const bool use_rc2 =
-			PCRTCDisplays.PCRTCDisplays[1].enabled &&          // RC2 enabled.
-				// Blending RC2 and not overwriting completely with RC1.
-				((m_regs->PMODE.SLBG == 0 && !(use_rc1 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255)) || 
-				(m_regs->PMODE.AMOD == 1) ||                   // Use alpha of RC2.
-				(feedback_merge && m_regs->EXTBUF.FBIN == 1)); // Use RC2 for feedback merge.
+			PCRTCDisplays.PCRTCDisplays[1].enabled &&                // RC2 enabled.
+				((m_regs->PMODE.SLBG == 0 && !rc1_overwrites_rc2) || // Blending RC2 and not overwritten by RC1.
+				(m_regs->PMODE.AMOD == 1) ||                         // Use alpha of RC2.
+				(feedback_merge && m_regs->EXTBUF.FBIN == 1));       // Use RC2 for feedback merge.
+
 		if (use_rc1)
 			tex[0] = GetOutput(0, tex_scale[0], y_offset[0]);
 		if (use_rc2)
@@ -186,7 +194,7 @@ bool GSRenderer::Merge(int field)
 		if (m_scanmask_used)
 		{
 			int displayIntOffset = PCRTCDisplays.PCRTCDisplays[i].displayRect.y - PCRTCDisplays.PCRTCDisplays[1 - i].displayRect.y;
-			
+
 			if (displayIntOffset > 0)
 			{
 				displayIntOffset &= 1;
@@ -752,10 +760,10 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 					// Present textures to both halves (stereoscopic rendering)
 					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
 						s_tv_shader_indices[GSConfig.TVShader], shader_time,
-						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
 						s_tv_shader_indices[GSConfig.TVShader], shader_time,
-						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 				}
 				else if (GSConfig.StereoMode == GSStereoMode::TopAndBottom)
 				{
@@ -800,23 +808,24 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 					// Present textures to both halves
 					g_gs_device->PresentRect(current, src_uv_l, nullptr, left_rect,
 						s_tv_shader_indices[GSConfig.TVShader], shader_time,
-						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 					g_gs_device->PresentRect(current, src_uv_r, nullptr, right_rect,
 						s_tv_shader_indices[GSConfig.TVShader], shader_time,
-						GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 				}
 				else
 				{
 					// Normal mono presentation
 					g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-						s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+						s_tv_shader_indices[GSConfig.TVShader], shader_time, BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 				}
 			}
 
 			EndPresentFrame();
 
-			if (GSConfig.OsdShowGPU)
-				PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+			const float gpu_time = g_gs_device->GetAndResetAccumulatedGPUTime();
+			GPUPipelineStatistics gpu_stats = g_gs_device->GetAndResetAccumulatedGPUPipelineStatistics();
+			PerformanceMetrics::OnGPUPresent(gpu_time, gpu_stats.vs_invocations, gpu_stats.ps_invocations);
 		}
 
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
@@ -833,7 +842,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			const GSTexture* current = g_gs_device->GetCurrent();
 			const GSVector2i internal_res = GetInternalResolution();
 
-			if (current->GetWidth() > internal_res.x || current->GetHeight() > internal_res.y)
+			if (current && (current->GetWidth() > internal_res.x || current->GetHeight() > internal_res.y))
 				g_gs_device->Resize(internal_res.x, internal_res.y);
 		}
 
@@ -933,7 +942,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
 				if (temp)
 				{
-					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
+					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y), ShaderConvert::COPY, Biln);
 					GSCapture::DeliverVideoFrame(temp);
 					g_gs_device->Recycle(temp);
 				}
@@ -955,6 +964,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			}
 		}
 	}
+
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()) && GSConfig.SaveTransferImages)
+		DumpTransferImages();
 }
 
 void GSRenderer::QueueSnapshot(const std::string& path, const u32 gsdump_frames)
@@ -1023,7 +1035,8 @@ std::string GSGetBaseSnapshotFilename()
 	// If organize by game is enabled, use or create a game-specific folder.
 	if (GSConfig.OrganizeSnapshotsByGame)
 	{
-		std::string game_name = VMManager::GetTitle(true);
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name = VMManager::GetTitle(prefer_english);
 		if (!game_name.empty())
 		{
 			Path::SanitizeFileName(&game_name);
@@ -1040,6 +1053,21 @@ std::string GSGetBaseSnapshotFilename()
 
 std::string GSGetBaseVideoFilename()
 {
+	// If organize by game is enabled, use or create a game-specific folder.
+	if (GSConfig.OrganizeVideoCaptureByGame)
+	{
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name = VMManager::GetTitle(prefer_english);
+		if (!game_name.empty())
+		{
+			Path::SanitizeFileName(&game_name);
+			const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
+
+			// Make sure the per-game directory exists or that we can successfully create it.
+			if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+				return Path::Combine(game_dir, GSGetBaseFilename());
+		}
+	}
 	// prepend video directory
 	return Path::Combine(EmuFolders::Videos, GSGetBaseFilename());
 }
@@ -1068,7 +1096,7 @@ void GSRenderer::PresentCurrentFrame()
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
 			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 		}
 
 		EndPresentFrame();
@@ -1182,7 +1210,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 		if (dl)
 		{
 			const GSVector4i rc(0, 0, draw_width, draw_height);
-			g_gs_device->StretchRect(current, src_uv, rt, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER);
+			g_gs_device->StretchRect(current, src_uv, rt, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER, Biln);
 			dl->CopyFromTexture(rc, rt, rc, 0);
 			dl->Flush();
 

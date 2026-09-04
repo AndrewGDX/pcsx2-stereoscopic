@@ -20,27 +20,28 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-QT=6.10.2
+QT=6.11.1
 QTAPNG=1.3.0
 
-FREETYPE=2.14.1
-HARFBUZZ=12.2.0
-SDL=SDL3-3.4.2
+FREETYPE=2.14.3
+SDL=SDL3-3.4.12
+HARFBUZZ=14.2.0
 ZSTD=1.5.7
 LZ4=1.10.0
-LIBPNG=1.6.53
-LIBJPEGTURBO=3.1.2
+LIBPNG=1.6.58
+LIBJPEGTURBO=3.2.0
 LIBWEBP=1.6.0
-FFMPEG=8.0
+FFMPEG=8.1
 MOLTENVK=1.4.1
-KDDOCKWIDGETS=2.4.0
+KDDOCKWIDGETS=2.4.1
 PLUTOVG=1.3.2
 PLUTOSVG=0.0.7
+RAPIDYAML=0.12.1
 
-SHADERC=2025.4
-SHADERC_GLSLANG=7a47e2531cb334982b2a2dd8513dca0a3de4373d
-SHADERC_SPIRVHEADERS=b824a462d4256d720bebb40e78b9eb8f78bbb305
-SHADERC_SPIRVTOOLS=971a7b6e8d7740035bbff089bbbf9f42951ecfd5
+SHADERC=2026.2
+SHADERC_GLSLANG=275822a6261ee689aadb1da5f09a0ec2f058685c
+SHADERC_SPIRVHEADERS=58006c901d1d5c37dece6b6610e9af87fa951375
+SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 mkdir -p deps-build
 cd deps-build
@@ -59,68 +60,72 @@ CMAKE_COMMON=(
 	-DCMAKE_INSTALL_NAME_DIR='$<INSTALL_PREFIX>/lib'
 )
 
-cat > SHASUMS <<EOF
-aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e  qtbase-everywhere-src-$QT.tar.xz
-8b8f9c718638081e7b3c000e7f31910140b1202a98e98df5d1b496fe6f639d67  qtimageformats-everywhere-src-$QT.tar.xz
-f07ff80f38caf235187200345392ca7479445ddf49a36c3694cd52a735dad6e1  qtsvg-everywhere-src-$QT.tar.xz
-1e3d2c07c1fd76d2425c6eaeeaa62ffaff5f79210c4e1a5bc2a6a9db668d5b24  qttools-everywhere-src-$QT.tar.xz
-b3b3813bc9d76b545716dc8b6e659fa71b6e2bc14569e9fab6dab8b30650a644  qttranslations-everywhere-src-$QT.tar.xz
+grep . > SHASUMS <<EOF
+d9594a31228aa23ad6b531719a29b45f0f3989fe6c136d45767ea179f233c1ac  qtbase-everywhere-src-$QT.tar.xz
+b2bf6c6845ac175ed7f819145483ba4676f617aaa6a5012c8efee63c8bbac413  qtimageformats-everywhere-src-$QT.tar.xz
+7f3cf02f4824bf03c2c5859ea6db173bf1482a1daf24e6cdf7bc78cfa26a8a94  qtsvg-everywhere-src-$QT.tar.xz
+8e61835a679c93fa9c6065b142353c2071ba68e297898937c32a03777fcaf50d  qttools-everywhere-src-$QT.tar.xz
+37c02c81206594c7bb4edca85ac93e8e55a9836b70c960fde6cb0f8623ec5677  qttranslations-everywhere-src-$QT.tar.xz
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 
-32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc  freetype-$FREETYPE.tar.xz
-f63fc519f150465bd0bdafcdf3d0e9c23474f4c474171cd515ea1b3a72c081fb  harfbuzz-$HARFBUZZ.tar.gz
-ef39a2e3f9a8a78296c40da701967dd1b0d0d6e267e483863ce70f8a03b4050c  $SDL.tar.gz
+36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f  freetype-$FREETYPE.tar.xz
+f07b958a9ac5020fb7a44cadb957f658b2149c3c8abb4f63145fac9303249db7  $SDL.tar.gz
+c652d5d94971031654ab3989891a490a895d3e3f2b71171c62692b28e94b1b93  harfbuzz-$HARFBUZZ.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
-1d3fb8ccc2932d04aa3663e22ef5ef490244370f4e568d7850165068778d98d4  libpng-$LIBPNG.tar.xz
+28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775  libpng-$LIBPNG.tar.xz
 e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
-452a1a290bd0cf18737fad0057dc17b7fdf10a73eda2d6d4f31ba04fda25ef2c  libpng-$LIBPNG-apng.patch.gz
-8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
-b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
-9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c  v$MOLTENVK.tar.gz
-51dbf24fe72e43dd7cb9a289d3cab47112010f1a2ed69b6fc8ac0dff31991ed2  KDDockWidgets-$KDDOCKWIDGETS.tar.gz
+eee7dea22ed502868017971c86c63c4ed1e6085de0baebfdcc3d3322f00f3eb0  libpng-$LIBPNG-apng.patch.gz
+6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+b072aed6871998cce9b36e7774033105ca29e33632be5b6347f3206898e0756a  ffmpeg-$FFMPEG.tar.xz
+9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c  MoltenVK-$MOLTENVK.tar.gz
+5cd9495d9316cf6cc937bb328a7fd491c3248ef2469cfa42511f1039f6148aca  KDDockWidgets-$KDDOCKWIDGETS.tar.gz
 7bd4e79ce18b1d47517e7e91fbb7cf19d4f01942804a519bc7c0bf32b6325dd5  plutovg-$PLUTOVG.tar.gz
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
+e9efcdd17f86287748793cf21d106e461fcad8d103a3e5a23632afe93828660d  rapidyaml-$RAPIDYAML-src.tgz
 
-8a89fb6612ace8954470aae004623374a8fc8b7a34a4277bee5527173b064faf  shaderc-$SHADERC.tar.gz
-272d2725b140e09e85b96eecdc59c2e00c1a14cda2301767e1bf3c363a44b931  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
-c693867f10a7760ef1bcf85419d51783586768cc2c601d03841bc6a8b2554b9c  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
-06b0a042f2e121e954badb4fd78c9e2d4bc7ed6087eceb26ab559c23cf94334f  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
+f924178e75e3293082481b25ed64d5e48a795b479dac3bd3c83d23070855df42  shaderc-$SHADERC.tar.gz
+971848a1cc639ce8dc244e778b17efe0f690e32ac398a75e31d1c67ad06d3e0a  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
+a6cb1b300bb8171795e116457e858e555334749f9cacaed8068ae0ef8681110c  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
+e156be0bd81c8812f1bff8e520422bfa9df61b3045587b9eb483185f1074a7b2  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
-curl -L \
-	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
-	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
-	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
-	-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
-	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
-	-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
-	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
-	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
-	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
-	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-	-o "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
-	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
-	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
-	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
-	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
-	-o "KDDockWidgets-$KDDOCKWIDGETS.tar.gz" "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
-	-o "plutovg-$PLUTOVG.tar.gz" "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
-	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
+if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
+	curl -L \
+		-O "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz" \
+		-O "https://github.com/harfbuzz/harfbuzz/archive/$HARFBUZZ/harfbuzz-$HARFBUZZ.tar.gz" \
+		-O "https://libsdl.org/release/$SDL.tar.gz" \
+		-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
+		-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
+		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
+		-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
+		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
+		-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
+		-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
+		-O "https://github.com/KhronosGroup/MoltenVK/archive/v$MOLTENVK/MoltenVK-$MOLTENVK.tar.gz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
+		-O "https://github.com/jurplel/QtApng/archive/$QTAPNG/QtApng-$QTAPNG.tar.gz" \
+		-O "https://github.com/google/shaderc/archive/v$SHADERC/shaderc-$SHADERC.tar.gz" \
+		-O "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG/shaderc-glslang-$SHADERC_GLSLANG.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS/shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS/shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" \
+		-O "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS/KDDockWidgets-$KDDOCKWIDGETS.tar.gz" \
+		-O "https://github.com/sammycage/plutovg/archive/v$PLUTOVG/plutovg-$PLUTOVG.tar.gz" \
+		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG/plutosvg-$PLUTOSVG.tar.gz" \
+		-O "https://github.com/biojppm/rapidyaml/releases/download/v$RAPIDYAML/rapidyaml-$RAPIDYAML-src.tgz"
+fi
 
-shasum -a 256 --check SHASUMS
+shasum -a 256 --check --strict SHASUMS
 
 echo "Installing SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-cmake -B build "${CMAKE_COMMON[@]}" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
+cmake -B build "${CMAKE_COMMON[@]}" -DSDL_VIDEO=OFF -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_DIALOG=OFF -DSDL_TRAY=OFF -DSDL_TEST_LIBRARY=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -165,7 +170,7 @@ cd ..
 echo "Installing libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
-gunzip -d -f "libpng-$LIBPNG-apng.patch.gz"
+gzip -kd -f "libpng-$LIBPNG-apng.patch.gz"
 cd "libpng-$LIBPNG"
 patch -p1 < "../libpng-$LIBPNG-apng.patch"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_FRAMEWORK=OFF -B build
@@ -206,7 +211,7 @@ echo "Building HarfBuzz..."
 rm -fr "harfbuzz-$HARFBUZZ"
 tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_BUILD_GPU=OFF -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -223,8 +228,10 @@ cd ..
 # MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."
 rm -fr "MoltenVK-${MOLTENVK}"
-tar xf "v$MOLTENVK.tar.gz"
+tar xf "MoltenVK-$MOLTENVK.tar.gz"
 cd "MoltenVK-${MOLTENVK}"
+patch -p1 < "$SCRIPTDIR/4cf93f0f16b1503580cdb7ffdedb056321446677.patch"
+patch -p1 < "$SCRIPTDIR/mvk-texture-swizzle.patch"
 sed -i '' 's/xcodebuild "$@"/xcodebuild $XCODEBUILD_EXTRA_ARGS "$@"/g' fetchDependencies
 sed -i '' 's/XCODEBUILD :=/XCODEBUILD ?=/g' Makefile
 XCODEBUILD_EXTRA_ARGS="VALID_ARCHS=x86_64" ./fetchDependencies --macos
@@ -239,6 +246,8 @@ cd "qtbase-everywhere-src-$QT"
 
 # Patch Qt to support macOS 11
 patch -p1 < "$SCRIPTDIR/qt-macos11compat.patch"
+# Backport fix build on Xcode 26.4 (https://codereview.qt-project.org/c/qt/qtbase/+/724619)
+patch -p1 < "$SCRIPTDIR/qt110-xcode264.patch"
 
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
@@ -364,6 +373,15 @@ rm -fr "plutosvg-$PLUTOSVG"
 tar xf "plutosvg-$PLUTOSVG.tar.gz"
 cd "plutosvg-$PLUTOSVG"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
+
+echo "Building RapidYAML..."
+rm -fr "rapidyaml-$RAPIDYAML-src"
+tar xf "rapidyaml-$RAPIDYAML-src.tgz"
+cd "rapidyaml-$RAPIDYAML-src"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..

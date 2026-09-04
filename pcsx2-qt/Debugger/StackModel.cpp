@@ -111,10 +111,11 @@ void StackModel::refreshData()
 	{
 		if (thread->Status() == ThreadStatus::THS_RUN)
 		{
-			m_stackFrames = MipsStackWalk::Walk(&m_cpu, m_cpu.getPC(), m_cpu.getRegister(0, 31), m_cpu.getRegister(0, 29),
-				thread->EntryPoint(), thread->StackTop());
+			m_stackFrames = m_cpu.StackTrace(*thread);
 			break;
 		}
 	}
 	endResetModel();
 }
+
+#include "moc_StackModel.cpp"

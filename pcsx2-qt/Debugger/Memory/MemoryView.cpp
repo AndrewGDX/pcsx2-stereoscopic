@@ -19,9 +19,11 @@ using namespace QtUtils;
 /*
 	MemoryViewTable
 */
-void MemoryViewTable::UpdateStartAddress(u32 start)
+void MemoryViewTable::UpdateStartAddress(u32 start, NavigationHistoryOperation history_operation)
 {
 	startAddress = start & ~0xF;
+	navigation_history.push(startAddress, history_operation);
+	parent->update();
 }
 
 void MemoryViewTable::UpdateSelectedAddress(u32 selected, bool page)
@@ -41,6 +43,13 @@ void MemoryViewTable::UpdateSelectedAddress(u32 selected, bool page)
 		else
 			startAddress += 0x10;
 	}
+	else
+	{
+		return;
+	}
+
+	navigation_history.pushWithDelay(startAddress);
+	parent->update();
 }
 
 void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu)
@@ -119,7 +128,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 			{
 				case MemoryViewType::BYTE:
 				{
-					const u8 val = static_cast<u8>(cpu.read8(thisSegmentsStart, valid));
+					const u8 val = cpu.Read8(thisSegmentsStart, &valid);
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "??");
@@ -127,7 +136,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::BYTEHW:
 				{
-					const u16 val = convertEndian<u16>(static_cast<u16>(cpu.read16(thisSegmentsStart, valid)));
+					const u16 val = convertEndian<u16>(cpu.Read16(thisSegmentsStart, &valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????");
@@ -135,7 +144,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::WORD:
 				{
-					const u32 val = convertEndian<u32>(cpu.read32(thisSegmentsStart, valid));
+					const u32 val = convertEndian<u32>(cpu.Read32(thisSegmentsStart, &valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????");
@@ -143,7 +152,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::DWORD:
 				{
-					const u64 val = convertEndian<u64>(cpu.read64(thisSegmentsStart, valid));
+					const u64 val = convertEndian<u64>(cpu.Read64(thisSegmentsStart, &valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????????????");
@@ -151,7 +160,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::FLOAT:
 				{
-					const u32 intVal = convertEndian<u32>(cpu.read32(thisSegmentsStart, valid));
+					const u32 intVal = convertEndian<u32>(cpu.Read32(thisSegmentsStart, &valid));
 					float val = 0.0;
 					std::memcpy(&val, &intVal, sizeof(val));
 					if (penDefault && val == 0.0)
@@ -177,7 +186,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				painter.setPen(palette.text().color());
 
 			bool valid;
-			const u8 value = cpu.read8(currentRowAddress + j, valid);
+			const u8 value = cpu.Read8(currentRowAddress + j, &valid);
 			if (valid)
 			{
 				QChar curChar = QChar::fromLatin1(value);
@@ -258,19 +267,19 @@ u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 	switch (displayType)
 	{
 		case MemoryViewType::BYTE:
-			val.lo = cpu.read8(selectedAddress);
+			val.lo = cpu.Read8(selectedAddress);
 			break;
 		case MemoryViewType::BYTEHW:
-			val.lo = convertEndian(static_cast<u16>(cpu.read16(selectedAddress & ~1)));
+			val.lo = convertEndian(static_cast<u16>(cpu.Read16(selectedAddress & ~1)));
 			break;
 		case MemoryViewType::WORD:
-			val.lo = convertEndian(cpu.read32(selectedAddress & ~3));
+			val.lo = convertEndian(cpu.Read32(selectedAddress & ~3));
 			break;
 		case MemoryViewType::DWORD:
-			val._u64[0] = convertEndian(cpu.read64(selectedAddress & ~7));
+			val._u64[0] = convertEndian(cpu.Read64(selectedAddress & ~7));
 			break;
 		case MemoryViewType::FLOAT:
-			val.lo = convertEndian(cpu.read32(selectedAddress & ~3));
+			val.lo = convertEndian(cpu.Read32(selectedAddress & ~3));
 			break;
 	}
 	return val;
@@ -279,13 +288,13 @@ u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 void MemoryViewTable::InsertIntoSelectedHexView(u8 value, DebugInterface& cpu)
 {
 	const u8 mask = selectedNibbleHI ? 0x0f : 0xf0;
-	u8 curVal = cpu.read8(selectedAddress) & mask;
+	u8 curVal = cpu.Read8(selectedAddress) & mask;
 	u8 newVal = value << (selectedNibbleHI ? 4 : 0);
 	curVal |= newVal;
 
 	const QPointer<MemoryViewTable> table(this);
 	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = curVal] {
-		cpu.write8(address, val);
+		cpu.Write8(address, val);
 
 		QtHost::RunOnUIThread([table] {
 			if (!table)
@@ -323,7 +332,7 @@ bool MemoryViewTable::InsertFloatIntoSelectedHexView(DebugInterface& cpu)
 
 		const QPointer<MemoryViewTable> table(this);
 		Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
-			cpu.write32(address, val);
+			cpu.Write32(address, val);
 
 			QtHost::RunOnUIThread([table] {
 				if (!table)
@@ -360,7 +369,7 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 
 		const QPointer<MemoryViewTable> table(this);
 		Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
-			cpu.write32(address, val);
+			cpu.Write32(address, val);
 
 			QtHost::RunOnUIThread([table] {
 				if (!table)
@@ -384,7 +393,7 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 			u32 currAddr = address;
 			for (int i = 0; i < input.size(); i++)
 			{
-				cpu.write8(currAddr, input[i]);
+				cpu.Write8(currAddr, input[i]);
 				currAddr = nextAddress(currAddr, address, display_type, little_endian);
 			}
 
@@ -552,7 +561,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 		{
 			const QPointer<MemoryViewTable> table(this);
 			Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = keychar.toLatin1()] {
-				cpu.write8(address, val);
+				cpu.Write8(address, val);
 
 				QtHost::RunOnUIThread([table, address]() {
 					if (!table)
@@ -572,7 +581,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 			{
 				const QPointer<MemoryViewTable> table(this);
 				Host::RunOnCPUThread([table, address = selectedAddress, &cpu] {
-					cpu.write8(address, 0);
+					cpu.Write8(address, 0);
 
 					QtHost::RunOnUIThread([table] {
 						if (!table)
@@ -684,7 +693,7 @@ MemoryView::MemoryView(const DebuggerViewParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &MemoryView::customContextMenuRequested, this, &MemoryView::openContextMenu);
 
-	m_table.UpdateStartAddress(0x100000);
+	m_table.UpdateStartAddress(0x100000, NavigationHistoryOperation::INSTANT_PUSH);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -723,7 +732,10 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 
 	auto start_address = json.value().FindMember("startAddress");
 	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
-		m_table.UpdateStartAddress(start_address->value.GetUint());
+	{
+		m_table.navigation_history.clear();
+		m_table.UpdateStartAddress(start_address->value.GetUint(), NavigationHistoryOperation::INSTANT_PUSH);
+	}
 
 	auto view_type = json.value().FindMember("viewType");
 	if (view_type != json.value().MemberEnd() && view_type->value.IsInt())
@@ -741,10 +753,44 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 	if (little_endian != json.value().MemberEnd() && little_endian->value.IsBool())
 		m_table.SetLittleEndian(little_endian->value.GetBool());
 
-	repaint();
+	update();
 
 	return true;
 }
+
+bool MemoryView::supportsNavigation()
+{
+	return true;
+}
+
+bool MemoryView::canNavigateBack()
+{
+	return m_table.navigation_history.canGoBack();
+}
+
+bool MemoryView::canNavigateForward()
+{
+	return m_table.navigation_history.canGoForward();
+}
+
+void MemoryView::navigateBack()
+{
+	std::optional<u32> address = m_table.navigation_history.back();
+	if (!address.has_value())
+		return;
+
+	m_table.UpdateStartAddress(*address, NavigationHistoryOperation::NO_PUSH);
+}
+
+void MemoryView::navigateForward()
+{
+	std::optional<u32> address = m_table.navigation_history.forward();
+	if (!address.has_value())
+		return;
+
+	m_table.UpdateStartAddress(*address, NavigationHistoryOperation::NO_PUSH);
+}
+
 
 void MemoryView::paintEvent(QPaintEvent* event)
 {
@@ -764,7 +810,7 @@ void MemoryView::mousePressEvent(QMouseEvent* event)
 		return;
 
 	m_table.SelectAt(event->pos());
-	repaint();
+	update();
 }
 
 void MemoryView::openContextMenu(QPoint pos)
@@ -859,13 +905,13 @@ void MemoryView::openContextMenu(QPoint pos)
 
 	menu->popup(this->mapToGlobal(pos));
 
-	this->repaint();
+	update();
 	return;
 }
 
 void MemoryView::contextCopyByte()
 {
-	QApplication::clipboard()->setText(QString::number(cpu().read8(m_table.selectedAddress), 16).toUpper());
+	QApplication::clipboard()->setText(QString::number(cpu().Read8(m_table.selectedAddress), 16).toUpper());
 }
 
 void MemoryView::contextCopySegment()
@@ -885,7 +931,7 @@ void MemoryView::contextCopySegment()
 
 void MemoryView::contextCopyCharacter()
 {
-	QApplication::clipboard()->setText(QChar::fromLatin1(cpu().read8(m_table.selectedAddress)).toUpper());
+	QApplication::clipboard()->setText(QChar::fromLatin1(cpu().Read8(m_table.selectedAddress)).toUpper());
 }
 
 void MemoryView::contextPaste()
@@ -913,7 +959,7 @@ void MemoryView::contextGoToAddress()
 void MemoryView::contextFollowAddress()
 {
 	bool valid;
-	u32 address = cpu().read32(m_table.selectedAddress & ~3, valid);
+	u32 address = cpu().Read32(m_table.selectedAddress & ~3, &valid);
 	if (!valid)
 		return;
 
@@ -928,17 +974,20 @@ void MemoryView::wheelEvent(QWheelEvent* event)
 {
 	if (event->angleDelta().y() < 0)
 	{
-		m_table.UpdateStartAddress(m_table.startAddress + 0x10);
+		m_table.UpdateStartAddress(m_table.startAddress + 0x10, NavigationHistoryOperation::DELAYED_PUSH);
 	}
 	else if (event->angleDelta().y() > 0)
 	{
-		m_table.UpdateStartAddress(m_table.startAddress - 0x10);
+		m_table.UpdateStartAddress(m_table.startAddress - 0x10, NavigationHistoryOperation::DELAYED_PUSH);
 	}
-	this->repaint();
 }
 
 void MemoryView::keyPressEvent(QKeyEvent* event)
 {
+	// Alt is used for the global navigation shortcuts.
+	if (event->modifiers() & Qt::AltModifier)
+		return;
+
 	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0', cpu()))
 	{
 		switch (event->key())
@@ -954,14 +1003,15 @@ void MemoryView::keyPressEvent(QKeyEvent* event)
 				break;
 		}
 	}
-	this->repaint();
+	update();
 	DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
 void MemoryView::gotoAddress(u32 address)
 {
-	m_table.UpdateStartAddress(address & ~0xF);
+	m_table.UpdateStartAddress(address & ~0xF, NavigationHistoryOperation::INSTANT_PUSH);
 	m_table.selectedAddress = address;
-	this->repaint();
-	this->setFocus();
+	setFocus();
 }
+
+#include "moc_MemoryView.cpp"

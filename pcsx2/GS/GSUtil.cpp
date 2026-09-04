@@ -282,7 +282,7 @@ GSRendererType GSUtil::GetPreferredRenderer()
 #if defined(__APPLE__)
 		// Mac: Prefer Metal hardware.
 		preferred_renderer = GSRendererType::Metal;
-#elif defined(_WIN32) && defined(_M_ARM64)
+#elif defined(_WIN32) && defined(ARCH_ARM64)
 		// Default to DX12 on Windows-on-ARM.
 		preferred_renderer = GSRendererType::DX12;
 #elif defined(_WIN32)
@@ -338,4 +338,28 @@ const char* GSUtil::GetPSMName(int psm)
 		default:break;
 	}
 	return "BAD_PSM";
+}
+
+bool GSUtil::IsValidPSM(int psm)
+{
+	switch (psm)
+	{
+		case PSMCT32:
+		case PSMCT24:
+		case PSMCT16:
+		case PSMCT16S:
+		case PSMT8:
+		case PSMT4:
+		case PSMT8H:
+		case PSMT4HL:
+		case PSMT4HH:
+		case PSMZ32:
+		case PSMZ24:
+		case PSMZ16:
+		case PSMZ16S:
+		case PSGPU24:
+			return true;
+		default:
+			return false;
+	}
 }

@@ -52,12 +52,14 @@ void AchievementLoginDialog::loginClicked()
 		const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
 		const QString message = QString::fromStdString(error.GetDescription());
 
-		QtHost::RunOnUIThread([dialog, result, message = std::move(message)]() {
-			if (!dialog)
-				return;
+		QMetaObject::invokeMethod(
+			qApp, [dialog, result, message = std::move(message)]() {
+				if (!dialog)
+					return;
 
-			dialog->processLoginResult(result, message);
-		});
+				dialog->processLoginResult(result, message);
+			},
+			Qt::QueuedConnection);
 	});
 }
 
@@ -171,3 +173,5 @@ bool AchievementLoginDialog::canEnableLoginButton() const
 {
 	return !m_ui.userName->text().isEmpty() && !m_ui.password->text().isEmpty();
 }
+
+#include "moc_AchievementLoginDialog.cpp"

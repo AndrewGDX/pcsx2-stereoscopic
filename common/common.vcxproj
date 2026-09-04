@@ -36,7 +36,6 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -62,6 +61,7 @@
     </ClCompile>
     <ClCompile Include="HTTPDownloaderWinHTTP.cpp" />
     <ClCompile Include="MD5Digest.cpp" />
+    <ClCompile Include="MemoryInterface.cpp" />
     <ClCompile Include="MemorySettingsInterface.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="ReadbackSpinManager.cpp" />
@@ -141,6 +141,7 @@
     </ClInclude>
     <ClInclude Include="HTTPDownloaderWinHTTP.h" />
     <ClInclude Include="MD5Digest.h" />
+    <ClInclude Include="MemoryInterface.h" />
     <ClInclude Include="MemorySettingsInterface.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="YAML.h" />
     <ClInclude Include="Threading.h" />
+    <ClInclude Include="EnumOps.h" />
     <ClInclude Include="emitter\implement\avx.h" />
     <ClInclude Include="emitter\implement\bmi.h" />
     <ClInclude Include="emitter\instructions.h" />
