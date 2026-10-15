@@ -28,6 +28,7 @@ pcsx2.snapshot_*
 svnrev.h
 
 /build*
+!/build-macos.sh
 /obj-*
 *.obj
 

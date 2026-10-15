@@ -13,8 +13,8 @@ fi
 
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
-NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
+NPROCS="${NPROCS:-$(getconf _NPROCESSORS_ONLN)}"
+SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 INSTALLDIR="$1"
 if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
@@ -52,6 +52,7 @@ CMAKE_COMMON=(
 	-DCMAKE_BUILD_TYPE=Release
 	-DCMAKE_SHARED_LINKER_FLAGS="-dead_strip -dead_strip_dylibs"
 	-DCMAKE_PREFIX_PATH="$INSTALLDIR"
+	"-DCMAKE_IGNORE_PREFIX_PATH=/usr/local;/opt/homebrew"
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
 	-DCMAKE_OSX_ARCHITECTURES="x86_64"
 	-DCMAKE_APPLE_SILICON_PROCESSOR="x86_64"
@@ -85,31 +86,76 @@ c693867f10a7760ef1bcf85419d51783586768cc2c601d03841bc6a8b2554b9c  shaderc-spirv-
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
 EOF
 
-curl -L \
-	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
-	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
-	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
-	-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
-	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
-	-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
-	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
-	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
-	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
-	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-	-o "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
-	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
-	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
-	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
-	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
-	-o "KDDockWidgets-$KDDOCKWIDGETS.tar.gz" "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
-	-o "plutovg-$PLUTOVG.tar.gz" "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
-	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
+# Keep verified archives separate from compiler-specific installations so a retry
+# or a recipe/toolchain update does not download everything again.
+DOWNLOAD_CACHE="${DEPS_DOWNLOAD_CACHE:-$PWD/.downloads}"
+mkdir -p "$DOWNLOAD_CACHE"
+DOWNLOAD_CACHE="$(cd "$DOWNLOAD_CACHE" && pwd -P)"
+
+archive_matches() {
+	[ -f "$1" ] && [ "$(shasum -a 256 "$1" | cut -d ' ' -f 1)" = "$2" ]
+}
+
+download() {
+	local filename="$1" url="$2" expected cached partial attempt
+	expected="$(awk -v filename="$filename" '$2 == filename { print $1 }' SHASUMS)"
+	if [ -z "$expected" ]; then
+		echo "No pinned checksum for $filename" >&2
+		return 1
+	fi
+	cached="$DOWNLOAD_CACHE/$filename"
+	partial="$cached.part"
+	if archive_matches "$cached" "$expected"; then
+		echo "Reusing verified download: $filename"
+		if [ "$cached" != "$PWD/$filename" ]; then cp "$cached" "$filename"; fi
+		return
+	fi
+	if archive_matches "$filename" "$expected"; then
+		echo "Caching verified download: $filename"
+		cp "$filename" "$cached"
+		return
+	fi
+	# Retry every transfer failure (including curl error 18) and checksum failure.
+	# Each attempt starts a fresh .part file; only verified data enters the cache.
+	for attempt in 1 2 3; do
+		echo "Downloading $filename (attempt $attempt/3)..."
+		if curl --fail --location --connect-timeout 30 --output "$partial" "$url" &&
+			archive_matches "$partial" "$expected"; then
+			mv -f "$partial" "$cached"
+			if [ "$cached" != "$PWD/$filename" ]; then cp "$cached" "$filename"; fi
+			return
+		fi
+		echo "Download or checksum failed for $filename (attempt $attempt/3)." >&2
+		if [ "$attempt" -lt 3 ]; then sleep "$attempt"; fi
+	done
+	echo "Unable to download a verified $filename. Rerun the build to retry; verified downloads are cached." >&2
+	return 1
+}
+
+download "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download"
+download "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
+download "$SDL.tar.gz" "https://libsdl.org/release/$SDL.tar.gz"
+download "zstd-$ZSTD.tar.gz" "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz"
+download "lz4-$LZ4.tar.gz" "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz"
+download "libpng-$LIBPNG.tar.xz" "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
+download "libpng-$LIBPNG-apng.patch.gz" "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz"
+download "libjpeg-turbo-$LIBJPEGTURBO.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
+download "libwebp-$LIBWEBP.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz"
+download "ffmpeg-$FFMPEG.tar.xz" "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz"
+download "v$MOLTENVK.tar.gz" "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz"
+download "qtbase-everywhere-src-$QT.tar.xz" "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz"
+download "qtimageformats-everywhere-src-$QT.tar.xz" "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz"
+download "qtsvg-everywhere-src-$QT.tar.xz" "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz"
+download "qttools-everywhere-src-$QT.tar.xz" "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz"
+download "qttranslations-everywhere-src-$QT.tar.xz" "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz"
+download "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz"
+download "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz"
+download "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz"
+download "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz"
+download "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz"
+download "KDDockWidgets-$KDDOCKWIDGETS.tar.gz" "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz"
+download "plutovg-$PLUTOVG.tar.gz" "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz"
+download "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -127,7 +173,7 @@ if [ "$BUILD_FFMPEG" -ne 0 ]; then
 	rm -fr "ffmpeg-$FFMPEG"
 	tar xf "ffmpeg-$FFMPEG.tar.xz"
 	cd "ffmpeg-$FFMPEG"
-	LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
+	LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-O3 $CFLAGS" CXXFLAGS="-O3 $CXXFLAGS" \
 		./configure --prefix="$INSTALLDIR" \
 		--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' \
 		--disable-all --disable-autodetect --disable-static --enable-shared \
@@ -174,7 +220,7 @@ echo "Installing libjpegturbo..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 cd "libjpeg-turbo-$LIBJPEGTURBO"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build
+cmake "${CMAKE_COMMON[@]}" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -261,7 +307,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build "${CMAKE_COMMON[@]}" -DCMAKE_BUILD_TYPE=MinSizeRel -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake -B build "${CMAKE_COMMON[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -312,7 +358,7 @@ tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
 patch -p1 < "$SCRIPTDIR/../common/shaderc-changes.patch"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
+cmake "${CMAKE_COMMON[@]}" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
