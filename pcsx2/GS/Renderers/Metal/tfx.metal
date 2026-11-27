@@ -255,7 +255,9 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(cb.stereo_params.x) * eye_scale * eye_sign;
 
-		float depth = 1.0f - (float(z) * 0.00000000006f - cb.stereo_params.z * 0.0005f) * cb.stereo_params.y;
+		const float stereo_z = cb.stereo_depth.z > 0.5f ?
+			(cb.stereo_depth.z > 1.5f ? v.q : float(v.z)) * cb.stereo_depth.x + cb.stereo_depth.y : float(z);
+		float depth = 1.0f - (stereo_z * 0.00000000006f - cb.stereo_params.z * 0.0005f) * cb.stereo_params.y;
 		out.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
 		out.p.x *= 0.5f;

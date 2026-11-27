@@ -231,6 +231,13 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="stereoProjectionDepth">
+        <property name="text">
+         <string>Projection-aware stereo depth (experimental)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

@@ -913,6 +913,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoPackedIntegerReads) &&
 		OpEqu(StereoPackedEffectDepthFix) &&
 		OpEqu(StereoPackedMonoFullscreen) &&
+		OpEqu(StereoProjectionDepth) &&
 		OpEqu(StereoMode) &&
 		OpEqu(StereoDebugAction) &&
 		OpEqu(StereoDominantEye) &&
@@ -1390,6 +1391,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoPackedIntegerReads);
 	SettingsWrapEntry(StereoPackedEffectDepthFix);
 	SettingsWrapEntry(StereoPackedMonoFullscreen);
+	SettingsWrapEntry(StereoProjectionDepth);
 	SettingsWrapEnumEx(StereoMode, "StereoMode", StereoModeNames);
 	SettingsWrapEnumEx(StereoDebugAction, "StereoDebugAction", StereoDebugActionNames);
 	SettingsWrapEnumEx(StereoDominantEye, "StereoDominantEye", StereoDominantEyeNames);

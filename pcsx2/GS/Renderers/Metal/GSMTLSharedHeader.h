@@ -100,6 +100,7 @@ struct GSMTLMainVSUniform
 	uint max_depth;
 	float line_aa1_width;
 	vector_float4 stereo_params;
+	vector_float4 stereo_depth;
 };
 
 struct GSMTLMainPSUniform

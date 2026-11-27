@@ -943,6 +943,7 @@ struct Pcsx2Config
 		bool StereoPackedIntegerReads = true;
 		bool StereoPackedEffectDepthFix = false;
 		bool StereoPackedMonoFullscreen = true;
+		bool StereoProjectionDepth = false;
 		GSStereoDominantEye StereoDominantEye = GSStereoDominantEye::None;
 		float StereoSeparation = 20.0f;
 		float StereoConvergence = 20.0f;

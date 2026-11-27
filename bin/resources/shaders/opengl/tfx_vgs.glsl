@@ -16,6 +16,7 @@ layout(std140, binding = 1) uniform cb20
 	uint  MaxDepth;
 	float LineAA1Width;
 	vec4 StereoParams;
+	vec4 StereoDepth;
 };
 
 #ifdef VERTEX_SHADER
@@ -109,7 +110,9 @@ void vs_main()
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		float stereo_z = StereoDepth.z > 0.5f ?
+			(StereoDepth.z > 1.5f ? i_q : float(i_z)) * StereoDepth.x + StereoDepth.y : float(z);
+		float depth = 1.0f - (stereo_z * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		gl_Position.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
 		gl_Position.x *= 0.5f;
@@ -215,7 +218,9 @@ ProcessedVertex load_vertex(uint index)
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		float stereo_z = StereoDepth.z > 0.5f ?
+			(StereoDepth.z > 1.5f ? i_q : float(i_z)) * StereoDepth.x + StereoDepth.y : float(z);
+		float depth = 1.0f - (stereo_z * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		vtx.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
 		{

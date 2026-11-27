@@ -44,6 +44,7 @@ namespace
 		{"StereoSwapEyes", "Swap Eyes", "Stereo Output", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSeparation", "Separation", "Depth", Control::Number, 0, 100.0f, 0.1f, nullptr},
 		{"StereoConvergence", "Convergence", "Depth", Control::Number, 0, 1000.0f, 0.1f, nullptr},
+		{"StereoProjectionDepth", "Projection-aware stereo depth (experimental)", "Depth", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoUiDetectMode", "UI Detection Mode", "UI Detection", Control::Choice, 0, 3, 1, s_StereoUiDetectMode},
 		{"StereoUiDepth", "UI Depth", "UI Detection", Control::Number, -100, 50, 1, nullptr},
 		{"StereoUiSecondLayerDepth", "Second Layer Parallax", "UI Detection", Control::Number, -25, 25, 1, nullptr},

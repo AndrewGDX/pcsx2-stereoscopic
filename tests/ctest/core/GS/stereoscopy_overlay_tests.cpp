@@ -226,7 +226,7 @@ TEST(StereoscopyOverlay, ControlsMatchSerializedSettingsAndExcludeDebugFilters)
 			EXPECT_GT(setting.maximum, setting.minimum);
 	}
 	EXPECT_TRUE(debug_action);
-	EXPECT_EQ(seen.size(), 39u);
+	EXPECT_EQ(seen.size(), 40u);
 }
 
 TEST(StereoscopyOverlay, DisabledControlsFollowQtDependencies)

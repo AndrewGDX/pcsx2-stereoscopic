@@ -1036,6 +1036,7 @@ struct alignas(16) GSHWDrawConfig
 		u32 max_depth;
 		float line_aa1_width;
 		GSVector4 stereo_params;
+		GSVector4 stereo_depth;
 		__fi VSConstantBuffer()
 		{
 			memset(static_cast<void*>(this), 0, sizeof(*this));

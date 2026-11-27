@@ -6,6 +6,7 @@
 #include "GSTextureCache.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/Renderers/Common/GSRenderer.h"
+#include "GS/Renderers/Common/GSStereoProjection.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSState.h"
 #include "GS/MultiISA.h"
@@ -215,6 +216,8 @@ private:
 	void DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm);
 
 	void SubmitPackedDraw(GSTextureCache::Source* tex, float separation, float convergence, float screen_depth, bool mono = false);
+	GSStereoProjection::Key GetStereoProjectionKey() const;
+	GSVector4 GetStereoProjectionDepth(GSTextureCache::Source* tex);
 	bool IsPackedScreenVisibilityMask() const;
 	bool IsPackedScreenVisibilityRGBMask() const;
 
@@ -338,6 +341,7 @@ private:
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;
 	float m_stereo_ui_detect_threshold_cutoff = 0.0f;
+	GSStereoProjection::Tracker m_stereo_projection;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
 

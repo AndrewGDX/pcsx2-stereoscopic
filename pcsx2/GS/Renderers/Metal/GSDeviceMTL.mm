@@ -2296,6 +2296,7 @@ static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, texture_offset)   == of
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, point_size)       == offsetof(GSMTLMainVSUniform, point_size));
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, max_depth)        == offsetof(GSMTLMainVSUniform, max_depth));
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, stereo_params)    == offsetof(GSMTLMainVSUniform, stereo_params));
+static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, stereo_depth)     == offsetof(GSMTLMainVSUniform, stereo_depth));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FogColor_AREF.x)  == offsetof(GSMTLMainPSUniform, fog_color));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FogColor_AREF.a)  == offsetof(GSMTLMainPSUniform, aref));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, WH)               == offsetof(GSMTLMainPSUniform, wh));

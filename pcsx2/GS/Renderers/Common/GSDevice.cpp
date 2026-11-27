@@ -1885,6 +1885,8 @@ static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VS
 	DumpVector2(out, "point_size", cb.point_size);
 	out.WriteLn("max_depth: {}", cb.max_depth);
 	out.WriteLn("line_aa1_width: {}", cb.line_aa1_width);
+	DumpVector4(out, "stereo_params", cb.stereo_params);
+	DumpVector4(out, "stereo_depth", cb.stereo_depth);
 }
 
 static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,

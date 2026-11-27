@@ -1743,6 +1743,7 @@ cbuffer cb0
 	uint MaxDepth;
 	float LineAA1Width;
 	float4 StereoParams;
+	float4 StereoDepth;
 };
 
 #ifdef DX12
@@ -1760,6 +1761,7 @@ cbuffer cb2
 VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 {
 	// Clamp to max depth, gs doesn't wrap
+	const uint original_z = input.z;
 	input.z = min(input.z, MaxDepth);
 
 	VS_OUTPUT output;
@@ -1787,7 +1789,9 @@ VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 		else if (dominant_mode == 2)
 			eye_scale = (eye_sign > 0.0f) ? 0.0f : 2.0f;
 		float eye_sep = abs(StereoParams.x) * eye_scale * eye_sign;
-		float depth = 1.0f - (float(input.z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
+		float stereo_z = StereoDepth.z > 0.5f ?
+			(StereoDepth.z > 1.5f ? input.q : float(original_z)) * StereoDepth.x + StereoDepth.y : float(input.z);
+		float depth = 1.0f - (stereo_z * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		output.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
 		output.p.x *= 0.5f;

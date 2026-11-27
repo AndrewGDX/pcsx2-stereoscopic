@@ -93,6 +93,7 @@ float GSRendererHW::GetUpscaleMultiplier()
 
 void GSRendererHW::Reset(bool hardware_reset)
 {
+	m_stereo_projection.Reset();
 	// Read back on CSR Reset, conditional downloading on render swap etc handled elsewhere.
 	if (!hardware_reset)
 		g_texture_cache->ReadbackAll();
@@ -104,6 +105,8 @@ void GSRendererHW::Reset(bool hardware_reset)
 
 void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
+	if (old_config.StereoProjectionDepth != GSConfig.StereoProjectionDepth || old_config.StereoMode != GSConfig.StereoMode)
+		m_stereo_projection.Reset();
 	GSRenderer::UpdateSettings(old_config);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
@@ -159,6 +162,8 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 	m_skip_offset = 0;
 
 	GSRenderer::VSync(field, registers_written, idle_frame);
+	if (GSConfig.StereoProjectionDepth && GSConfig.StereoMode != GSStereoMode::Off && !idle_frame)
+		m_stereo_projection.EndFrame();
 }
 
 GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
@@ -2784,6 +2789,16 @@ void GSRendererHW::Draw()
 	m_cached_ctx.TEST = context->TEST;
 	m_cached_ctx.FRAME = context->FRAME;
 	m_cached_ctx.ZBUF = context->ZBUF;
+
+	if (GSConfig.StereoProjectionDepth && GSConfig.StereoMode != GSStereoMode::Off)
+	{
+		// Optimized clears may never reach DrawPrims. Invalidate inheritance here,
+		// retaining the learned reference across the game's depth-buffer clears.
+		if (m_cached_ctx.DepthWrite() && m_cached_ctx.TEST.ZTST == ZTST_ALWAYS)
+			m_stereo_projection.InvalidateDepth(m_cached_ctx.ZBUF.Block());
+		else if (m_vt.m_primclass != GS_TRIANGLE_CLASS || !m_cached_ctx.DepthRead())
+			m_stereo_projection.Invalidate(GetStereoProjectionKey());
+	}
 
 	if (IsBadFrame())
 	{
@@ -9517,6 +9532,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
+	const GSVector4 stereo_projection_depth = GetStereoProjectionDepth(tex);
 	HandleFlatShadedVertices();
 
 	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);
@@ -9538,6 +9554,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		g_gs_device->BeginDSAsRT(m_conf.ds, m_conf.drawarea);
 	}
 	m_conf.cb_vs.stereo_params = GSVector4::zero();
+	m_conf.cb_vs.stereo_depth = GSVector4::zero();
 	m_conf.cb_ps.StereoRemap = GSVector4(0.0f, 0.0f, -1.0f, 0.0f);
 	m_conf.cb_ps.StereoClipParams = GSVector4::zero();
 	m_conf.cb_ps.StereoScissorLeft = GSVector4::zero();
@@ -10297,6 +10314,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			}
 
 			float separation;
+			if (!ui_detect)
+				m_conf.cb_vs.stereo_depth = stereo_projection_depth;
 			if (sbs_remap_fix && m_cached_ctx.TEST.ZTST != ZTST_GEQUAL && m_cached_ctx.TEST.ZTST != ZTST_GREATER)
 			{
 			    separation = 0.000000001f;
@@ -10354,6 +10373,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				m_conf.cb_ps.StereoScissorRight = GSVector4(static_cast<float>(right_scissor.x), static_cast<float>(right_scissor.y), static_cast<float>(right_scissor.z), static_cast<float>(right_scissor.w));
 				m_conf.cb_ps.StereoDrawLeft = GSVector4(static_cast<float>(left_drawarea.x), static_cast<float>(left_drawarea.y), static_cast<float>(left_drawarea.z), static_cast<float>(left_drawarea.w));
 				m_conf.cb_ps.StereoDrawRight = GSVector4(static_cast<float>(right_drawarea.x), static_cast<float>(right_drawarea.y), static_cast<float>(right_drawarea.z), static_cast<float>(right_drawarea.w));
+				if (GSConfig.SaveHWConfig && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+					GSHWDrawConfig::DumpConfig(GetDrawDumpPath("%05d_hwconfig.txt", s_n), m_conf);
 				g_gs_device->RenderHW(m_conf);
 			}
 		}
@@ -10374,6 +10395,59 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	if (g_gs_device->IsDSInRTActive())
 		g_gs_device->EndDSAsRT();
+}
+
+GSStereoProjection::Key GSRendererHW::GetStereoProjectionKey() const
+{
+	const GSVector4i& scissor = m_context->scissor.in;
+	return {m_context->ZBUF.Block(), m_context->ZBUF.PSM, m_context->FRAME.FBW,
+		{scissor.x, scissor.y, scissor.z, scissor.w}};
+}
+
+GSVector4 GSRendererHW::GetStereoProjectionDepth(GSTextureCache::Source* tex)
+{
+	if (!GSConfig.StereoProjectionDepth || GSConfig.StereoMode == GSStereoMode::Off)
+		return GSVector4::zero();
+
+	const GSStereoProjection::Key key = GetStereoProjectionKey();
+	// Screen-image copies already contain disparity and cannot train the scene.
+	// A varying-Q mesh can still use a target-backed material (including textures
+	// converted by GS draws), so framebuffer provenance alone is not a rejection.
+	const bool screen_image = tex && tex->IsFromTarget() &&
+		(PRIM->FST || m_vt.m_eq.q || m_conf.ps.tex_is_fb);
+	// Depth-only and alpha-mask passes must move with their color geometry;
+	// different disparity corrupts later depth/coverage tests. (AI-assisted)
+	// Other games' depth-prepass pipelines still need proper testing. (AI-assisted)
+	const bool has_output = m_conf.colormask.wrgba || m_conf.depth.zwe ||
+	                        (m_conf.alpha_second_pass.enable && (m_conf.alpha_second_pass.colormask.wrgba || m_conf.alpha_second_pass.depth.zwe));
+	if (m_vt.m_primclass != GS_TRIANGLE_CLASS || !m_cached_ctx.DepthRead() || m_vt.m_eq.z ||
+		m_channel_shuffle || m_texture_shuffle || m_conf.ps.channel ||
+		!has_output || screen_image)
+	{
+		m_stereo_projection.Invalidate(key);
+		return GSVector4::zero();
+	}
+
+	std::optional<GSStereoProjection::Transform> transform;
+	if (PRIM->TME && !PRIM->FST)
+	{
+		std::array<GSStereoProjection::Sample, 64> samples;
+		const u32 count = std::min<u32>(m_index->tail, samples.size());
+		for (u32 i = 0; i < count; i++)
+		{
+			const u32 index = count > 1 ? static_cast<u32>(static_cast<u64>(i) * (m_index->tail - 1) / (count - 1)) : 0;
+			const GSVertex& v = m_vertex->buff[m_index->buff[index]];
+			samples[i] = {v.RGBAQ.Q, static_cast<double>(v.XYZ.Z)};
+		}
+		transform = m_stereo_projection.Resolve(key, std::span(samples.data(), count));
+	}
+	else
+	{
+		// Untextured material/fog passes and fixed-UV companions retain the last
+		// proven mapping for this depth target, until a clear or unrelated draw.
+		transform = m_stereo_projection.Inherit(key);
+	}
+	return transform ? GSVector4(transform->scale, transform->bias, transform->use_q ? 2.0f : 1.0f, 0.0f) : GSVector4::zero();
 }
 
 bool GSRendererHW::IsPackedScreenVisibilityMask() const
@@ -10466,6 +10540,7 @@ void GSRendererHW::SubmitPackedDraw(GSTextureCache::Source* tex, float separatio
 	const bool visibility_mask = IsPackedScreenVisibilityMask() || IsPackedScreenVisibilityRGBMask();
 	if (mono || image_effect || overlay || visibility_mask)
 	{
+		m_conf.cb_vs.stereo_depth = GSVector4::zero();
 		separation = 0.0f;
 		convergence = 0.0f;
 		screen_depth = 0.0f;
@@ -10498,6 +10573,9 @@ void GSRendererHW::SubmitPackedDraw(GSTextureCache::Source* tex, float separatio
 		m_conf.cb_ps.StereoClipParams = GSVector4(1.0f, 1.0f, 0.0f, 0.0f);
 		m_conf.cb_ps.StereoScissorLeft = GSVector4(left_scissor);
 		m_conf.cb_ps.StereoScissorRight = GSVector4(right_scissor);
+		// Dump the final stereo uniforms, including policies which suppress depth.
+		if (GSConfig.SaveHWConfig && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+			GSHWDrawConfig::DumpConfig(GetDrawDumpPath("%05d_hwconfig.txt", s_n), m_conf);
 		g_gs_device->RenderHW(m_conf);
 		const GSVector4i colclip_area = m_conf.colclip_update_area;
 		m_conf = logical;
