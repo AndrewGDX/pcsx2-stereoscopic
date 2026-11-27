@@ -6,6 +6,10 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QLabel>
 
 #include "pcsx2/Host.h"
 #include "pcsx2/Patch.h"
@@ -115,6 +119,35 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_hw.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.enableHWFixes, "EmuCore/GS", "UserHacks", false);
+	// Packed rendering options precede the existing stereo controls.
+	{
+		auto* group = new QGroupBox(tr("Improved packed renderer"), m_hardware_rendering_tab);
+		group->setObjectName(QStringLiteral("stereoPackedRenderer"));
+		auto* grid = new QGridLayout(group);
+		auto* explanation = new QLabel(tr("Both eyes share one texture with automatic eye-aware sampling and transfers. Options can be overridden per game."), group);
+		explanation->setWordWrap(true);
+		grid->addWidget(explanation, 0, 0, 1, 2);
+		struct Option { const char* key; const char* label; const char* help; bool value; };
+		const Option options[] = {
+			{"StereoPackedEnable", QT_TR_NOOP("Enable improved packed renderer"), QT_TR_NOOP("Keep both eyes in one texture, automatically preserving each eye through sampling, uploads, copies, resizing, and readback. Uncheck to use the original stereo path."), true},
+			{"StereoPackedIntegerReads", QT_TR_NOOP("Remap integer / depth / region reads"), QT_TR_NOOP("Resolve raw texture, depth, and region reads into the matching eye. Requires the improved packed renderer."), true},
+			{"StereoPackedMonoFullscreen", QT_TR_NOOP("Keep flat fullscreen overlays at screen depth"), QT_TR_NOOP("Suppress geometry disparity for full-coverage screen sprites, including layers that retain depth testing. Requires the improved packed renderer."), true},
+			{"StereoPackedEffectDepthFix", QT_TR_NOOP("Fix framebuffer effect depth"), QT_TR_NOOP("Keep framebuffer-image effects at screen depth while preserving world depth for fixed-UV and varying-Q meshes. May break effects in some games; enable per game as needed. Requires the improved packed renderer."), false},
+		};
+		int i = 0;
+		for (const Option& option : options)
+		{
+			auto* check = new QCheckBox(tr(option.label), group);
+			check->setObjectName(QString::fromUtf8(option.key));
+			check->setToolTip(tr(option.help));
+			SettingWidgetBinder::BindWidgetToBoolSetting(sif, check, "EmuCore/GS", option.key, option.value);
+			connect(check, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePackedStereoOptions);
+			grid->addWidget(check, 1 + i / 2, i % 2);
+			i++;
+		}
+		m_hw.stereoscopicFormLayout->insertRow(0, group);
+		m_packed_stereo_group = group;
+	}
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_hw.stereoscopicMode, "EmuCore/GS", "StereoMode",
 		Pcsx2Config::GSOptions::StereoModeNames, GSStereoMode::SideBySide);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_hw.stereoDominantEye, "EmuCore/GS", "StereoDominantEye",
@@ -1480,7 +1513,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_hw.stereoRejectFst, tr("Reject Fixed ST"), tr("Unchecked"),
 			tr("Disable stereoscopy when fixed texture coordinates are used (Gran Turismo 4, Need for Speed series)"));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows1, tr("Fix Stencil Shadows"), tr("Unchecked"),
-			tr("Disable stereoscopy for stencil shadow passes (Tekken 5, Soul Calibur 3)"));
+			tr("Disable stereoscopy for stencil shadow passes (Tekken 5, Soul Calibur 3). With the improved packed renderer enabled, also duplicate legacy mono draws into both eyes."));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows2, tr("Stencil Shadows 2"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for specific titles."));
 		dialog()->registerWidgetHelp(m_hw.stereoFixStencilShadows3, tr("Stencil Shadows 3"), tr("Unchecked"),
@@ -2198,6 +2231,20 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 		for (int i = start_index + 1; i < m_hw.stereoMonoObjectLayout->count(); ++i)
 			set_checkbox_enabled(m_hw.stereoMonoObjectLayout->itemAt(i), set_checkbox_enabled);
 	}
+
+	updatePackedStereoOptions();
+}
+
+// Preserve saved option values while their packed-renderer path is inactive.
+void GraphicsSettingsWidget::updatePackedStereoOptions()
+{
+	if (!m_packed_stereo_group)
+		return;
+
+	const bool stereo = dialog()->getEffectiveStringValue("EmuCore/GS", "StereoMode", "Side by Side") != "Off";
+	const bool packed = stereo && dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoPackedEnable", true);
+	for (QCheckBox* check : m_packed_stereo_group->findChildren<QCheckBox*>())
+		check->setEnabled(check->objectName() == QStringLiteral("StereoPackedEnable") ? stereo : packed);
 }
 
 void GraphicsSettingsWidget::onMessagesPosChanged()

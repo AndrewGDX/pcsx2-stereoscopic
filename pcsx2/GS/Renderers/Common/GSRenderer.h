@@ -7,6 +7,17 @@
 #include <memory>
 #include <string>
 
+static __fi bool IsPackedStereoEnabled()
+{
+	return GSConfig.StereoPackedEnable && GSConfig.StereoMode != GSStereoMode::Off;
+}
+
+static __fi GSPackedStereo::Axis GetPackedStereoAxis()
+{
+	return !IsPackedStereoEnabled() ? GSPackedStereo::Axis::None :
+		(GSConfig.StereoFlipRendering ? GSPackedStereo::Axis::Vertical : GSPackedStereo::Axis::Horizontal);
+}
+
 static __fi GSVector2 GetStereoScaleVector2()
 {
 	if (GSConfig.StereoMode == GSStereoMode::Off || GSConfig.StereoDisableCorrectSbsFramebufferSize)

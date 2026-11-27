@@ -59,6 +59,7 @@ private Q_SLOTS:
 	void onUiDepthChanged();
 	void onUiSecondLayerDepthChanged();
 	void onUiDetectThresholdChanged();
+	void updatePackedStereoOptions();
 
 private:
 	GSRendererType getEffectiveRenderer() const;
@@ -84,4 +85,5 @@ private:
 	QWidget* m_upscaling_fixes_tab = nullptr;
 	QWidget* m_texture_replacement_tab = nullptr;
 	QWidget* m_advanced_tab = nullptr;
+	QGroupBox* m_packed_stereo_group = nullptr;
 };

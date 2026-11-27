@@ -142,6 +142,8 @@ struct GSMTLMainPSUniform
 	vector_float4 stereo_scissor_right;
 	vector_float4 stereo_draw_left;
 	vector_float4 stereo_draw_right;
+	vector_float4 stereo_source;
+	vector_float4 stereo_target;
 };
 
 enum GSMTLAttributes

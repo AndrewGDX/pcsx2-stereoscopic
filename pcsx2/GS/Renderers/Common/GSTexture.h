@@ -4,6 +4,7 @@
 #pragma once
 
 #include "GS/GSVector.h"
+#include "GS/Renderers/Common/GSPackedStereo.h"
 
 #include <string>
 #include <string_view>
@@ -64,6 +65,7 @@ protected:
 	Type m_type = Type::Invalid;
 	Format m_format = Format::Invalid;
 	State m_state = State::Dirty;
+	GSPackedStereo::Axis m_packed_stereo_axis = GSPackedStereo::Axis::None;
 
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge
@@ -94,6 +96,22 @@ public:
 	__fi int GetHeight() const { return m_size.y; }
 	__fi const GSVector2i& GetSize() const { return m_size; }
 	__fi GSVector4i GetRect() const { return GSVector4i::loadh(m_size); }
+	__fi GSPackedStereo::Axis GetPackedStereoAxis() const { return m_packed_stereo_axis; }
+	__fi bool IsPackedStereo() const { return m_packed_stereo_axis != GSPackedStereo::Axis::None; }
+	__fi void SetPackedStereoAxis(GSPackedStereo::Axis axis) { m_packed_stereo_axis = axis; }
+	GSVector4 PackedStereoPixels(const GSVector4& r, unsigned eye) const
+	{
+		const auto v = GSPackedStereo::Pixels({r.x, r.y, r.z, r.w}, m_packed_stereo_axis,
+			static_cast<float>(m_size.x), static_cast<float>(m_size.y), eye);
+		return GSVector4(v.x, v.y, v.z, v.w);
+	}
+	GSVector4 PackedStereoUV(const GSVector4& r, unsigned eye, bool clamp = false) const
+	{
+		auto v = GSPackedStereo::UV({r.x, r.y, r.z, r.w}, m_packed_stereo_axis, eye);
+		if (clamp && IsPackedStereo())
+			v = GSPackedStereo::ClampUV(v, m_packed_stereo_axis, static_cast<float>(m_size.x), static_cast<float>(m_size.y), eye);
+		return GSVector4(v.x, v.y, v.z, v.w);
+	}
 
 	__fi int GetMipmapLevels() const { return m_mipmap_levels; }
 	__fi bool IsMipmap() const { return m_mipmap_levels > 1; }

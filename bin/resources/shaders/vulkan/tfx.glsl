@@ -68,7 +68,7 @@ void main()
 	if (base_mode > 0)
 	{
 		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -81,7 +81,8 @@ void main()
 		if (base_mode == 2 || base_mode == 4)
 		{
 			gl_Position.y *= 0.5f;
-			gl_Position.y -= eye_sign * 0.5f;
+			// The positive Vulkan viewport maps NDC -1 to the first eye's rows.
+			gl_Position.y += eye_sign * 0.5f;
 		}
 		else
 		{
@@ -178,7 +179,7 @@ ProcessedVertex load_vertex(uint index)
 	if (base_mode > 0)
 	{
 		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_sign = stereo_instanced ? ((gl_InstanceIndex & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -191,7 +192,7 @@ ProcessedVertex load_vertex(uint index)
 		if (base_mode == 2 || base_mode == 4)
 		{
 			vtx.p.y *= 0.5f;
-			vtx.p.y -= eye_sign * 0.5f;
+			vtx.p.y += eye_sign * 0.5f;
 		}
 		else
 		{
@@ -403,6 +404,8 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	vec4 StereoScissorRight;
 	vec4 StereoDrawLeft;
 	vec4 StereoDrawRight;
+	vec4 StereoSource;
+	vec4 StereoTarget;
 };
 
 layout(location = 0) in VSOutput
@@ -451,12 +454,59 @@ layout(depth_less) out float gl_FragDepth;
 
 #if NEEDS_TEX
 
+
+// All packed shader reads use explicit eye-local or screen coordinates.
+float packed_eye()
+{
+    return StereoTarget.w >= 0.0 ? StereoTarget.w : (vsIn.stereo_eye > 0.0 ? 1.0 : 0.0);
+}
+
+vec2 packed_origin(vec4 image)
+{
+    float eye = packed_eye();
+    return image.z < 1.5 ? vec2(eye * image.x * 0.5, 0.0) : vec2(0.0, eye * image.y * 0.5);
+}
+
+ivec2 packed_texel(ivec2 p, bool screen_position)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
+        return p;
+    vec2 origin = packed_origin(StereoSource);
+    vec2 extent = StereoSource.xy * (StereoSource.z < 1.5 ? vec2(0.5, 1.0) : vec2(1.0, 0.5));
+    vec2 local = vec2(p);
+    if (screen_position)
+        local -= packed_origin(StereoTarget);
+    vec2 physical = local + origin;
+    if ((flags & 4u) != 0u)
+        physical = clamp(physical, origin, max(origin, origin + extent - vec2(1.0, 1.0)));
+    return ivec2(physical);
+}
+
+vec2 packed_uv(vec2 uv)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & 1u) == 0u)
+        return uv;
+    if ((flags & 16u) != 0u) uv.x = fract(uv.x);
+    if ((flags & 32u) != 0u) uv.y = fract(uv.y);
+    vec2 extent = StereoSource.z < 1.5 ? vec2(0.5, 1.0) : vec2(1.0, 0.5);
+    vec2 origin = packed_origin(StereoSource) / StereoSource.xy;
+    uv = uv * extent + origin;
+    if ((flags & 4u) != 0u)
+    {
+        vec2 half_texel = vec2(0.5, 0.5) / StereoSource.xy;
+        uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
+    }
+    return uv;
+}
+
 vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
 #elif PS_REGION_RECT
-	return texelFetch(Texture, ivec2(uv), 0);
+	return texelFetch(Texture, packed_texel(ivec2(uv), false), 0);
 #else
 
 #if !PS_ADJS && !PS_ADJT
@@ -474,6 +524,10 @@ vec4 sample_c(vec2 uv)
 	#endif
 #endif
 
+	if (StereoSource.z > 0.5)
+		uv = packed_uv(uv);
+	else
+	{
 	bool use_forced_eye = (StereoRemap.z >= 0.0f);
 	if (StereoRemap.x > 0.5f && (use_forced_eye || vsIn.stereo_eye != 0.0f))
 	{
@@ -482,6 +536,8 @@ vec4 sample_c(vec2 uv)
 			uv.y = uv.y * 0.5f + eye_index * 0.5f;
 		else
 			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
+
 	}
 
 #if PS_AUTOMATIC_LOD == 1
@@ -655,7 +711,7 @@ int fetch_raw_depth(ivec2 xy)
 #if PS_TEX_IS_FB
 	vec4 col = sample_from_rt();
 #else
-	vec4 col = texelFetch(Texture, xy, 0);
+	vec4 col = texelFetch(Texture, packed_texel(xy, true), 0);
 #endif
 	return int(col.r * exp2(32.0f));
 }
@@ -665,7 +721,7 @@ vec4 fetch_raw_color(ivec2 xy)
 #if PS_TEX_IS_FB
 	return sample_from_rt();
 #else
-	return texelFetch(Texture, xy, 0);
+	return texelFetch(Texture, packed_texel(xy, true), 0);
 #endif
 }
 
@@ -674,7 +730,7 @@ vec4 fetch_c(ivec2 uv)
 #if PS_TEX_IS_FB
 	return sample_from_rt();
 #else
-	return texelFetch(Texture, uv, 0);
+	return texelFetch(Texture, packed_texel(uv, false), 0);
 #endif
 }
 
@@ -1346,8 +1402,8 @@ void main()
 		{
 			if (vsIn.stereo_axis > 0.5f)
 			{
-				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.y < 0.0f) ||
-					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.y > 0.0f))
+				if ((vsIn.stereo_eye < 0.0f && vsIn.stereo_pos.y > 0.0f) ||
+					(vsIn.stereo_eye > 0.0f && vsIn.stereo_pos.y < 0.0f))
 					discard;
 			}
 			else

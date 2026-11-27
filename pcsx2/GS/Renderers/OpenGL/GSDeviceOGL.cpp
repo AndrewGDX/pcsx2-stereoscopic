@@ -1829,7 +1829,10 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY, linear);
+		DrawMergeRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], linear,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				StretchRect(sTex[1], src_rect, dTex, dst_rect, ShaderConvert::COPY, linear);
+			});
 	}
 
 	// Upload constant to select YUV algo
@@ -1842,7 +1845,10 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 
 	// Save 2nd output
 	if (feedback_write_2)
-		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, linear);
+		DrawMergeRect(dTex, full_r, sTex[2], dRect[2], linear,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				StretchRect(dTex, src_rect, sTex[2], dst_rect, ShaderConvert::YUV, linear);
+			});
 
 	// Restore background color to process the normal merge
 	if (feedback_write_2_but_blend_bg)
@@ -1859,17 +1865,26 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 			// Blend with a constant alpha
 			m_merge_obj.ps[1].Bind();
 			m_merge_obj.ps[1].Uniform4fv(0, GSVector4::unorm8(c).v);
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], true, OMColorMaskSelector(), linear);
+			DrawMergeRect(sTex[0], sRect[0], dTex, dRect[0], linear,
+				[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+					DoStretchRect(sTex[0], src_rect, dTex, dst_rect, m_merge_obj.ps[1], true, OMColorMaskSelector(), linear);
+				});
 		}
 		else
 		{
 			// Blend with 2 * input alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], true, OMColorMaskSelector(), linear);
+			DrawMergeRect(sTex[0], sRect[0], dTex, dRect[0], linear,
+				[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+					DoStretchRect(sTex[0], src_rect, dTex, dst_rect, m_merge_obj.ps[0], true, OMColorMaskSelector(), linear);
+				});
 		}
 	}
 
 	if (feedback_write_1)
-		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, linear);
+		DrawMergeRect(dTex, full_r, sTex[2], dRect[2], linear,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				StretchRect(dTex, src_rect, sTex[2], dst_rect, ShaderConvert::YUV, linear);
+			});
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)

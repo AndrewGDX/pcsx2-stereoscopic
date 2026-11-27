@@ -3254,7 +3254,10 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			SetUtilityTexture(sTex[1], sampler);
 			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)]);
-			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
+			DrawMergeRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], linear,
+				[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+					DrawStretchRect(src_rect, dst_rect, dsize);
+				});
 			dTex->SetState(GSTexture::State::Dirty);
 			dcleared = true;
 		}
@@ -3275,7 +3278,10 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		{
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
 			SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
-			DrawStretchRect(full_r, dRect[2], fbsize);
+			DrawMergeRect(dTex, full_r, sTex[2], dRect[2], linear,
+				[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+					DrawStretchRect(src_rect, dst_rect, fbsize);
+				});
 		}
 		EndRenderPass();
 
@@ -3306,7 +3312,10 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityTexture(sTex[0], sampler);
 		SetPipeline(m_merge[PMODE.MMOD]);
 		SetUtilityPushConstants(&bg_color, sizeof(bg_color));
-		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
+		DrawMergeRect(sTex[0], sRect[0], dTex, dRect[0], linear,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				DrawStretchRect(src_rect, dst_rect, dsize);
+			});
 	}
 
 	if (feedback_write_1)
@@ -3317,7 +3326,10 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
 		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		BeginRenderPass(m_utility_color_render_pass_load, fbarea);
-		DrawStretchRect(full_r, dRect[2], dsize);
+		DrawMergeRect(dTex, full_r, sTex[2], dRect[2], linear,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				DrawStretchRect(src_rect, dst_rect, dTex->IsPackedStereo() ? fbsize : dsize);
+			});
 	}
 
 	EndRenderPass();
@@ -5935,7 +5947,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (BindDrawPipeline(pipe))
 		{
 			// TODO: This probably should have barriers, in case we want to use it conditionally.
-			DrawIndexedPrimitive();
+			DrawIndexedPrimitive(config.instance_count);
 		}
 	}
 

@@ -767,6 +767,16 @@ void GSgetTitleStats(std::string& info)
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 {
+	const bool packed_layout_changed =
+		GSConfig.StereoPackedEnable != new_config.StereoPackedEnable ||
+		GSConfig.StereoMode != new_config.StereoMode ||
+		GSConfig.StereoFlipRendering != new_config.StereoFlipRendering ||
+		GSConfig.StereoDisableCorrectSbsFramebufferSize != new_config.StereoDisableCorrectSbsFramebufferSize;
+	// Download with the OLD coordinate convention before changing atlas layout.
+	// GS local memory has one image, so this preserves the canonical eye.
+	if (g_gs_renderer && GSIsHardwareRenderer() && packed_layout_changed)
+		g_gs_renderer->ReadbackTextureCache();
+
 	Pcsx2Config::GSOptions old_config(std::move(GSConfig));
 	GSConfig = new_config;
 	if (!g_gs_renderer)
@@ -826,6 +836,15 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	{
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			g_gs_renderer->ReadbackTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, true, true);
+		g_gs_device->ClearCurrent();
+		g_gs_device->PurgePool();
+	}
+
+	// Only layout changes invalidate existing surfaces. Sampling, classification,
+	// and logging switches take effect on subsequent draws without losing targets.
+	if (packed_layout_changed)
+	{
 		g_gs_renderer->PurgeTextureCache(true, true, true);
 		g_gs_device->ClearCurrent();
 		g_gs_device->PurgePool();
