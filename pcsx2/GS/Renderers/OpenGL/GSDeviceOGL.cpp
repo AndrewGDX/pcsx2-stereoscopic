@@ -1359,7 +1359,7 @@ void GSDeviceOGL::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_in
 	if (vs_indexing)
 	{
 		VSSetPushConstants(m_vertex.start, m_index.start + offset);
-		glDrawArrays(m_draw_topology, 0, count * vs_indexing_expansion, config.instance_count);
+		glDrawArraysInstanced(m_draw_topology, 0, count * vs_indexing_expansion, instance_count);
 	}
 	else
 	{

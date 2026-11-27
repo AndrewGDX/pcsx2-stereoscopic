@@ -707,6 +707,9 @@
     <QtUi Include="Settings\GraphicsSoftwareRenderingSettingsTab.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\GraphicsStereoscopySettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\GraphicsTextureReplacementSettingsTab.ui">
       <Filter>Settings</Filter>
     </QtUi>

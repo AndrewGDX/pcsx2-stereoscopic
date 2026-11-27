@@ -258,6 +258,7 @@
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp" />
     <ClCompile Include="ImGui\ImGuiManager.cpp" />
     <ClCompile Include="ImGui\ImGuiOverlays.cpp" />
+    <ClCompile Include="ImGui\StereoscopyOverlay.cpp" />
     <ClCompile Include="INISettingsInterface.cpp" />
     <ClCompile Include="GameDatabase.cpp" />
     <ClCompile Include="Gif_Logger.cpp" />
@@ -706,6 +707,7 @@
     <ClInclude Include="ImGui\ImGuiFullscreen.h" />
     <ClInclude Include="ImGui\ImGuiManager.h" />
     <ClInclude Include="ImGui\ImGuiOverlays.h" />
+    <ClInclude Include="ImGui\StereoscopyOverlay.h" />
     <ClInclude Include="INISettingsInterface.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />

@@ -1349,6 +1349,9 @@
     <ClCompile Include="ImGui\ImGuiOverlays.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\StereoscopyOverlay.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="ImGui\FullscreenUI.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
@@ -2305,6 +2308,9 @@
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\ImGuiOverlays.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\StereoscopyOverlay.h">
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\FullscreenUI.h">
