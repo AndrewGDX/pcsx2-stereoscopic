@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "ImGui/StereoscopyOverlay.h"
 #include "Input/InputManager.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadDualshock2.h"
@@ -215,6 +216,9 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 
 void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 {
+	si.SetStringList("Hotkeys", StereoscopyOverlay::HOTKEY,
+		{"Keyboard/Control & Keyboard/Shift & Keyboard/F1", StereoscopyOverlay::PAD_CHORD});
+	si.SetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", true);
 	// PCSX2 Controller Settings - Hotkeys
 
 	// PCSX2 Controller Settings - Hotkeys - General
@@ -543,8 +547,28 @@ PadBase* Pad::GetPad(const u8 unifiedSlot)
 	return s_controllers[unifiedSlot].get();
 }
 
+void Pad::ClearInputState()
+{
+	for (u32 port = 0; port < NUM_CONTROLLER_PORTS; port++)
+	{
+		if (s_controllers[port])
+			for (const InputBindingInfo& binding : s_controllers[port]->GetInfo().bindings)
+				if (binding.bind_type == InputBindingInfo::Type::Button || binding.bind_type == InputBindingInfo::Type::Axis || binding.bind_type == InputBindingInfo::Type::HalfAxis)
+					s_controllers[port]->Set(binding.bind_index, 0.0f);
+		for (MacroButton& macro : s_macro_buttons[port])
+		{
+			macro.active_buttons.clear();
+			macro.trigger_state = false;
+			macro.toggle_state = false;
+			macro.toggle_counter = 0;
+		}
+	}
+}
+
 void Pad::SetControllerState(u32 controller, u32 bind, float value)
 {
+	if (StereoscopyOverlay::IsOpen())
+		value = 0.0f;
 	if (controller >= NUM_CONTROLLER_PORTS)
 		return;
 
@@ -730,10 +754,9 @@ void Pad::SetMacroButtonState(InputBindingKey& key, u32 pad, u32 index, bool sta
 void Pad::ApplyMacroButton(u32 controller, const Pad::MacroButton& mb)
 {
 	const float value = mb.toggle_state ? mb.pressure : 0.0f;
-	PadBase* const pad = Pad::GetPad(controller);
 
 	for (const u32 btn : mb.buttons)
-		pad->Set(btn, value);
+		Pad::SetControllerState(controller, btn, value);
 }
 
 void Pad::UpdateMacroButtons()

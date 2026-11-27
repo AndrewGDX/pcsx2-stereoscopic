@@ -23,6 +23,7 @@
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
+#include "pcsx2/ImGui/StereoscopyOverlay.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiFullscreen.h"
@@ -1393,6 +1394,12 @@ bool QtHost::InitializeConfig()
 		// Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
 		if (!s_run_setup_wizard)
 			SaveSettings();
+	}
+
+	if (!s_base_settings_interface->GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false))
+	{
+		StereoscopyOverlay::MigrateHotkey(*s_base_settings_interface);
+		SaveSettings();
 	}
 
 	// Layer secrets ini on top

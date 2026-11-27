@@ -4,6 +4,7 @@
 #include "Achievements.h"
 #include "GS.h"
 #include "Host.h"
+#include "ImGui/StereoscopyOverlay.h"
 #include "IconsFontAwesome.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiOverlays.h"
@@ -152,6 +153,11 @@ DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANS
 	[](s32 pressed) {
 		if (!pressed)
 			Host::SetFullscreen(!Host::IsFullscreen());
+	})
+DEFINE_HOTKEY("ToggleStereoscopyOverlay", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+	TRANSLATE_NOOP("Hotkeys", "Toggle Stereoscopy Overlay"), [](s32 pressed) {
+		if (pressed == 1)
+			StereoscopyOverlay::Toggle();
 	})
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
 	[](s32 pressed) {

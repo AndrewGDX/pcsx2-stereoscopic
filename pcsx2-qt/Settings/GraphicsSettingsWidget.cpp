@@ -13,6 +13,7 @@
 #include <QtCore/QSignalBlocker>
 
 #include "pcsx2/Host.h"
+#include "pcsx2/ImGui/StereoscopyOverlay.h"
 #include "pcsx2/Patch.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
@@ -70,6 +71,26 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	m_hardware_rendering_tab = setupTab(m_hw, tr("Rendering"));
 	m_software_rendering_tab = setupTab(m_sw, tr("Rendering"));
 	m_stereoscopy_tab = setupTab(m_stereo, tr("Stereoscopy"));
+	// Overlay placement is a frontend preference, independent of per-game GS settings. (AI-assisted)
+	{
+		auto* group = new QGroupBox(tr("In-game Overlay"), m_stereoscopy_tab);
+		auto* layout = new QGridLayout(group);
+		auto* position = new QComboBox(group);
+		for (const char* name : StereoscopyOverlay::POSITIONS)
+			position->addItem(tr(name));
+		position->setObjectName(QStringLiteral("stereoscopyOverlayPosition"));
+		const std::string current = Host::GetBaseStringSettingValue("UI", StereoscopyOverlay::POSITION_KEY, "Left");
+		for (int i = 0; i < static_cast<int>(std::size(StereoscopyOverlay::POSITIONS)); i++)
+			if (current == StereoscopyOverlay::POSITIONS[i])
+				position->setCurrentIndex(i);
+		layout->addWidget(new QLabel(tr("Overlay position:"), group), 0, 0);
+		layout->addWidget(position, 0, 1);
+		m_stereo.stereoscopyLayout->insertWidget(1, group);
+		connect(position, &QComboBox::currentIndexChanged, this, [](int index) {
+			Host::SetBaseStringSettingValue("UI", StereoscopyOverlay::POSITION_KEY, StereoscopyOverlay::POSITIONS[index]);
+			Host::CommitBaseSettingChanges();
+		});
+	}
 	// Show stereoscopy descriptions in the help panel instead of popup tooltips (AI-assisted).
 	for (QCheckBox* check : m_stereoscopy_tab->findChildren<QCheckBox*>())
 	{

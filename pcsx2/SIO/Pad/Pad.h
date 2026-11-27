@@ -65,6 +65,7 @@ namespace Pad
 
 	// Sets the specified bind on a controller to the specified pressure (normalized to 0..1).
 	void SetControllerState(u32 controller, u32 bind, float value);
+	void ClearInputState();
 
 	bool Freeze(StateWrapper& sw);
 

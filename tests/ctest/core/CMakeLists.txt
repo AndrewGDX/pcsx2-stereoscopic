@@ -1,6 +1,7 @@
 add_pcsx2_test(core_test
 	patch_tests.cpp
 	GS/stereoscopy_tests.cpp
+	GS/stereoscopy_overlay_tests.cpp
 	MockMemoryInterface.h
 	StubHost.cpp
 )

@@ -18,6 +18,8 @@ public:
 
 	const std::string& GetFileName() const { return m_filename; }
 	bool IsDirty() const { return m_dirty; }
+	// Use when another writer owns persistence, so destruction cannot autosave stale data. (AI-assisted)
+	void ClearDirtyFlag() { m_dirty = false; }
 
 	bool Load();
 	bool Save(Error* error = nullptr) override;

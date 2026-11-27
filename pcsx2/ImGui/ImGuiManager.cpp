@@ -6,6 +6,7 @@
 #include "Counters.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "ImGui/StereoscopyOverlay.h"
 #include "IconsFontAwesome.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
@@ -1069,6 +1070,7 @@ void ImGuiManager::RenderOSD()
 		DrawOSDMessages(current_time);
 	}
 
+	StereoscopyOverlay::Render();
 	// Cursors are always last.
 	DrawSoftwareCursors();
 }

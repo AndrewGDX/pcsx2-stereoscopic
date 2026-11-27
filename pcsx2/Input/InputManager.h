@@ -278,6 +278,7 @@ namespace InputManager
 
 	/// Clears internal state for any binds with a matching source/index.
 	void ClearBindStateFromSource(InputBindingKey key);
+	void BeginOverlayCapture();
 
 	/// Sets a hook which can be used to intercept events before they're processed by the normal bindings.
 	/// This is typically used when binding new controls to detect what gets pressed.

@@ -17,6 +17,7 @@
 #include "GameDatabase.h"
 #include "GameList.h"
 #include "Host.h"
+#include "ImGui/StereoscopyOverlay.h"
 #include "INISettingsInterface.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiOverlays.h"
@@ -44,6 +45,7 @@
 #include "ps2/BiosTools.h"
 
 #include "common/Console.h"
+#include "common/MemorySettingsInterface.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/FPControl.h"
@@ -654,6 +656,7 @@ void VMManager::LoadCoreSettings(SettingsInterface& si)
 {
 	SettingsLoadWrapper slw(si);
 	EmuConfig.LoadSave(slw);
+	StereoscopyOverlay::ApplyPreview(EmuConfig.GS);
 	Patch::ApplyPatchSettingOverrides();
 
 	// Achievements hardcore mode disallows setting some configuration options.
@@ -765,6 +768,34 @@ void VMManager::ApplySettings()
 	EmuConfig.CopyRuntimeConfig(old_config);
 	LoadSettings();
 	CheckForConfigChanges(old_config);
+}
+
+void VMManager::RefreshStereoscopySettings()
+{
+	if (!HasValidVM())
+		return;
+	MTGS::WaitGS(false);
+	Pcsx2Config old_config(EmuConfig);
+	{
+		FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+		auto lock = Host::GetSettingsLock();
+		MemorySettingsInterface values, defaults;
+		SettingsSaveWrapper save(values), save_defaults(defaults);
+		EmuConfig.GS.LoadSave(save);
+		Pcsx2Config::GSOptions factory;
+		factory.LoadSave(save_defaults);
+		SettingsInterface* effective = Host::GetSettingsInterface();
+		for (const auto& setting : StereoscopyOverlay::GetSettings())
+		{
+			const std::string fallback = defaults.GetStringValue("EmuCore/GS", setting.key);
+			values.SetStringValue("EmuCore/GS", setting.key,
+				effective->GetStringValue("EmuCore/GS", setting.key, fallback.c_str()).c_str());
+		}
+		SettingsLoadWrapper load(values);
+		EmuConfig.GS.LoadSave(load);
+		StereoscopyOverlay::ApplyPreview(EmuConfig.GS);
+	}
+	CheckForGSConfigChanges(old_config);
 }
 
 void VMManager::ApplyCoreSettings()
@@ -967,31 +998,33 @@ std::string VMManager::GetSerialForGameSettings()
 	return s_elf_override.empty() ? std::string(s_disc_serial) : std::string();
 }
 
+std::string VMManager::GetCurrentGameSettingsPath()
+{
+	const u32 crc = GetDiscCRC();
+	if (crc == 0)
+		return {};
+
+	std::string filename = GetGameSettingsPath(GetSerialForGameSettings(), crc);
+	if (FileSystem::FileExists(filename.c_str()))
+		return filename;
+
+	filename = GetGameSettingsPath({}, crc);
+	return FileSystem::FileExists(filename.c_str()) ? filename : std::string();
+}
+
 bool VMManager::UpdateGameSettingsLayer()
 {
+	StereoscopyOverlay::Close(false);
 	std::unique_ptr<INISettingsInterface> new_interface;
-	if (s_disc_crc != 0)
+	const std::string filename = GetCurrentGameSettingsPath();
+	if (!filename.empty())
 	{
-		std::string filename(GetGameSettingsPath(GetSerialForGameSettings(), s_disc_crc));
-		if (!FileSystem::FileExists(filename.c_str()))
+		Console.WriteLn("Loading game settings from '%s'...", filename.c_str());
+		new_interface = std::make_unique<INISettingsInterface>(filename);
+		if (!new_interface->Load())
 		{
-			// try the legacy format (crc.ini)
-			filename = GetGameSettingsPath({}, s_disc_crc);
-		}
-
-		if (FileSystem::FileExists(filename.c_str()))
-		{
-			Console.WriteLn("Loading game settings from '%s'...", filename.c_str());
-			new_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-			if (!new_interface->Load())
-			{
-				Console.Error("Failed to parse game settings ini '%s'", new_interface->GetFileName().c_str());
-				new_interface.reset();
-			}
-		}
-		else
-		{
-			DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
+			Console.Error("Failed to parse game settings ini '%s'", new_interface->GetFileName().c_str());
+			new_interface.reset();
 		}
 	}
 
@@ -1036,6 +1069,7 @@ bool VMManager::UpdateGameSettingsLayer()
 
 void VMManager::UpdateDiscDetails(bool booting)
 {
+	StereoscopyOverlay::Close();
 	std::string memcardFilters;
 	{
 		// Only need to protect writes with the mutex.
@@ -1650,6 +1684,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 
 void VMManager::Shutdown(bool save_resume_state)
 {
+	StereoscopyOverlay::Close();
 	// we'll probably already be stopping (this is how Qt calls shutdown),
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);

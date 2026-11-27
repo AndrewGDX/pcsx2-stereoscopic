@@ -142,6 +142,9 @@ namespace VMManager
 	/// Reloads settings, and applies any changes present.
 	void ApplySettings();
 
+	/// Applies stereoscopy edits without reloading input bindings or unrelated core settings.
+	void RefreshStereoscopySettings();
+
 	/// Reloads game specific settings, and applys any changes present.
 	bool ReloadGameSettings();
 
@@ -244,6 +247,9 @@ namespace VMManager
 
 	/// Returns the path for the game settings ini file for the specified CRC.
 	std::string GetGameSettingsPath(const std::string_view game_serial, u32 game_crc);
+
+	/// Returns the existing settings path for the current game, including the legacy CRC-only fallback.
+	std::string GetCurrentGameSettingsPath();
 
 	/// Returns the ISO override for an ELF via gamesettings.
 	std::string GetDiscOverrideFromGameSettings(const std::string& elf_path);

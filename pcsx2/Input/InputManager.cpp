@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "ImGui/ImGuiManager.h"
+#include "ImGui/StereoscopyOverlay.h"
 #include "Input/InputManager.h"
 #include "Input/InputSource.h"
 #include "SIO/Pad/Pad.h"
@@ -25,6 +26,7 @@
 #include <mutex>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -60,6 +62,8 @@ struct InputBinding
 {
 	InputBindingKey keys[MAX_KEYS_PER_BINDING] = {};
 	InputEventHandler handler;
+	bool overlay_navigation = false;
+	bool overlay_toggle = false;
 	u8 num_keys = 0;
 	u8 full_mask = 0;
 	u8 current_mask = 0;
@@ -136,6 +140,20 @@ static std::mutex s_binding_map_write_lock;
 // Reverse lookups for controller navigation; user bindings take priority over static defaults.
 using ControllerButtonGenericMap = std::unordered_map<InputBindingKey, GenericInputBinding, InputBindingKeyHash>;
 static ControllerButtonGenericMap s_controller_button_generic_map;
+// Buttons held during capture must be released before reaching the guest again. (AI-assisted)
+static std::unordered_set<InputBindingKey, InputBindingKeyHash> s_overlay_held_inputs;
+static std::unordered_set<InputBindingKey, InputBindingKeyHash> s_active_inputs;
+
+static bool IsOverlayReleaseRequired(InputBindingKey key)
+{
+	// Continuous axes resume on close: sticks can drift and triggers can rest at -1.
+	// Physical controller coverage still needs proper testing on each input backend. (AI-assisted)
+	if (key.source_type == InputSourceType::Keyboard)
+		return true;
+	if (key.source_type == InputSourceType::Pointer)
+		return key.source_subtype != InputSubclass::PointerAxis;
+	return key.source_subtype != InputSubclass::ControllerAxis;
+}
 
 using ControllerAxisGenericMap = std::unordered_map<InputBindingKey, std::array<GenericInputBinding, 2>, InputBindingKeyHash>;
 static ControllerAxisGenericMap s_controller_axis_generic_map;
@@ -616,6 +634,8 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 
 		if (ibinding)
 		{
+			ibinding->overlay_navigation = std::string_view(section) == "Pad1" && !std::string_view(key).starts_with("Macro");
+			ibinding->overlay_toggle = std::string_view(section) == "Hotkeys" && std::string_view(key) == StereoscopyOverlay::HOTKEY;
 			// Check for SDL2-3 migrations
 			for (u32 i = 0; i < ibinding->num_keys; i++)
 			{
@@ -861,11 +881,23 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 
 void InputManager::AddHotkeyBindings(SettingsInterface& si, bool is_profile)
 {
+	if (is_profile && !si.GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false))
+	{
+		StereoscopyOverlay::MigrateHotkey(si);
+		si.Save();
+	}
+	StereoscopyOverlay::SetDefaultPadChordEnabled(false);
 	for (const HotkeyInfo* hotkey_list : s_hotkey_list)
 	{
 		for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
 		{
-			const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey->name));
+			std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey->name));
+			if (std::string_view(hotkey->name) == StereoscopyOverlay::HOTKEY)
+			{
+				const auto end = std::remove(bindings.begin(), bindings.end(), StereoscopyOverlay::PAD_CHORD);
+				StereoscopyOverlay::SetDefaultPadChordEnabled(end != bindings.end());
+				bindings.erase(end, bindings.end());
+			}
 			if (bindings.empty())
 				continue;
 
@@ -909,8 +941,12 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_
 					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
 					AddBindings(
-						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
-							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, generic = bi.generic_mapping, sensitivity, deadzone](InputBindingKey key, float value) {
+							const float scaled = ApplySingleBindingScale(sensitivity, deadzone, value);
+							const bool captured = StereoscopyOverlay::IsOpen();
+							if (pad_index == 0)
+								StereoscopyOverlay::OnPadInput(generic, scaled, key.MaskDirection().bits);
+							Pad::SetControllerState(pad_index, bind_index, captured ? 0.0f : scaled);
 						}},
 						bi.bind_type, si, section.c_str(), bi.name, is_profile);
 				}
@@ -1111,6 +1147,27 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 	if (DoEventHook(key, value))
 		return true;
 
+	const InputBindingKey physical = key.MaskDirection();
+	if (value != 0.0f)
+		s_active_inputs.insert(physical);
+	else
+		s_active_inputs.erase(physical);
+	if (StereoscopyOverlay::IsOpen())
+	{
+		if (key.source_type == InputSourceType::Keyboard)
+			ImGuiManager::ProcessHostKeyEvent(key, value);
+		if (value != 0.0f && IsOverlayReleaseRequired(physical))
+			s_overlay_held_inputs.insert(physical);
+		else
+			s_overlay_held_inputs.erase(physical);
+		return ProcessEvent(key, value, false);
+	}
+	if (s_overlay_held_inputs.contains(physical))
+	{
+		if (value == 0.0f)
+			s_overlay_held_inputs.erase(physical);
+		return ProcessEvent(key, 0.0f, true);
+	}
 	// If imgui ate the event, don't fire our handlers.
 	const bool skip_button_handlers = PreprocessEvent(key, value, generic_key, axis_neg_key, axis_pos_key);
 	return ProcessEvent(key, value, skip_button_handlers);
@@ -1124,6 +1181,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 	if (range.first == s_binding_map.end())
 		return false;
 
+	const bool overlay_capture = StereoscopyOverlay::IsOpen();
 	// Now we can actually fire/activate bindings.
 	u32 min_num_keys = 0;
 	for (auto it = range.first; it != range.second; ++it)
@@ -1166,7 +1224,8 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 			if (IsAxisHandler(binding->handler))
 			{
 				if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
-					std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
+					std::get<InputAxisEventHandler>(binding->handler)(key,
+						((overlay_capture && !StereoscopyOverlay::IsOpen()) || ((overlay_capture || StereoscopyOverlay::IsOpen()) && !binding->overlay_navigation)) ? 0.0f : value_to_pass);
 			}
 			else if (binding->num_keys >= min_num_keys)
 			{
@@ -1215,7 +1274,8 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 
 				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
 				{
-					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+					const bool captured = (overlay_capture || StereoscopyOverlay::IsOpen()) && !binding->overlay_toggle;
+					const s32 pressed = (skip_button_handlers || captured) ? -1 : static_cast<s32>(value_to_pass > 0.0f);
 					std::get<InputButtonEventHandler>(binding->handler)(pressed);
 				}
 			}
@@ -1230,6 +1290,14 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 
 void InputManager::ClearBindStateFromSource(InputBindingKey key)
 {
+	// Focus loss/disconnection ends capture for this source, including missing key-up events. (AI-assisted)
+	const auto matches_source = [key](InputBindingKey input) {
+		return input.source_type == key.source_type && input.source_subtype == key.source_subtype &&
+		       input.source_index == key.source_index;
+	};
+	std::erase_if(s_active_inputs, matches_source);
+	std::erase_if(s_overlay_held_inputs, matches_source);
+
 	// Why are we doing it this way? Because any of the bindings could cause a reload and invalidate our iterators :(.
 	// Axis handlers should be fine, so we'll do those as a first pass.
 	for (const auto& [match_key, binding] : s_binding_map)
@@ -1245,7 +1313,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 			if (binding->keys[i].MaskDirection() != match_key)
 				continue;
 
-			std::get<InputAxisEventHandler>(binding->handler)(key, 0.0f);
+			std::get<InputAxisEventHandler>(binding->handler)(match_key, 0.0f);
 			break;
 		}
 	}
@@ -1357,6 +1425,21 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 
 void InputManager::GenerateRelativeMouseEvents()
 {
+	if (StereoscopyOverlay::IsOpen())
+	{
+		// Discard captured movement instead of replaying accumulated motion on close. (AI-assisted)
+		for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
+			for (u32 axis = 0; axis < static_cast<u32>(InputPointerAxis::Count); axis++)
+			{
+				PointerAxisState& state = s_pointer_state[device][axis];
+				state.delta.exchange(0, std::memory_order_acquire);
+				if (state.last_value != 0.0f)
+					ProcessEvent(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)), 0.0f, false);
+				state.last_value = 0.0f;
+			}
+		s_pointer_pos = {};
+		return;
+	}
 	for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
 	{
 		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
@@ -1710,6 +1793,33 @@ void InputManager::CloseSources()
 	}
 }
 
+void InputManager::BeginOverlayCapture()
+{
+	// Release guest USB keyboard/buttons which were already held when capture began.
+	for (const InputBindingKey& key : s_active_inputs)
+	{
+		if (IsOverlayReleaseRequired(key))
+			s_overlay_held_inputs.insert(key);
+		if (key.source_type == InputSourceType::Keyboard)
+			for (const KeyboardEventCallback& callback : s_keyboard_event_callbacks)
+				callback(key, 0.0f);
+		const auto range = s_binding_map.equal_range(key);
+		for (auto it = range.first; it != range.second; ++it)
+		{
+			InputBinding& binding = *it->second;
+			if (binding.overlay_navigation || binding.overlay_toggle)
+				continue;
+			if (IsAxisHandler(binding.handler))
+				std::get<InputAxisEventHandler>(binding.handler)(key, 0.0f);
+			else
+			{
+				binding.current_mask = 0;
+				std::get<InputButtonEventHandler>(binding.handler)(-1);
+			}
+		}
+	}
+}
+
 void InputManager::PollSources()
 {
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -1718,6 +1828,7 @@ void InputManager::PollSources()
 			s_input_sources[i]->PollEvents();
 	}
 
+	StereoscopyOverlay::Update();
 	GenerateRelativeMouseEvents();
 
 	if (VMManager::GetState() == VMState::Running && !s_pad_vibration_array.empty())
