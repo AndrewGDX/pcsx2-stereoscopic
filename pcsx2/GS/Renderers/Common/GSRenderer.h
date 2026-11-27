@@ -14,8 +14,7 @@ static __fi bool IsPackedStereoEnabled()
 
 static __fi GSPackedStereo::Axis GetPackedStereoAxis()
 {
-	return !IsPackedStereoEnabled() ? GSPackedStereo::Axis::None :
-		(GSConfig.StereoFlipRendering ? GSPackedStereo::Axis::Vertical : GSPackedStereo::Axis::Horizontal);
+	return IsPackedStereoEnabled() ? GSPackedStereo::Axis::Horizontal : GSPackedStereo::Axis::None;
 }
 
 static __fi GSVector2 GetStereoScaleVector2()
@@ -23,7 +22,7 @@ static __fi GSVector2 GetStereoScaleVector2()
 	if (GSConfig.StereoMode == GSStereoMode::Off || GSConfig.StereoDisableCorrectSbsFramebufferSize)
 		return GSVector2(1.0f, 1.0f);
 
-	return GSConfig.StereoFlipRendering ? GSVector2(1.0f, 2.0f) : GSVector2(2.0f, 1.0f);
+	return GSVector2(2.0f, 1.0f);
 }
 
 static __fi GSVector2 GetStereoScaleVector2(float scale)

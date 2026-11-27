@@ -13,6 +13,7 @@
 #include "ui_GraphicsPostProcessingSettingsTab.h"
 #include "ui_GraphicsSettingsHeader.h"
 #include "ui_GraphicsSoftwareRenderingSettingsTab.h"
+#include "ui_GraphicsStereoscopySettingsTab.h"
 #include "ui_GraphicsTextureReplacementSettingsTab.h"
 #include "ui_GraphicsUpscalingFixesSettingsTab.h"
 
@@ -66,6 +67,7 @@ private:
 	Ui::GraphicsDisplaySettingsTab m_display;
 	Ui::GraphicsHardwareRenderingSettingsTab m_hw;
 	Ui::GraphicsSoftwareRenderingSettingsTab m_sw;
+	Ui::GraphicsStereoscopySettingsTab m_stereo;
 	Ui::GraphicsHardwareFixesSettingsTab m_fixes;
 	Ui::GraphicsUpscalingFixesSettingsTab m_upscaling;
 	Ui::GraphicsTextureReplacementSettingsTab m_texture;
@@ -76,6 +78,7 @@ private:
 	QWidget* m_display_tab = nullptr;
 	QWidget* m_hardware_rendering_tab = nullptr;
 	QWidget* m_software_rendering_tab = nullptr;
+	QWidget* m_stereoscopy_tab = nullptr;
 	QWidget* m_hardware_fixes_tab = nullptr;
 	QWidget* m_upscaling_fixes_tab = nullptr;
 	QWidget* m_texture_replacement_tab = nullptr;

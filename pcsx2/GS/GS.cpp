@@ -801,7 +801,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	const bool packed_layout_changed =
 		GSConfig.StereoPackedEnable != new_config.StereoPackedEnable ||
 		GSConfig.StereoMode != new_config.StereoMode ||
-		GSConfig.StereoFlipRendering != new_config.StereoFlipRendering ||
 		GSConfig.StereoDisableCorrectSbsFramebufferSize != new_config.StereoDisableCorrectSbsFramebufferSize;
 	// Download with the OLD coordinate convention before changing atlas layout.
 	// GS local memory has one image, so this preserves the canonical eye.

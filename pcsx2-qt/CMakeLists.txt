@@ -126,6 +126,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/GraphicsSettingsWidget.cpp
 	Settings/GraphicsSettingsWidget.h
 	Settings/GraphicsSoftwareRenderingSettingsTab.ui
+	Settings/GraphicsStereoscopySettingsTab.ui
 	Settings/GraphicsTextureReplacementSettingsTab.ui
 	Settings/GraphicsUpscalingFixesSettingsTab.ui
 	Settings/HotkeySettingsWidget.cpp

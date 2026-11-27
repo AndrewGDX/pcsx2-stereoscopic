@@ -313,8 +313,22 @@ enum class GSPostBilinearMode : u8
 enum class GSStereoMode : u8
 {
 	Off,
-	SideBySide,
-	TopAndBottom,
+	HalfSideBySide,
+	FullSideBySide,
+	HalfTopAndBottom,
+	FullTopAndBottom,
+	Count
+};
+
+// Mutually exclusive draw overrides selected by the stereoscopy debugger. (AI-assisted)
+enum class GSStereoDebugAction : u8
+{
+	None,
+	Skip,
+	Mono,
+	Stereo,
+	SbsRemap,
+	UI,
 	Count
 };
 
@@ -721,6 +735,7 @@ struct Pcsx2Config
 		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 		static const char* StereoModeNames[];
+		static const char* StereoDebugActionNames[];
 		static const char* StereoDominantEyeNames[];
 
 		static const char* GetRendererName(GSRendererType type);
@@ -921,7 +936,8 @@ struct Pcsx2Config
 		u8 ShadeBoost_Gamma = DEFAULT_SHADEBOOST_GAMMA;
 		u8 PNGCompressionLevel = 1;
 
-		GSStereoMode StereoMode = GSStereoMode::SideBySide;
+		GSStereoMode StereoMode = GSStereoMode::HalfSideBySide;
+		GSStereoDebugAction StereoDebugAction = GSStereoDebugAction::None;
 		// Experimental packed-atlas renderer. All controls can be overridden per game.
 		bool StereoPackedEnable = true;
 		bool StereoPackedIntegerReads = true;
@@ -935,14 +951,7 @@ struct Pcsx2Config
 		int StereoUiDetectMode = 3;
 		int StereoUiDetectThreshold = 80;
 		bool StereoSwapEyes = false;
-		bool StereoFlipRendering = false;
 		bool StereoDisableCorrectSbsFramebufferSize = false;
-		bool StereoEnableFullSbsAspectRatio = true;
-		bool StereoDontRenderCheckedObjects = false;
-		bool StereoRenderCheckedObjectsMono = false;
-		bool StereoRenderCheckedObjectsStereo = false;
-		bool StereoRenderCheckedObjectsSbsRemap = false;
-		bool StereoRenderCheckedObjectsUI = false;
 		bool StereoRequireTextureDisplayBuffer2 = false;
 		bool StereoRejectTextureDisplayBuffer2 = false;
 		bool StereoRequirePrimTme = false;
@@ -983,13 +992,6 @@ struct Pcsx2Config
 		bool StereoRejectScalingDraw = false;
 		bool StereoRejectSbsInput = false;
 		bool StereoRejectTabInput = false;
-		bool StereoMasterFixTest = false;
-		bool StereoMasterFix1 = false;
-		bool StereoMasterFix2 = false;
-		bool StereoMasterFix3 = false;
-		bool StereoMasterFix4 = false;
-		bool StereoMasterFix5 = false;
-		bool StereoMasterFixMovies = false;
 		bool StereoRequireDisplayBuffer1 = false;
 		bool StereoRequireDisplayBuffer2 = false;
 		bool StereoRequirePerspectiveUV = false;
@@ -1017,16 +1019,7 @@ struct Pcsx2Config
 		bool StereoRejectFullCover = false;
 		bool StereoRejectSpriteNoGaps = false;
 		bool StereoRejectTexIsFb = false;
-		bool StereoRejectChannelShuffle = false;
-		bool StereoRejectTextureShuffle = false;
-		bool StereoRejectFullscreenShuffle = false;
-		bool StereoRejectShaderShuffle = false;
-		bool StereoRejectShuffleAcross = false;
-		bool StereoRejectShuffleSame = false;
-		bool StereoRejectChannelFetch = false;
-		bool StereoRejectChannelFetchFb = false;
 		bool StereoRejectFeedbackLoop = false;
-		bool StereoRejectColclip = false;
 		bool StereoRejectRtaCorrection = false;
 		bool StereoUniversalRejectRtaSourceCorrection = false;
 		bool StereoUniversalRejectColclipHw = false;
@@ -1161,25 +1154,13 @@ struct Pcsx2Config
 		bool StereoUniversalRequireFixedQ = false;
 		bool StereoUniversalRequireFixedZ = false;
 		bool StereoUniversalRequireConstantColor = false;
-		bool StereoRejectBlendMix = false;
-		bool StereoRejectPabe = false;
-		bool StereoRejectDither = false;
 		bool StereoRejectScanmask = false;
 		bool StereoRejectRegionRect = false;
-		bool StereoRejectNoColorOutput = false;
-		bool StereoRejectHleShuffle = false;
-		bool StereoRejectTCOffsetHack = false;
-		bool StereoRejectPoints = false;
-		bool StereoRejectLines = false;
-		bool StereoRejectFlatShading = false;
 		bool StereoRejectFst = false;
 		bool StereoFixStencilShadows1 = false;
 		bool StereoFixStencilShadows2 = false;
 		bool StereoFixStencilShadows3 = false;
 		bool StereoRejectFixedQ = false;
-		bool StereoRejectAa1 = false;
-		bool StereoRejectNoZTest = false;
-		bool StereoRejectNoZWrite = false;
 		bool StereoRejectZTestAlways = false;
 		bool StereoUiDetectSkyDepth = false;
 		bool StereoUiDetectFst = false;
@@ -1190,109 +1171,7 @@ struct Pcsx2Config
 		bool StereoUiSecondLayerSelector3 = false;
 		bool StereoUiSecondLayerSelector4 = false;
 		bool StereoUiSecondLayerSelector5 = false;
-		bool StereoRejectZTestNever = false;
-		bool StereoRejectAlphaTestOff = false;
-		bool StereoRejectAlphaTestAlways = false;
-		bool StereoRejectAlphaTestNever = false;
-		bool StereoRejectTfxModulate = false;
 		bool StereoRejectTfxDecal = false;
-		bool StereoRejectTfxHighlight = false;
-		bool StereoRejectTfxHighlight2 = false;
-		bool StereoRejectSmallDrawArea = false;
-		bool StereoRejectWideDrawBand = false;
-		bool StereoRejectTopDrawBand = false;
-		bool StereoRejectRtSpriteNoDepth = false;
-		bool StereoRejectRtSpriteAlphaBlend = false;
-		bool StereoRequireProcessTexture = false;
-		bool StereoRejectProcessTexture = false;
-		bool StereoRequireSourceFromTarget = false;
-		bool StereoRejectSourceFromTarget = false;
-		bool StereoRequireDrawUsesTarget = false;
-		bool StereoRejectDrawUsesTarget = false;
-		bool StereoRequireTexIsRt = false;
-		bool StereoRejectTexIsRt = false;
-		bool StereoRequireInTargetDraw = false;
-		bool StereoRejectInTargetDraw = false;
-		bool StereoRequireTempZ = false;
-		bool StereoRejectTempZ = false;
-		bool StereoRequireOneBarrier = false;
-		bool StereoRejectOneBarrier = false;
-		bool StereoRequireFullBarrier = false;
-		bool StereoRejectFullBarrier = false;
-		bool StereoRequireSinglePass = false;
-		bool StereoRejectSinglePass = false;
-		bool StereoRequireFullscreenDrawArea = false;
-		bool StereoRejectFullscreenDrawArea = false;
-		bool StereoRequireFullscreenSprite = false;
-		bool StereoRejectFullscreenSprite = false;
-		bool StereoRequireTexturedSprite = false;
-		bool StereoRejectTexturedSprite = false;
-		bool StereoRequireRtOutput = false;
-		bool StereoRejectRtOutput = false;
-		bool StereoRequireDepthOutput = false;
-		bool StereoRejectDepthOutput = false;
-		bool StereoRequireDepthRead = false;
-		bool StereoRejectDepthRead = false;
-		bool StereoRequireDepthWrite = false;
-		bool StereoRejectDepthWrite = false;
-		bool StereoRequirePalettedTexture = false;
-		bool StereoRejectPalettedTexture = false;
-		bool StereoRequireDepthTexture = false;
-		bool StereoRejectDepthTexture = false;
-		bool StereoRequireMipmap = false;
-		bool StereoRejectMipmap = false;
-		bool StereoRequireLinearSampling = false;
-		bool StereoRejectLinearSampling = false;
-		bool StereoRequireFmvActive = false;
-		bool StereoRejectFmvActive = false;
-		bool StereoRequireFmvHeuristic = false;
-		bool StereoRejectFmvHeuristic = false;
-		bool StereoRequireFmvSprite = false;
-		bool StereoRejectFmvSprite = false;
-		bool StereoRequireFmvSingleSprite = false;
-		bool StereoRejectFmvSingleSprite = false;
-		bool StereoRequireFmvTextureMapping = false;
-		bool StereoRejectFmvTextureMapping = false;
-		bool StereoRequireFmvProcessTexture = false;
-		bool StereoRejectFmvProcessTexture = false;
-		bool StereoRequireFmvFullscreenDrawArea = false;
-		bool StereoRejectFmvFullscreenDrawArea = false;
-		bool StereoRequireFmvFullscreenScissor = false;
-		bool StereoRejectFmvFullscreenScissor = false;
-		bool StereoRequireFmvNoAlphaBlend = false;
-		bool StereoRejectFmvNoAlphaBlend = false;
-		bool StereoRequireFmvNoAlphaTest = false;
-		bool StereoRejectFmvNoAlphaTest = false;
-		bool StereoRequireFmvNoDepthTest = false;
-		bool StereoRejectFmvNoDepthTest = false;
-		bool StereoRequireFmvNoDepthWrite = false;
-		bool StereoRejectFmvNoDepthWrite = false;
-		bool StereoRequireFmvNoDepthOutput = false;
-		bool StereoRejectFmvNoDepthOutput = false;
-		bool StereoRequireFmvNoDepthRead = false;
-		bool StereoRejectFmvNoDepthRead = false;
-		bool StereoRequireFmvNoFbMask = false;
-		bool StereoRejectFmvNoFbMask = false;
-		bool StereoRequireFmvColorOutput = false;
-		bool StereoRejectFmvColorOutput = false;
-		bool StereoRequireFmvSourceNotFromTarget = false;
-		bool StereoRejectFmvSourceNotFromTarget = false;
-		bool StereoRequireFmvDrawMatchesTex = false;
-		bool StereoRejectFmvDrawMatchesTex = false;
-		bool StereoRequireFmvNoShuffle = false;
-		bool StereoRejectFmvNoShuffle = false;
-		bool StereoRequireFmvNoMipmap = false;
-		bool StereoRejectFmvNoMipmap = false;
-		bool StereoRequireFmvLinearSampling = false;
-		bool StereoRejectFmvLinearSampling = false;
-		bool StereoRequireFmvEeUpload = false;
-		bool StereoRejectFmvEeUpload = false;
-		bool StereoRequireFmvDisplayMatch = false;
-		bool StereoRejectFmvDisplayMatch = false;
-		bool StereoRequireFmvRecentEeUpload = false;
-		bool StereoRejectFmvRecentEeUpload = false;
-		bool StereoRequireFmvRecentTransferDraw = false;
-		bool StereoRejectFmvRecentTransferDraw = false;
 		bool StereoRequireFeedbackLoopAny = false;
 		bool StereoRejectFeedbackLoopAny = false;
 		bool StereoRequireFeedbackLoopShader = false;
@@ -1310,12 +1189,10 @@ struct Pcsx2Config
 		bool StereoRequireFeedbackLoopOverlapDrawRange = false;
 		bool StereoRejectFeedbackLoopOverlapDrawRange = false;
 		bool StereoFeedbackLoopDisableStereo = false;
-		bool StereoFeedbackLoopClampToDominantEye = false;
 		bool StereoFeedbackLoopSourceFromTargetOnly = false;
 		bool StereoSbsRemapMono = false;
-		bool StereoDisableInstancedRendering = false;
-		int StereoSbsRemapFix = 2;
-		int StereoFeedbackLoopFix = 2;
+		int StereoSbsRemapFix = 3;
+		int StereoFeedbackLoopFix = 0;
 
 		u16 SWExtraThreads = 2;
 		u16 SWExtraThreadsHeight = 4;

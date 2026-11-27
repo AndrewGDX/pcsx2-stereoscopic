@@ -155,7 +155,6 @@ struct MainVSOut
 	float4 ti;
 	float2 stereo_pos [[center_no_perspective]];
 	float stereo_eye [[flat]];
-	float stereo_axis [[flat]];
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(VS_COVERAGE)]];
@@ -170,7 +169,6 @@ struct MainPSIn
 	float4 ti;
 	float2 stereo_pos [[center_no_perspective]];
 	float stereo_eye [[flat]];
-	float stereo_axis [[flat]];
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(PS_COVERAGE)]];
@@ -246,12 +244,10 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
 	int stereo_mode = int(cb.stereo_params.w + 0.5f);
-	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
-	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0)
+	int dominant_mode = (stereo_mode > 0) ? (stereo_mode - 1) : 0;
+	if (stereo_mode > 0)
 	{
-		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((instance_id & 1u) != 0u ? 1.0f : -1.0f) : ((as_type<uint>(cb.stereo_params.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
+		float eye_sign = ((instance_id & 1u) != 0u ? 1.0f : -1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -262,21 +258,12 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 		float depth = 1.0f - (float(z) * 0.00000000006f - cb.stereo_params.z * 0.0005f) * cb.stereo_params.y;
 		out.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (base_mode == 2 || base_mode == 4)
-		{
-			out.p.y *= 0.5f;
-			out.p.y -= eye_sign * 0.5f;
-		}
-		else
-		{
-			out.p.x *= 0.5f;
-			out.p.x += eye_sign * 0.5f;
-		}
+		out.p.x *= 0.5f;
+		out.p.x += eye_sign * 0.5f;
 	}
 
 	out.stereo_pos = out.p.xy;
-	out.stereo_eye = (base_mode >= 3) ? ((instance_id & 1u) != 0u ? 1.0f : -1.0f) : 0.0f;
-	out.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+	out.stereo_eye = (stereo_mode > 0) ? ((instance_id & 1u) != 0u ? 1.0f : -1.0f) : 0.0f;
 
 	texture_coord(v, out, cb);
 
@@ -671,13 +658,13 @@ struct PSMain
 // All packed shader reads use explicit eye-local or screen coordinates.
 float packed_eye()
 {
-    return cb.stereo_target.w >= 0.0 ? cb.stereo_target.w : (in.stereo_eye > 0.0 ? 1.0 : 0.0);
+    return (in.stereo_eye > 0.0 ? 1.0 : 0.0);
 }
 
 float2 packed_origin(float4 image)
 {
     float eye = packed_eye();
-    return image.z < 1.5 ? float2(eye * image.x * 0.5, 0.0) : float2(0.0, eye * image.y * 0.5);
+    return float2(eye * image.x * 0.5, 0.0);
 }
 
 int2 packed_texel(int2 p, bool screen_position)
@@ -686,7 +673,7 @@ int2 packed_texel(int2 p, bool screen_position)
     if (cb.stereo_source.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
         return p;
     float2 origin = packed_origin(cb.stereo_source);
-    float2 extent = cb.stereo_source.xy * (cb.stereo_source.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5));
+    float2 extent = cb.stereo_source.xy * (float2(0.5, 1.0));
     float2 local = float2(p);
     if (screen_position)
         local -= packed_origin(cb.stereo_target);
@@ -700,7 +687,7 @@ float2 packed_clamp_uv(float2 uv)
 {
     if (cb.stereo_source.z > 0.5 && (uint(cb.stereo_source.w) & 4u) != 0u)
     {
-        float2 extent = cb.stereo_source.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+        float2 extent = float2(0.5, 1.0);
         float2 origin = packed_origin(cb.stereo_source) / cb.stereo_source.xy;
         float2 half_texel = float2(0.5, 0.5) / cb.stereo_source.xy;
         uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
@@ -715,7 +702,7 @@ float2 packed_uv(float2 uv)
         return uv;
     if ((flags & 16u) != 0u) uv.x = fract(uv.x);
     if ((flags & 32u) != 0u) uv.y = fract(uv.y);
-    float2 extent = cb.stereo_source.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+    float2 extent = float2(0.5, 1.0);
     float2 origin = packed_origin(cb.stereo_source) / cb.stereo_source.xy;
     uv = uv * extent + origin;
     if ((flags & 4u) != 0u)
@@ -743,10 +730,7 @@ float2 packed_uv(float2 uv)
 		if (cb.stereo_remap.x > 0.5f && (use_forced_eye || in.stereo_eye != 0.0f))
 		{
 			float eye_index = use_forced_eye ? cb.stereo_remap.z : (in.stereo_eye > 0.0f ? 1.0f : 0.0f);
-			if (cb.stereo_remap.y < 0.5f)
-				uv.x = uv.x * 0.5f + eye_index * 0.5f;
-			else
-				uv.y = uv.y * 0.5f + eye_index * 0.5f;
+			uv.x = uv.x * 0.5f + eye_index * 0.5f;
 		}
 		return uv;
 	}
@@ -1639,12 +1623,6 @@ float2 packed_uv(float2 uv)
 			}
 			else
 			{
-				if (in.stereo_axis > 0.5f)
-				{
-					if (in.stereo_eye < 0.0f && in.stereo_pos.y < 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.y > 0.0f)
-						discard_fragment();
-				}
-				else
 				{
 					if (in.stereo_eye < 0.0f && in.stereo_pos.x > 0.0f || in.stereo_eye > 0.0f && in.stereo_pos.x < 0.0f)
 						discard_fragment();

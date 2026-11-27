@@ -15,7 +15,6 @@ enum class Axis : std::uint8_t
 {
 	None,
 	Horizontal,
-	Vertical,
 };
 
 struct Rect
@@ -29,11 +28,6 @@ inline Rect Pixels(Rect r, Axis axis, float width, float height, unsigned eye)
 	{
 		r.x = r.x * 0.5f + eye * width * 0.5f;
 		r.z = r.z * 0.5f + eye * width * 0.5f;
-	}
-	else if (axis == Axis::Vertical)
-	{
-		r.y = r.y * 0.5f + eye * height * 0.5f;
-		r.w = r.w * 0.5f + eye * height * 0.5f;
 	}
 	return r;
 }

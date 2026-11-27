@@ -40,7 +40,6 @@ out SHADER
 	#endif
 	noperspective vec2 stereo_pos;
 	flat float stereo_eye;
-	flat float stereo_axis;
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge.
 } VSout;
@@ -100,12 +99,10 @@ void vs_main()
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
 	int stereo_mode = int(StereoParams.w + 0.5f);
-	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
-	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0)
+	int dominant_mode = (stereo_mode > 0) ? (stereo_mode - 1) : 0;
+	if (stereo_mode > 0)
 	{
-		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
+		float eye_sign = ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -115,22 +112,12 @@ void vs_main()
 		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		gl_Position.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (base_mode == 2 || base_mode == 4)
-		{
-			gl_Position.y *= 0.5f;
-			// With GL_LOWER_LEFT, NDC -1 maps to the first eye's rows.
-			gl_Position.y += eye_sign * 0.5f;
-		}
-		else
-		{
-			gl_Position.x *= 0.5f;
-			gl_Position.x += eye_sign * 0.5f;
-		}
+		gl_Position.x *= 0.5f;
+		gl_Position.x += eye_sign * 0.5f;
 	}
 
 	VSout.stereo_pos = gl_Position.xy;
-	VSout.stereo_eye = (base_mode >= 3) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
-	VSout.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+	VSout.stereo_eye = (stereo_mode > 0) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
 
 	texture_coord();
 
@@ -218,12 +205,10 @@ ProcessedVertex load_vertex(uint index)
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
 	int stereo_mode = int(StereoParams.w + 0.5f);
-	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
-	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0)
+	int dominant_mode = (stereo_mode > 0) ? (stereo_mode - 1) : 0;
+	if (stereo_mode > 0)
 	{
-		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
+		float eye_sign = ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -233,12 +218,6 @@ ProcessedVertex load_vertex(uint index)
 		float depth = 1.0f - (float(z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		vtx.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (base_mode == 2 || base_mode == 4)
-		{
-			vtx.p.y *= 0.5f;
-			vtx.p.y += eye_sign * 0.5f;
-		}
-		else
 		{
 			vtx.p.x *= 0.5f;
 			vtx.p.x += eye_sign * 0.5f;
@@ -534,10 +513,8 @@ void main()
 	VSout.c = vtx.c;
 	{
 		int stereo_mode = int(StereoParams.w + 0.5f);
-		int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
 		VSout.stereo_pos = vtx.p.xy;
-		VSout.stereo_eye = (base_mode >= 3) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
-		VSout.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+		VSout.stereo_eye = (stereo_mode > 0) ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : 0.0f;
 	}
 }
 

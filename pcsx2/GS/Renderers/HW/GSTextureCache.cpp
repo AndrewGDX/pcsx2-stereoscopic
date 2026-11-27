@@ -2322,8 +2322,6 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 	// Fractional upscale factors must still give both eyes integer pixel origins.
 	if (GetPackedStereoAxis() == GSPackedStereo::Axis::Horizontal)
 		size.x = (size.x + 1) & ~1;
-	else if (GetPackedStereoAxis() == GSPackedStereo::Axis::Vertical)
-		size.y = (size.y + 1) & ~1;
 	return size;
 }
 

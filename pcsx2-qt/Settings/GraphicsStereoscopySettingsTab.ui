@@ -1,0 +1,2902 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsStereoscopySettingsTab</class>
+ <widget class="QWidget" name="GraphicsStereoscopySettingsTab">
+  <layout class="QVBoxLayout" name="stereoscopyLayout">
+   <item>
+    <widget class="QGroupBox" name="stereoOutputGroup">
+     <property name="title">
+      <string>Stereo Output</string>
+     </property>
+     <layout class="QFormLayout" name="stereoOutputGroupLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="formAlignment">
+       <set>Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="stereoscopicModeLabel">
+        <property name="text">
+         <string>Stereoscopic 3D Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoscopicMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="stereoscopicMode">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Half SBS (Side-by-Side)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full SBS (Side-by-Side)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Half TAB (Top-and-Bottom)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full TAB (Top-and-Bottom)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="stereoDominantEyeLabel">
+        <property name="text">
+         <string>Dominant Eye:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoDominantEye</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="stereoDominantEyeRow">
+        <item>
+         <widget class="QComboBox" name="stereoDominantEye">
+          <item>
+           <property name="text">
+            <string>No (default)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Left</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Right</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="stereoSwapEyes">
+          <property name="text">
+           <string>Swap Eyes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoDepthGroup">
+     <property name="title">
+      <string>Depth</string>
+     </property>
+     <layout class="QFormLayout" name="stereoDepthGroupLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="formAlignment">
+       <set>Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="stereoSeparationLabel">
+        <property name="text">
+         <string>Separation:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoSeparation</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="stereoSeparationSliderRow" stretch="1,0">
+        <item>
+         <widget class="QSlider" name="stereoSeparationSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="pageStep">
+           <number>50</number>
+          </property>
+          <property name="value">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoSeparation">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0</double>
+          </property>
+          <property name="maximum">
+           <double>100.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+          <property name="singleStep">
+           <double>0.1</double>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>69</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="stereoConvergenceLabel">
+        <property name="text">
+         <string>Convergence:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoConvergence</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="stereoConvergenceSliderRow" stretch="1,0">
+        <item>
+         <widget class="QSlider" name="stereoConvergenceSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+          <property name="pageStep">
+           <number>500</number>
+          </property>
+          <property name="value">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="stereoConvergence">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0</double>
+          </property>
+          <property name="maximum">
+           <double>1000.0</double>
+          </property>
+          <property name="value">
+           <double>20.0</double>
+          </property>
+          <property name="singleStep">
+           <double>0.1</double>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>69</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoUiGroup">
+     <property name="title">
+      <string>UI Detection</string>
+     </property>
+     <layout class="QFormLayout" name="stereoUiGroupLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="formAlignment">
+       <set>Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="stereoUiDetectModeLabel">
+        <property name="text">
+         <string>UI Detection Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoUiDetectMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="stereoUiDetectMode">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unsafe</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Safe</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Advanced</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="stereoUiDepthControlsRow" stretch="0,1,0,1">
+        <item>
+         <widget class="QLabel" name="stereoUiDepthLabel">
+          <property name="text">
+           <string>UI Depth:</string>
+          </property>
+          <property name="buddy">
+           <cstring>stereoUiDepth</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="stereoUiDepthRow" stretch="1,0">
+          <item>
+           <widget class="QSlider" name="stereoUiDepth">
+            <property name="minimum">
+             <number>-100</number>
+            </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TickPosition::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>25</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stereoUiDepthValue">
+            <property name="text">
+             <string>0.0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoUiSecondLayerDepthLabel">
+          <property name="text">
+           <string>Second Layer Parallax:</string>
+          </property>
+          <property name="buddy">
+           <cstring>stereoUiSecondLayerDepth</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="stereoUiSecondLayerDepthRow" stretch="1,0">
+          <item>
+           <widget class="QSlider" name="stereoUiSecondLayerDepth">
+            <property name="minimum">
+             <number>-25</number>
+            </property>
+            <property name="maximum">
+             <number>25</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TickPosition::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stereoUiSecondLayerDepthValue">
+            <property name="text">
+             <string>0.0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="stereoUiDetectThresholdLabel">
+        <property name="text">
+         <string>UI Detection Threshold:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoUiDetectThreshold</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="stereoUiDetectThresholdRow" stretch="1,0">
+        <item>
+         <widget class="QSlider" name="stereoUiDetectThreshold">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>80</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TickPosition::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="stereoUiDetectThresholdValue">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <layout class="QVBoxLayout" name="stereoUiConditionsContainer">
+        <item>
+         <widget class="QGroupBox" name="stereoUiConditions">
+          <property name="title">
+           <string>Additional UI Detection</string>
+          </property>
+          <layout class="QGridLayout" name="stereoUiConditionsLayout">
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="stereoRejectZTestAlways">
+             <property name="text">
+              <string>Z test is Always</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="stereoStencilRequireZTestGequal">
+             <property name="text">
+              <string>Z test is not GEQUAL or GREATER</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="stereoRequireZVaries">
+             <property name="text">
+              <string>Constant vertex Z</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="stereoRejectFixedQ">
+             <property name="text">
+              <string>Constant vertex Q</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="stereoUiDetectSkyDepth">
+             <property name="text">
+              <string>Near-zero depth</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="stereoUiDetectFst">
+             <property name="text">
+              <string>Fixed texture coordinates (FST)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QCheckBox" name="stereoUiDetectFullscreenDrawArea">
+             <property name="text">
+              <string>Fullscreen draw area</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QCheckBox" name="stereoUiDetectFullscreenSprite">
+             <property name="text">
+              <string>Fullscreen sprite</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <layout class="QVBoxLayout" name="stereoUiLayerConditionsContainer">
+        <item>
+         <widget class="QGroupBox" name="stereoUiLayerConditions">
+          <property name="title">
+           <string>Second Layer UI Detection</string>
+          </property>
+          <layout class="QGridLayout" name="stereoUiLayerConditionsLayout">
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="stereoUiSecondLayerSelector1">
+             <property name="text">
+              <string>Fullscreen draw area</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="stereoUiSecondLayerSelector2">
+             <property name="text">
+              <string>Constant Z and Q with depth testing</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="stereoUiSecondLayerSelector3">
+             <property name="text">
+              <string>No blend mixing</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="stereoUiSecondLayerSelector4">
+             <property name="text">
+              <string>Secondary color disabled with blend mixing</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="stereoUiSecondLayerSelector5">
+             <property name="text">
+              <string>Advanced layer detection</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoPackedGroup">
+     <property name="title">
+      <string>Improved Packed Renderer</string>
+     </property>
+     <layout class="QGridLayout" name="stereoPackedLayout" />
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoPresentationGroup">
+     <property name="title">
+      <string>Presentation Fixes</string>
+     </property>
+     <layout class="QGridLayout" name="stereoPresentationGroupLayout" columnstretch="0,1,0,1">
+      <item row="0" column="0" colspan="4">
+       <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
+        <property name="text">
+         <string>Alternative Rendering (Disable full framebuffer for each eye)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="4">
+       <widget class="QCheckBox" name="stereoSbsRemapMono">
+        <property name="text">
+         <string>Picture-in-Picture Fix: Mono SBS Remap</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="stereoFeedbackLoopFixLabel">
+        <property name="text">
+         <string>Feedback Loop Fix:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoFeedbackLoopFix</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="stereoFeedbackLoopFix">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Safe</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Moderate</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="stereoSbsRemapFixLabel">
+        <property name="text">
+         <string>SBS Remap Fix:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoSbsRemapFix</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QComboBox" name="stereoSbsRemapFix">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Safe</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Moderate</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoRenderingGroup">
+     <property name="title">
+      <string>Rendering Fixes</string>
+     </property>
+     <layout class="QGridLayout" name="stereoRenderingGroupLayout">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="stereoCloseDepthFix">
+        <property name="text">
+         <string>Depth Fix: God of War, Gun</string>
+        </property>
+        <property name="toolTip">
+         <string>Depth Fix: God of War, Gun</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="stereoSkyFix">
+        <property name="text">
+         <string>Sky Fix: Killzone, Gran Turismo 4</string>
+        </property>
+        <property name="toolTip">
+         <string>Sky Fix: Killzone, Gran Turismo 4</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="stereoRequireRtaCorrection">
+        <property name="text">
+         <string>Shadows Fix 0: Target Alpha Correction (MK, COD)</string>
+        </property>
+        <property name="toolTip">
+         <string>Shadows Fix 0: Target Alpha Correction (MK, COD)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="stereoFixStencilShadows1">
+        <property name="text">
+         <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
+        </property>
+        <property name="toolTip">
+         <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="stereoFixStencilShadows2">
+        <property name="text">
+         <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+        </property>
+        <property name="toolTip">
+         <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="stereoFixStencilShadows3">
+        <property name="text">
+         <string>Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)</string>
+        </property>
+        <property name="toolTip">
+         <string>Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QCheckBox" name="stereoRejectRegionRect">
+        <property name="text">
+         <string>PostFX Overlay Fix 1: Reject Region Rect</string>
+        </property>
+        <property name="toolTip">
+         <string>PostFX Overlay Fix 1: Reject Region Rect</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="stereoRejectTfxDecal">
+        <property name="text">
+         <string>PostFX Overlay Fix 2: Reject TFX Decal</string>
+        </property>
+        <property name="toolTip">
+         <string>PostFX Overlay Fix 2: Reject TFX Decal</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="stereoDebugGroup">
+     <property name="title">
+      <string>Debug Rendering</string>
+     </property>
+     <layout class="QVBoxLayout" name="stereoDebugGroupLayout">
+      <item>
+       <layout class="QHBoxLayout" name="stereoDebugActionLabelRow">
+        <item>
+         <widget class="QLabel" name="stereoDebugActionLabel">
+          <property name="text">
+           <string>Debug Rendering Action:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="stereoDebugAction">
+          <item>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Skip Matching Draws</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Render Matching Draws as Mono</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Render Matching Draws as Stereo</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Render Matching Draws with SBS Remapping</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Render Matching Draws as UI</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QWidget" name="stereoDebugFilters">
+        <layout class="QVBoxLayout" name="stereoDebugFiltersLayout">
+         <item>
+          <widget class="QLabel" name="stereoDebugDescription">
+           <property name="text">
+            <string>The selected action applies to draws matching any checked condition. Unchecked conditions have no effect.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="stereoDebugGeometry">
+           <property name="title">
+            <string>Geometry and Depth</string>
+           </property>
+           <layout class="QGridLayout" name="stereoDebugGeometryLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="stereoRejectNonPositiveZ">
+              <property name="text">
+               <string>Z ≤ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Z ≤ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="stereoRejectSmallZRange">
+              <property name="text">
+               <string>Small positive Z range</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Small positive Z range. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="stereoRejectSpriteBlit">
+              <property name="text">
+               <string>Fullscreen draw area</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fullscreen draw area. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stereoRejectFullCover">
+              <property name="text">
+               <string>Full primitive coverage</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Full primitive coverage. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="stereoRejectScanmask">
+              <property name="text">
+               <string>Scanline mask ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Scanline mask ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="stereoRejectConstantColor">
+              <property name="text">
+               <string>Constant vertex color</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Constant vertex color. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="stereoRejectScalingDraw">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Scaled draw (unavailable)</string>
+              </property>
+              <property name="toolTip">
+               <string>This detector is currently inactive and does not select any draws. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="stereoRejectSbsInput">
+              <property name="text">
+               <string>SBS texture input</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: SBS texture input. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="stereoRejectTabInput">
+              <property name="text">
+               <string>TAB texture input</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TAB texture input. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="stereoRejectSpriteNoGaps">
+              <property name="text">
+               <string>Sprite without gaps or region overlay</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: m_primitive_covers_without_gaps = NoGapsType::SpriteNoGaps or GSConfig.StereoRejectRegionRect and Region rectangle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="stereoRejectFst">
+              <property name="text">
+               <string>PRIM.FST</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FST. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="stereoRejectRtaCorrection">
+              <property name="text">
+               <string>Target alpha correction disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Target alpha correction disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimTme">
+              <property name="text">
+               <string>PRIM.TME disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.TME disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimTme">
+              <property name="text">
+               <string>PRIM.TME</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.TME. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimFst">
+              <property name="text">
+               <string>PRIM.FST disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FST disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimFst">
+              <property name="text">
+               <string>PRIM.FST</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FST. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimAbe">
+              <property name="text">
+               <string>PRIM.ABE disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.ABE disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimAbe">
+              <property name="text">
+               <string>PRIM.ABE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.ABE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimFge">
+              <property name="text">
+               <string>PRIM.FGE disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FGE disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimFge">
+              <property name="text">
+               <string>PRIM.FGE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FGE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimIip">
+              <property name="text">
+               <string>PRIM.IIP disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.IIP disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimIip">
+              <property name="text">
+               <string>PRIM.IIP</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.IIP. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimAa1">
+              <property name="text">
+               <string>PRIM.AA1 disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.AA1 disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimAa1">
+              <property name="text">
+               <string>PRIM.AA1</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.AA1. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimCtxt">
+              <property name="text">
+               <string>PRIM.CTXT disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.CTXT disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimCtxt">
+              <property name="text">
+               <string>PRIM.CTXT</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.CTXT. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="0">
+             <widget class="QCheckBox" name="stereoRequirePrimFix">
+              <property name="text">
+               <string>PRIM.FIX disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FIX disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="1">
+             <widget class="QCheckBox" name="stereoRejectPrimFix">
+              <property name="text">
+               <string>PRIM.FIX</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.FIX. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="0">
+             <widget class="QCheckBox" name="stereoRequirePerspectiveUV">
+              <property name="text">
+               <string>Perspective UV coordinates disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Perspective UV coordinates disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="1">
+             <widget class="QCheckBox" name="stereoRequireDepthActive">
+              <property name="text">
+               <string>Depth testing and writes disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth testing and writes disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="0">
+             <widget class="QCheckBox" name="stereoRejectSprites">
+              <property name="text">
+               <string>Sprite primitive</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Sprite primitive. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="1">
+             <widget class="QCheckBox" name="stereoRequireTextureMapping">
+              <property name="text">
+               <string>Texture mapping disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture mapping disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="0">
+             <widget class="QCheckBox" name="stereoRequireAlphaBlend">
+              <property name="text">
+               <string>Alpha blending disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha blending disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="1">
+             <widget class="QCheckBox" name="stereoRequireAlphaTest">
+              <property name="text">
+               <string>Alpha testing disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha testing disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="0">
+             <widget class="QCheckBox" name="stereoRequireUvVaries">
+              <property name="text">
+               <string>Varying UV coordinates disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Varying UV coordinates disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="1">
+             <widget class="QCheckBox" name="stereoRequireColorVaries">
+              <property name="text">
+               <string>Varying vertex color disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Varying vertex color disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="18" column="0">
+             <widget class="QCheckBox" name="stereoRequireFog">
+              <property name="text">
+               <string>Fog disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fog disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="stereoDebugShader">
+           <property name="title">
+            <string>Shader State</string>
+           </property>
+           <layout class="QGridLayout" name="stereoDebugShaderLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireRtaSourceCorrection">
+              <property name="text">
+               <string>Source alpha correction</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Source alpha correction. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectAdjt">
+              <property name="text">
+               <string>T-coordinate adjustment disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: T-coordinate adjustment disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireTfx">
+              <property name="text">
+               <string>PS.TFX ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.TFX ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendMix">
+              <property name="text">
+               <string>Blend mixing = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Blend mixing = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireWms">
+              <property name="text">
+               <string>PS.WMS ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.WMS ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireWmt">
+              <property name="text">
+               <string>PS.WMT ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.WMT ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireLtf">
+              <property name="text">
+               <string>Linear texture filtering</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Linear texture filtering. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectIip">
+              <property name="text">
+               <string>Interpolated shading disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Interpolated shading disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectAutomaticLod">
+              <property name="text">
+               <string>Automatic texture LOD disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Automatic texture LOD disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireNoColor1">
+              <property name="text">
+               <string>Secondary color output disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Secondary color output disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendB">
+              <property name="text">
+               <string>PS.BLEND_B = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_B = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectAtst">
+              <property name="text">
+               <string>PS.ATST = NONE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.ATST = NONE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireShuffle">
+              <property name="text">
+               <string>Shader texture shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader texture shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectTcc">
+              <property name="text">
+               <string>Texture alpha disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture alpha disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectProcessBa">
+              <property name="text">
+               <string>BA channel processing = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: BA channel processing = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectProcessRg">
+              <property name="text">
+               <string>RG channel processing = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: RG channel processing = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectShuffleAcross">
+              <property name="text">
+               <string>Cross-channel shuffle disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Cross-channel shuffle disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireTextureShuffle">
+              <property name="text">
+               <string>Texture shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectRtaSourceCorrection">
+              <property name="text">
+               <string>Source alpha correction disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Source alpha correction disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectColclipHw">
+              <property name="text">
+               <string>Hardware color clipping disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Hardware color clipping disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectColclip">
+              <property name="text">
+               <string>Color clipping disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Color clipping disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectPabe">
+              <property name="text">
+               <string>Per-pixel alpha blending disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Per-pixel alpha blending disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectFbMask">
+              <property name="text">
+               <string>Shader framebuffer mask disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader framebuffer mask disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectTexIsFb">
+              <property name="text">
+               <string>PS.TEXTURE is framebuffer disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.TEXTURE is framebuffer disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectNoColor">
+              <property name="text">
+               <string>Primary color output enabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Primary color output enabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectNoColor1">
+              <property name="text">
+               <string>Secondary color output enabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Secondary color output enabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectAemFmt">
+              <property name="text">
+               <string>PS.AEM_FMT = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.AEM_FMT = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectPalFmt">
+              <property name="text">
+               <string>PS.PAL_FMT = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.PAL_FMT = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectDstFmt">
+              <property name="text">
+               <string>PS.DST_FMT = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DST_FMT = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectDepthFmt">
+              <property name="text">
+               <string>PS.DEPTH_FMT = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DEPTH_FMT = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectAem">
+              <property name="text">
+               <string>Alpha expansion disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha expansion disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectFba">
+              <property name="text">
+               <string>Framebuffer alpha disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer alpha disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectFog">
+              <property name="text">
+               <string>Fog disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fog disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectDate">
+              <property name="text">
+               <string>PS.DATE = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DATE = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectAfail">
+              <property name="text">
+               <string>PS.AFAIL = KEEP</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.AFAIL = KEEP. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectFst">
+              <property name="text">
+               <string>Fixed texture coordinates disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fixed texture coordinates disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="18" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectTfx">
+              <property name="text">
+               <string>PS.TFX = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.TFX = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="18" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectWms">
+              <property name="text">
+               <string>PS.WMS = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.WMS = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="19" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectWmt">
+              <property name="text">
+               <string>PS.WMT = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.WMT = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="19" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectAdjs">
+              <property name="text">
+               <string>S-coordinate adjustment disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: S-coordinate adjustment disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="20" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectLtf">
+              <property name="text">
+               <string>Linear texture filtering disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Linear texture filtering disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="20" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectShuffle">
+              <property name="text">
+               <string>Shader texture shuffle disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader texture shuffle disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="21" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectShuffleSame">
+              <property name="text">
+               <string>Same-channel shuffle disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Same-channel shuffle disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="21" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectReal16Src">
+              <property name="text">
+               <string>16-bit texture source disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: 16-bit texture source disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="22" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectWriteRg">
+              <property name="text">
+               <string>RG channel writes disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: RG channel writes disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="22" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendA">
+              <property name="text">
+               <string>PS.BLEND_A = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_A = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="23" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendC">
+              <property name="text">
+               <string>PS.BLEND_C = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_C = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="23" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendD">
+              <property name="text">
+               <string>PS.BLEND_D = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_D = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="24" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectFixedOneA">
+              <property name="text">
+               <string>Fixed alpha of one disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fixed alpha of one disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="24" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectBlendHw">
+              <property name="text">
+               <string>PS.BLEND_HW = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_HW = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="25" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectAMasked">
+              <property name="text">
+               <string>Alpha masked disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha masked disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="25" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectRoundInv">
+              <property name="text">
+               <string>Inverse rounding disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Inverse rounding disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="26" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectChannel">
+              <property name="text">
+               <string>Channel fetch = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Channel fetch = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="26" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectChannelFb">
+              <property name="text">
+               <string>Framebuffer channel fetch disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer channel fetch disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="27" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectDither">
+              <property name="text">
+               <string>Dithering = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Dithering = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="27" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectDitherAdjust">
+              <property name="text">
+               <string>Dither adjustment disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Dither adjustment disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="28" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectZClamp">
+              <property name="text">
+               <string>Depth clamp disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth clamp disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="28" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectZFloor">
+              <property name="text">
+               <string>Depth floor disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth floor disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="29" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectTCOffsetHack">
+              <property name="text">
+               <string>Texture-coordinate offset disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture-coordinate offset disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="29" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectUrbanChaosHle">
+              <property name="text">
+               <string>Urban Chaos HLE disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Urban Chaos HLE disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="30" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectTalesOfAbyssHle">
+              <property name="text">
+               <string>Tales of the Abyss HLE disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Tales of the Abyss HLE disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="30" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectManualLod">
+              <property name="text">
+               <string>Manual texture LOD disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Manual texture LOD disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="31" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectPointSampler">
+              <property name="text">
+               <string>Point sampling disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Point sampling disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="31" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRejectRegionRect">
+              <property name="text">
+               <string>Region rectangle disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Region rectangle disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="32" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRejectScanmask">
+              <property name="text">
+               <string>Scanline mask = 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Scanline mask = 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="32" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireColclipHw">
+              <property name="text">
+               <string>Hardware color clipping</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Hardware color clipping. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="33" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireColclip">
+              <property name="text">
+               <string>Color clipping</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Color clipping. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="33" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendMix">
+              <property name="text">
+               <string>Blend mixing ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Blend mixing ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="34" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequirePabe">
+              <property name="text">
+               <string>Per-pixel alpha blending</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Per-pixel alpha blending. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="34" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireFbMask">
+              <property name="text">
+               <string>Shader framebuffer mask</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader framebuffer mask. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="35" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireTexIsFb">
+              <property name="text">
+               <string>PS.TEXTURE is framebuffer</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.TEXTURE is framebuffer. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="35" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireNoColor">
+              <property name="text">
+               <string>Primary color output disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Primary color output disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="36" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAemFmt">
+              <property name="text">
+               <string>PS.AEM_FMT ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.AEM_FMT ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="36" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequirePalFmt">
+              <property name="text">
+               <string>PS.PAL_FMT ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.PAL_FMT ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="37" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireDstFmt">
+              <property name="text">
+               <string>PS.DST_FMT ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DST_FMT ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="37" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireDepthFmt">
+              <property name="text">
+               <string>PS.DEPTH_FMT ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DEPTH_FMT ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="38" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAem">
+              <property name="text">
+               <string>Alpha expansion</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha expansion. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="38" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireFba">
+              <property name="text">
+               <string>Framebuffer alpha</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer alpha. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="39" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireFog">
+              <property name="text">
+               <string>Fog</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fog. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="39" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireIip">
+              <property name="text">
+               <string>Interpolated shading</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Interpolated shading. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="40" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireDate">
+              <property name="text">
+               <string>PS.DATE ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.DATE ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="40" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireAtst">
+              <property name="text">
+               <string>PS.ATST ≠ NONE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.ATST ≠ NONE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="41" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAfail">
+              <property name="text">
+               <string>PS.AFAIL ≠ KEEP</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.AFAIL ≠ KEEP. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="41" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireFst">
+              <property name="text">
+               <string>Fixed texture coordinates</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fixed texture coordinates. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="42" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireTcc">
+              <property name="text">
+               <string>Texture alpha</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture alpha. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="42" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireAdjs">
+              <property name="text">
+               <string>S-coordinate adjustment</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: S-coordinate adjustment. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="43" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAdjt">
+              <property name="text">
+               <string>T-coordinate adjustment</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: T-coordinate adjustment. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="43" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireShuffleSame">
+              <property name="text">
+               <string>Same-channel shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Same-channel shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="44" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireReal16Src">
+              <property name="text">
+               <string>16-bit texture source</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: 16-bit texture source. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="44" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireProcessBa">
+              <property name="text">
+               <string>BA channel processing ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: BA channel processing ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="45" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireProcessRg">
+              <property name="text">
+               <string>RG channel processing ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: RG channel processing ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="45" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireShuffleAcross">
+              <property name="text">
+               <string>Cross-channel shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Cross-channel shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="46" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireWriteRg">
+              <property name="text">
+               <string>RG channel writes</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: RG channel writes. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="46" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendA">
+              <property name="text">
+               <string>PS.BLEND_A ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_A ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="47" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendB">
+              <property name="text">
+               <string>PS.BLEND_B ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_B ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="47" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendC">
+              <property name="text">
+               <string>PS.BLEND_C ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_C ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="48" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendD">
+              <property name="text">
+               <string>PS.BLEND_D ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_D ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="48" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireFixedOneA">
+              <property name="text">
+               <string>Fixed alpha of one</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fixed alpha of one. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="49" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireBlendHw">
+              <property name="text">
+               <string>PS.BLEND_HW ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PS.BLEND_HW ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="49" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireAMasked">
+              <property name="text">
+               <string>Alpha masked</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha masked. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="50" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireRoundInv">
+              <property name="text">
+               <string>Inverse rounding</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Inverse rounding. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="50" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireChannel">
+              <property name="text">
+               <string>Channel fetch ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Channel fetch ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="51" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireChannelFb">
+              <property name="text">
+               <string>Framebuffer channel fetch</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer channel fetch. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="51" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireDither">
+              <property name="text">
+               <string>Dithering ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Dithering ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="52" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireDitherAdjust">
+              <property name="text">
+               <string>Dither adjustment</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Dither adjustment. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="52" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireZClamp">
+              <property name="text">
+               <string>Depth clamp</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth clamp. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="53" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireZFloor">
+              <property name="text">
+               <string>Depth floor</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth floor. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="53" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireTCOffsetHack">
+              <property name="text">
+               <string>Texture-coordinate offset</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture-coordinate offset. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="54" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireUrbanChaosHle">
+              <property name="text">
+               <string>Urban Chaos HLE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Urban Chaos HLE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="54" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireTalesOfAbyssHle">
+              <property name="text">
+               <string>Tales of the Abyss HLE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Tales of the Abyss HLE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="55" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAutomaticLod">
+              <property name="text">
+               <string>Automatic texture LOD</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Automatic texture LOD. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="55" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireManualLod">
+              <property name="text">
+               <string>Manual texture LOD</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Manual texture LOD. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="56" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequirePointSampler">
+              <property name="text">
+               <string>Point sampling</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Point sampling. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="56" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireRegionRect">
+              <property name="text">
+               <string>Region rectangle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Region rectangle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="57" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireScanmask">
+              <property name="text">
+               <string>Scanline mask ≠ 0</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Scanline mask ≠ 0. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="57" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireAlphaBlend">
+              <property name="text">
+               <string>PRIM.ABE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.ABE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="58" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAlphaTest">
+              <property name="text">
+               <string>TEST.ATE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.ATE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="58" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireDatm">
+              <property name="text">
+               <string>TEST.DATM</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.DATM. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="59" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireZTest">
+              <property name="text">
+               <string>TEST.ZTE</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.ZTE. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="59" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireZWrite">
+              <property name="text">
+               <string>m_cached_ctx.ZBUF.ZMSK disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: m_cached_ctx.ZBUF.ZMSK disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="60" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireZTestAlways">
+              <property name="text">
+               <string>TEST.ZTST = ALWAYS</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.ZTST = ALWAYS. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="60" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireZTestNever">
+              <property name="text">
+               <string>TEST.ZTST = ZTST_NEVER</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.ZTST = ZTST_NEVER. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="61" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireAa1">
+              <property name="text">
+               <string>PRIM.AA1</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: PRIM.AA1. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="61" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireChannelShuffle">
+              <property name="text">
+               <string>Channel shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Channel shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="62" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireFullscreenShuffle">
+              <property name="text">
+               <string>Fullscreen shuffle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fullscreen shuffle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="62" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequirePoints">
+              <property name="text">
+               <string>Point primitive</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Point primitive. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="63" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireLines">
+              <property name="text">
+               <string>Line primitive</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Line primitive. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="63" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireTriangles">
+              <property name="text">
+               <string>Triangle primitive</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Triangle primitive. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="64" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireSprites">
+              <property name="text">
+               <string>Constant Z with ZTST Always</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEST.ZTST = ALWAYS and Constant vertex Z. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="64" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireFixedQ">
+              <property name="text">
+               <string>TEX0.TFX = DECAL</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEX0.TFX = DECAL. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="65" column="0">
+             <widget class="QCheckBox" name="stereoUniversalRequireFixedZ">
+              <property name="text">
+               <string>TEX0.TFX ≠ DECAL</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: TEX0.TFX ≠ DECAL. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="65" column="1">
+             <widget class="QCheckBox" name="stereoUniversalRequireConstantColor">
+              <property name="text">
+               <string>Not a non-region DECAL draw</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: !(TEX0.TFX = DECAL and not Region rectangle). The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="stereoDebugDisplay">
+           <property name="title">
+            <string>Display Buffers</string>
+           </property>
+           <layout class="QGridLayout" name="stereoDebugDisplayLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="stereoRequireDisplayBuffer1">
+              <property name="text">
+               <string>Framebuffer matches display 1 disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer matches display 1 disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="stereoRequireDisplayBuffer2">
+              <property name="text">
+               <string>Framebuffer matches display 2 disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer matches display 2 disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="stereoRequireTextureDisplayBuffer2">
+              <property name="text">
+               <string>Texture matches display 2 disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture matches display 2 disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stereoRejectTextureDisplayBuffer2">
+              <property name="text">
+               <string>Texture matches display 2</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture matches display 2. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="stereoDebugFeedback">
+           <property name="title">
+            <string>Feedback Loops</string>
+           </property>
+           <layout class="QGridLayout" name="stereoDebugFeedbackLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoop">
+              <property name="text">
+               <string>Shader feedback loop</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader feedback loop. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopAny">
+              <property name="text">
+               <string>Any feedback loop disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Any feedback loop disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopAny">
+              <property name="text">
+               <string>Any feedback loop</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Any feedback loop. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopShader">
+              <property name="text">
+               <string>Shader feedback loop disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader feedback loop disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopShader">
+              <property name="text">
+               <string>Shader feedback loop</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Shader feedback loop. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopDrawUsesTarget">
+              <property name="text">
+               <string>Draw samples its target disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Draw samples its target disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopDrawUsesTarget">
+              <property name="text">
+               <string>Draw samples its target</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Draw samples its target. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopTexIsRt">
+              <property name="text">
+               <string>Texture overlaps render target disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture overlaps render target disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopTexIsRt">
+              <property name="text">
+               <string>Texture overlaps render target</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture overlaps render target. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopSourceFromTarget">
+              <property name="text">
+               <string>Source from render target disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Source from render target disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopSourceFromTarget">
+              <property name="text">
+               <string>Source from render target</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Source from render target. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopInTargetDraw">
+              <property name="text">
+               <string>In-target draw disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: In-target draw disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopInTargetDraw">
+              <property name="text">
+               <string>In-target draw</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: In-target draw. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopTempZ">
+              <property name="text">
+               <string>Temporary depth buffer disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Temporary depth buffer disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopTempZ">
+              <property name="text">
+               <string>Temporary depth buffer</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Temporary depth buffer. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QCheckBox" name="stereoRequireFeedbackLoopOverlapDrawRange">
+              <property name="text">
+               <string>Draw overlaps source target disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Draw overlaps source target disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="stereoRejectFeedbackLoopOverlapDrawRange">
+              <property name="text">
+               <string>Draw overlaps source target</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Draw overlaps source target. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QCheckBox" name="stereoFeedbackLoopDisableStereo">
+              <property name="text">
+               <string>Any feedback loop</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Any feedback loop. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0" colspan="2">
+             <widget class="QCheckBox" name="stereoFeedbackLoopSourceFromTargetOnly">
+              <property name="text">
+               <string>Detect feedback only from target sources</string>
+              </property>
+              <property name="toolTip">
+               <string>Limit the Any feedback loop condition to textures sourced from a render target. This option does not select draws by itself.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="stereoDebugStencil">
+           <property name="title">
+            <string>Stencil and Fullscreen</string>
+           </property>
+           <layout class="QGridLayout" name="stereoDebugStencilLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="stereoRejectFullscreenScissor">
+              <property name="text">
+               <string>not Fullscreen scissor</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: not Fullscreen scissor. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="stereoRejectFullscreenDraw">
+              <property name="text">
+               <string>Fullscreen draw rectangle</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Fullscreen draw rectangle. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="stereoStencilRequireTexIsFb">
+              <property name="text">
+               <string>Texture is framebuffer disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture is framebuffer disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stereoStencilRequireDate">
+              <property name="text">
+               <string>Destination alpha test (DATE) disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Destination alpha test (DATE) disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="stereoStencilRequireDatm">
+              <property name="text">
+               <string>Destination alpha mode (DATM) disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Destination alpha mode (DATM) disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="stereoStencilRequireAfailZbOnly">
+              <property name="text">
+               <string>Alpha fail: depth only disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha fail: depth only disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="stereoStencilRequireAfailNotKeep">
+              <property name="text">
+               <string>Alpha fail: discard enabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Alpha fail: discard enabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="stereoStencilRequireZWrite">
+              <property name="text">
+               <string>Depth writes disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth writes disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="stereoStencilRequireZTest">
+              <property name="text">
+               <string>Depth testing disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Depth testing disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="stereoStencilRequireFbMask">
+              <property name="text">
+               <string>Framebuffer write mask disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Framebuffer write mask disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="stereoStencilRequireFbMaskFull">
+              <property name="text">
+               <string>Full RGB framebuffer mask disabled</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Full RGB framebuffer mask disabled. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="stereoRejectTexIsFb">
+              <property name="text">
+               <string>Texture is framebuffer</string>
+              </property>
+              <property name="toolTip">
+               <string>Select draws satisfying: Texture is framebuffer. The chosen debug action applies when any checked condition matches.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="stereoscopyVerticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
+</ui>

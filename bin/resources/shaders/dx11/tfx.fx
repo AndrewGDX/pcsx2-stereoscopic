@@ -164,7 +164,6 @@ struct VS_OUTPUT
 	float4 ti : TEXCOORD2;
 	noperspective float2 stereo_pos : TEXCOORD3;
 	nointerpolation float stereo_eye : TEXCOORD4;
-	nointerpolation float stereo_axis : TEXCOORD5;
 
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
@@ -183,7 +182,6 @@ struct PS_INPUT
 	float4 ti : TEXCOORD2;
 	noperspective float2 stereo_pos : TEXCOORD3;
 	nointerpolation float stereo_eye : TEXCOORD4;
-	nointerpolation float stereo_axis : TEXCOORD5;
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
 #else
@@ -333,13 +331,13 @@ static float PackedEye = 0.0;
 // All packed shader reads use explicit eye-local or screen coordinates.
 float packed_eye()
 {
-    return StereoTarget.w >= 0.0 ? StereoTarget.w : (PackedEye > 0.0 ? 1.0 : 0.0);
+    return (PackedEye > 0.0 ? 1.0 : 0.0);
 }
 
 float2 packed_origin(float4 image)
 {
     float eye = packed_eye();
-    return image.z < 1.5 ? float2(eye * image.x * 0.5, 0.0) : float2(0.0, eye * image.y * 0.5);
+    return float2(eye * image.x * 0.5, 0.0);
 }
 
 int2 packed_texel(int2 p, bool screen_position)
@@ -348,7 +346,7 @@ int2 packed_texel(int2 p, bool screen_position)
     if (StereoSource.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
         return p;
     float2 origin = packed_origin(StereoSource);
-    float2 extent = StereoSource.xy * (StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5));
+    float2 extent = StereoSource.xy * (float2(0.5, 1.0));
     float2 local = float2(p);
     if (screen_position)
         local -= packed_origin(StereoTarget);
@@ -362,7 +360,7 @@ float2 packed_clamp_uv(float2 uv)
 {
     if (StereoSource.z > 0.5 && (uint(StereoSource.w) & 4u) != 0u)
     {
-        float2 extent = StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+        float2 extent = float2(0.5, 1.0);
         float2 origin = packed_origin(StereoSource) / StereoSource.xy;
         float2 half_texel = float2(0.5, 0.5) / StereoSource.xy;
         uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
@@ -377,7 +375,7 @@ float2 packed_uv(float2 uv)
         return uv;
     if ((flags & 16u) != 0u) uv.x = frac(uv.x);
     if ((flags & 32u) != 0u) uv.y = frac(uv.y);
-    float2 extent = StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+    float2 extent = float2(0.5, 1.0);
     float2 origin = packed_origin(StereoSource) / StereoSource.xy;
     uv = uv * extent + origin;
     if ((flags & 4u) != 0u)
@@ -587,11 +585,8 @@ float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 	if (StereoRemap.x > 0.5f && (use_forced_eye || stereo_eye != 0.0f))
 	{
 		float eye_index = use_forced_eye ? StereoRemap.z : (stereo_eye > 0.0f ? 1.0f : 0.0f);
-		if (StereoRemap.y > 0.5f)
-			uv.y = uv.y * 0.5f + eye_index * 0.5f;
-		else
-			uv.x = uv.x * 0.5f + eye_index * 0.5f;
-	}
+		uv.x = uv.x * 0.5f + eye_index * 0.5f;
+		}
 
 	}
 
@@ -1430,13 +1425,6 @@ void ps_main(PS_INPUT input)
 		}
 		else
 		{
-			if (input.stereo_axis > 0.5f)
-			{
-				if ((input.stereo_eye < 0.0f && input.stereo_pos.y < 0.0f) ||
-					(input.stereo_eye > 0.0f && input.stereo_pos.y > 0.0f))
-					discard;
-			}
-			else
 			{
 				if ((input.stereo_eye < 0.0f && input.stereo_pos.x > 0.0f) ||
 					(input.stereo_eye > 0.0f && input.stereo_pos.x < 0.0f))
@@ -1789,12 +1777,10 @@ VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 	// Apply stereoscopic 3D offset if enabled
 	// Based on Nvidia 3D Vision Automatic Best Practices Guide
 	int stereo_mode = int(StereoParams.w + 0.5f);
-	int dominant_mode = (stereo_mode > 0) ? ((stereo_mode - 1) / 4) : 0;
-	int base_mode = (stereo_mode > 0) ? (((stereo_mode - 1) % 4) + 1) : 0;
-	if (base_mode > 0)
+	int dominant_mode = (stereo_mode > 0) ? (stereo_mode - 1) : 0;
+	if (stereo_mode > 0)
 	{
-		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((instance_id & 1u) ? 1.0f : -1.0f) : ((asuint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
+		float eye_sign = ((instance_id & 1u) ? 1.0f : -1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -1804,21 +1790,12 @@ VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 		float depth = 1.0f - (float(input.z) * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
 		output.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
 
-		if (base_mode == 2 || base_mode == 4)
-		{
-			output.p.y *= 0.5f;
-			output.p.y -= eye_sign * 0.5f;
-		}
-		else
-		{
-			output.p.x *= 0.5f;
-			output.p.x += eye_sign * 0.5f;
-		}
+		output.p.x *= 0.5f;
+		output.p.x += eye_sign * 0.5f;
 	}
 
 	output.stereo_pos = output.p.xy;
-	output.stereo_eye = (base_mode >= 3) ? ((instance_id & 1u) ? 1.0f : -1.0f) : 0.0f;
-	output.stereo_axis = (base_mode == 4) ? 1.0f : 0.0f;
+	output.stereo_eye = (stereo_mode > 0) ? ((instance_id & 1u) ? 1.0f : -1.0f) : 0.0f;
 
 	if(VS_TME)
 	{
