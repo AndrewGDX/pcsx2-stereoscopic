@@ -154,8 +154,8 @@ bool GSRenderer::Merge(int field)
 
 	s_n++;
 
-	GSVector4 src_gs_read[2];
-	GSVector4 dst[3];
+	GSVector4 src_gs_read[2] = {};
+	GSVector4 dst[3] = {};
 
 	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
 	const bool scanmask_frame = m_scanmask_used && abs(PCRTCDisplays.PCRTCDisplays[0].displayRect.y - PCRTCDisplays.PCRTCDisplays[1].displayRect.y) != 1;
@@ -224,6 +224,15 @@ bool GSRenderer::Merge(int field)
 	const GSVector2 stereo_scale = GetStereoScaleVector2(GetUpscaleMultiplier());
 	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * stereo_scale.x),
 		static_cast<int>(static_cast<float>(resolution.y) * stereo_scale.y));
+
+	if ((tex[0] && tex[0]->IsPackedStereo()) || (tex[1] && tex[1]->IsPackedStereo()) || (tex[2] && tex[2]->IsPackedStereo()))
+	{
+		const GSPackedStereo::Axis axis = GetPackedStereoAxis();
+		if (axis == GSPackedStereo::Axis::Horizontal)
+			fs.x = (fs.x + 1) & ~1;
+		else if (axis == GSPackedStereo::Axis::Vertical)
+			fs.y = (fs.y + 1) & ~1;
+	}
 
 	m_real_size = GSVector2i(fs.x, fs.y);
 

@@ -904,6 +904,10 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(VideoCaptureHeight) &&
 		OpEqu(AudioCaptureBitrate) &&
 
+		OpEqu(StereoPackedEnable) &&
+		OpEqu(StereoPackedIntegerReads) &&
+		OpEqu(StereoPackedEffectDepthFix) &&
+		OpEqu(StereoPackedMonoFullscreen) &&
 		OpEqu(StereoMode) &&
 		OpEqu(StereoDominantEye) &&
 		OpEqu(StereoSeparation) &&
@@ -1515,6 +1519,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
 
+	SettingsWrapEntry(StereoPackedEnable);
+	SettingsWrapEntry(StereoPackedIntegerReads);
+	SettingsWrapEntry(StereoPackedEffectDepthFix);
+	SettingsWrapEntry(StereoPackedMonoFullscreen);
 	SettingsWrapEnumEx(StereoMode, "StereoMode", StereoModeNames);
 	SettingsWrapEnumEx(StereoDominantEye, "StereoDominantEye", StereoDominantEyeNames);
 	SettingsWrapEntry(StereoSeparation);

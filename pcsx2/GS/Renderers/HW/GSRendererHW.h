@@ -214,6 +214,10 @@ private:
 
 	void DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm);
 
+	void SubmitPackedDraw(GSTextureCache::Source* tex, float separation, float convergence, float screen_depth, bool mono = false);
+	bool IsPackedScreenVisibilityMask() const;
+	bool IsPackedScreenVisibilityRGBMask() const;
+
 	void ResetStates();
 	void HandleFlatShadedVertices();
 	void SetupIA(float target_scale, float sx, float sy, bool req_vert_backup, const bool no_rt);

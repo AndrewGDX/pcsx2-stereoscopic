@@ -1135,6 +1135,8 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 StereoScissorRight;
 		GSVector4 StereoDrawLeft;
 		GSVector4 StereoDrawRight;
+		GSVector4 StereoSource; // physical source size, packed axis, sampling flags
+		GSVector4 StereoTarget; // physical target size, packed axis, forced eye (-1 = instance)
 
 		__fi PSConstantBuffer()
 		{
@@ -1499,6 +1501,26 @@ protected:
 	virtual GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) = 0;
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) = 0;
+	// A cropped display window must be read from the same region of each eye.
+	template <typename Draw>
+	static void DrawMergeRect(const GSTexture* src, const GSVector4& src_rect, const GSTexture* dst, const GSVector4& dst_rect,
+		Filter filter, Draw draw)
+	{
+		const GSPackedStereo::Axis axis = dst->GetPackedStereoAxis();
+		const bool same_layout = axis == src->GetPackedStereoAxis();
+		const bool whole_axis = axis == GSPackedStereo::Axis::Horizontal ?
+			src_rect.x == 0.0f && src_rect.z == 1.0f && dst_rect.x == 0.0f && dst_rect.z == dst->GetWidth() :
+			src_rect.y == 0.0f && src_rect.w == 1.0f && dst_rect.y == 0.0f && dst_rect.w == dst->GetHeight();
+		if (same_layout && (axis == GSPackedStereo::Axis::None || (whole_axis && filter == Nearest)))
+		{
+			draw(src_rect, dst_rect);
+			return;
+		}
+
+		const unsigned count = dst->IsPackedStereo() ? 2 : 1;
+		for (unsigned eye = 0; eye < count; eye++)
+			draw(src->PackedStereoUV(src_rect, eye, filter == Biln), dst->PackedStereoPixels(dst_rect, eye));
+	}
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
@@ -1523,6 +1545,8 @@ protected:
 	}
 	void DoStretchRectWithAssertions(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, 
 		ShaderConvertSelector shader, Filter filter);
+	void DoStretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+		GSHWDrawConfig::ColorMaskSelector mask, ShaderConvertSelector shader, bool linear);
 public:
 	GSDevice();
 	virtual ~GSDevice();
@@ -1662,6 +1686,16 @@ public:
 	GSTexture* CreateCompatible(GSTexture* tex, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateCompatible(GSTexture* tex, const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateCompatible(GSTexture* tex, int w, int h, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreatePackedRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreatePackedDepthStencil(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	void StretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+		ShaderConvertSelector shader = ShaderConvert::COPY, bool linear = true);
+	void StretchRectPacked(GSTexture* src, GSTexture* dst, const GSVector4& dr,
+		ShaderConvertSelector shader = ShaderConvert::COPY, bool linear = true);
+	void StretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+		bool red, bool green, bool blue, bool alpha, ShaderConvertSelector shader = ShaderConvert::COPY);
+	void DrawMultiStretchRectsPacked(const MultiStretchRect* rects, u32 count, GSTexture* dst, ShaderConvertSelector shader = ShaderConvert::COPY);
+	void CopyRectPacked(GSTexture* src, GSTexture* dst, const GSVector4i& r, u32 x, u32 y);
 
 	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 

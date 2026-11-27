@@ -2158,7 +2158,10 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, GSVector4::unorm8(c));
 		SetUtilityRootSignature();
 		SetPipeline(GetConvertPipeline(ShaderConvert::COPY));
-		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
+		DrawMergeRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], filter,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				DrawStretchRect(src_rect, dst_rect, dsize);
+			});
 		dTex->SetState(GSTexture::State::Dirty);
 		dcleared = true;
 	}
@@ -2179,7 +2182,10 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		{
 			SetUtilityRootSignature();
 			SetPipeline(GetConvertPipeline(ShaderConvert::YUV));
-			DrawStretchRect(full_r, dRect[2], fbsize);
+			DrawMergeRect(dTex, full_r, sTex[2], dRect[2], filter,
+				[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+					DrawStretchRect(src_rect, dst_rect, fbsize);
+				});
 		}
 		EndRenderPass();
 
@@ -2214,7 +2220,10 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityRootSignature();
 		SetUtilityTexture(sTex[0], sampler);
 		SetPipeline(m_merge[PMODE.MMOD].get());
-		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
+		DrawMergeRect(sTex[0], sRect[0], dTex, dRect[0], filter,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				DrawStretchRect(src_rect, dst_rect, dsize);
+			});
 	}
 
 	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
@@ -2226,7 +2235,10 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		OMSetRenderTargets(sTex[2], nullptr, nullptr, fbarea);
 		BeginRenderPass(
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
-		DrawStretchRect(full_r, dRect[2], dsize);
+		DrawMergeRect(dTex, full_r, sTex[2], dRect[2], filter,
+			[&](const GSVector4& src_rect, const GSVector4& dst_rect) {
+				DrawStretchRect(src_rect, dst_rect, dTex->IsPackedStereo() ? fbsize : dsize);
+			});
 	}
 
 	EndRenderPass();

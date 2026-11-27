@@ -105,7 +105,7 @@ void vs_main()
 	if (base_mode > 0)
 	{
 		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -118,7 +118,8 @@ void vs_main()
 		if (base_mode == 2 || base_mode == 4)
 		{
 			gl_Position.y *= 0.5f;
-			gl_Position.y -= eye_sign * 0.5f;
+			// With GL_LOWER_LEFT, NDC -1 maps to the first eye's rows.
+			gl_Position.y += eye_sign * 0.5f;
 		}
 		else
 		{
@@ -222,7 +223,7 @@ ProcessedVertex load_vertex(uint index)
 	if (base_mode > 0)
 	{
 		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_sign = stereo_instanced ? ((gl_InstanceID & 1) != 0 ? 1.0f : -1.0f) : ((floatBitsToUint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;
@@ -235,7 +236,7 @@ ProcessedVertex load_vertex(uint index)
 		if (base_mode == 2 || base_mode == 4)
 		{
 			vtx.p.y *= 0.5f;
-			vtx.p.y -= eye_sign * 0.5f;
+			vtx.p.y += eye_sign * 0.5f;
 		}
 		else
 		{

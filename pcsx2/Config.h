@@ -922,6 +922,11 @@ struct Pcsx2Config
 		u8 PNGCompressionLevel = 1;
 
 		GSStereoMode StereoMode = GSStereoMode::SideBySide;
+		// Experimental packed-atlas renderer. All controls can be overridden per game.
+		bool StereoPackedEnable = true;
+		bool StereoPackedIntegerReads = true;
+		bool StereoPackedEffectDepthFix = false;
+		bool StereoPackedMonoFullscreen = true;
 		GSStereoDominantEye StereoDominantEye = GSStereoDominantEye::None;
 		float StereoSeparation = 20.0f;
 		float StereoConvergence = 20.0f;

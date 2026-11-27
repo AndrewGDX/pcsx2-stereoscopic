@@ -104,6 +104,8 @@ layout(std140, binding = 0) uniform cb21
 	vec4 StereoScissorRight;
 	vec4 StereoDrawLeft;
 	vec4 StereoDrawRight;
+	vec4 StereoSource;
+	vec4 StereoTarget;
 };
 
 in SHADER
@@ -206,6 +208,64 @@ float sample_from_depth()
 }
 
 #if NEEDS_TEX
+
+// All packed shader reads use explicit eye-local or screen coordinates.
+float packed_eye()
+{
+    return StereoTarget.w >= 0.0 ? StereoTarget.w : (PSin.stereo_eye > 0.0 ? 1.0 : 0.0);
+}
+
+vec2 packed_origin(vec4 image)
+{
+    float eye = packed_eye();
+    return image.z < 1.5 ? vec2(eye * image.x * 0.5, 0.0) : vec2(0.0, eye * image.y * 0.5);
+}
+
+ivec2 packed_texel(ivec2 p, bool screen_position)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
+        return p;
+    vec2 origin = packed_origin(StereoSource);
+    vec2 extent = StereoSource.xy * (StereoSource.z < 1.5 ? vec2(0.5, 1.0) : vec2(1.0, 0.5));
+    vec2 local = vec2(p);
+    if (screen_position)
+        local -= packed_origin(StereoTarget);
+    vec2 physical = local + origin;
+    if ((flags & 4u) != 0u)
+        physical = clamp(physical, origin, max(origin, origin + extent - vec2(1.0, 1.0)));
+    return ivec2(physical);
+}
+
+vec2 packed_clamp_uv(vec2 uv)
+{
+    if (StereoSource.z > 0.5 && (uint(StereoSource.w) & 4u) != 0u)
+    {
+        vec2 extent = StereoSource.z < 1.5 ? vec2(0.5, 1.0) : vec2(1.0, 0.5);
+        vec2 origin = packed_origin(StereoSource) / StereoSource.xy;
+        vec2 half_texel = vec2(0.5, 0.5) / StereoSource.xy;
+        uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
+    }
+    return uv;
+}
+
+vec2 packed_uv(vec2 uv)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & 1u) == 0u)
+        return uv;
+    if ((flags & 16u) != 0u) uv.x = fract(uv.x);
+    if ((flags & 32u) != 0u) uv.y = fract(uv.y);
+    vec2 extent = StereoSource.z < 1.5 ? vec2(0.5, 1.0) : vec2(1.0, 0.5);
+    vec2 origin = packed_origin(StereoSource) / StereoSource.xy;
+    uv = uv * extent + origin;
+    if ((flags & 4u) != 0u)
+    {
+        vec2 half_texel = vec2(0.5, 0.5) / StereoSource.xy;
+        uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
+    }
+    return uv;
+}
 
 #if (PS_AUTOMATIC_LOD != 1) && (PS_MANUAL_LOD == 1)
 float manual_lod(float uv_w)
@@ -342,7 +402,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 		for (int i = 0; i < aniso_ratio; i++)
 		{
 			vec2 d = -aniso_line + (0.5f + i) * segment;	
-			vec2 uv_sample = uv + d;
+			vec2 uv_sample = packed_clamp_uv(uv + d);
 			vec4 sample_colour = textureLod(TextureSampler, uv_sample, lod);
 			num += sample_colour;
 		}
@@ -358,7 +418,7 @@ vec4 sample_c(vec2 uv)
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #elif PS_REGION_RECT
-	return texelFetch(TextureSampler, ivec2(uv), 0);
+	return texelFetch(TextureSampler, packed_texel(ivec2(uv), false), 0);
 #else
 
 #if !PS_ADJS && !PS_ADJT
@@ -376,6 +436,10 @@ vec4 sample_c(vec2 uv)
 	#endif
 #endif
 
+	if (StereoSource.z > 0.5)
+		uv = packed_uv(uv);
+	else
+	{
 	bool use_forced_eye = (StereoRemap.z >= 0.0f);
 	if (StereoRemap.x > 0.5f && (use_forced_eye || PSin.stereo_eye != 0.0f))
 	{
@@ -384,6 +448,8 @@ vec4 sample_c(vec2 uv)
 			uv.y = uv.y * 0.5f + eye_index * 0.5f;
 		else
 			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
+
 	}
 
 #if PS_ANISOTROPIC_FILTERING > 1
@@ -544,7 +610,7 @@ uint fetch_raw_depth()
 #if PS_TEX_IS_FB == 1
 	return uint(sample_from_rt().r * multiplier);
 #else
-	return uint(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r * multiplier);
+	return uint(texelFetch(TextureSampler, packed_texel(ivec2(gl_FragCoord.xy + ChannelShuffleOffset), true), 0).r * multiplier);
 #endif
 }
 
@@ -553,7 +619,7 @@ vec4 fetch_raw_color()
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #else
-	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0);
+	return texelFetch(TextureSampler, packed_texel(ivec2(gl_FragCoord.xy + ChannelShuffleOffset), true), 0);
 #endif
 }
 
@@ -562,7 +628,7 @@ vec4 fetch_c(ivec2 uv)
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #else
-	return texelFetch(TextureSampler, ivec2(uv), 0);
+	return texelFetch(TextureSampler, packed_texel(ivec2(uv), false), 0);
 #endif
 }
 
@@ -1223,8 +1289,8 @@ void ps_main()
 		{
 			if (PSin.stereo_axis > 0.5f)
 			{
-				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y < 0.0f) ||
-					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y > 0.0f))
+				if ((PSin.stereo_eye < 0.0f && PSin.stereo_pos.y > 0.0f) ||
+					(PSin.stereo_eye > 0.0f && PSin.stereo_pos.y < 0.0f))
 					discard;
 			}
 			else

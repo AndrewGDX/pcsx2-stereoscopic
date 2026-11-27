@@ -227,6 +227,7 @@ public:
 		u32 ZBP;
 		int offset;
 		int rt_offset;
+		GSVector2i depth_to_temp;
 		GSVector4i rect_since;
 	};
 
@@ -465,9 +466,6 @@ protected:
 	bool PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, bool is_frame,
 		bool preload, bool preserve_target, const GSVector4i draw_rect, Target* dst, GSTextureCache::Source* src = nullptr);
 
-	// Returns scaled texture size.
-	static GSVector2i ScaleRenderTargetSize(const GSVector2i& sz, float scale);
-
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
 	/// plus the height is larger than the current size of the target.
 	void ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h);
@@ -532,6 +530,7 @@ public:
 
 	Target* FindTargetOverlap(Target* target, int type, int psm);
 	void CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src = nullptr);
+	static GSVector2i ScaleRenderTargetSize(const GSVector2i& sz, float scale);
 
 private:
 	Target* ProcessTargetAfterLookup(RescaleHelper& rescaler, Target* dst, GIFRegTEX0 TEX0, const GSVector2i& size, int type,
@@ -607,8 +606,8 @@ public:
 	void SetTemporaryZ(GSTexture* temp_z);
 	GSTexture* GetTemporaryZ();
 	TempZAddress GetTemporaryZInfo();
-	void SetTemporaryZInfo(u32 address, u32 offset, u32 rt_offset);
 	void SetTemporaryZInfo(TempZAddress address_info);
+	void CopyTemporaryZ(const Target* depth, const GSVector4i& rect, bool to_temporary);
 	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is.
 	void InvalidateTemporaryZ();
 

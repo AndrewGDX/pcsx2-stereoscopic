@@ -292,6 +292,8 @@ cbuffer cb1
 	float4 StereoScissorRight;
 	float4 StereoDrawLeft;
 	float4 StereoDrawRight;
+	float4 StereoSource;
+	float4 StereoTarget;
 };
 
 float4 RtLoad(int2 xy)
@@ -324,6 +326,66 @@ void DepthWrite(int2 xy, float d)
 #if PS_ROV_DEPTH
 	DepthTextureRov[xy] = d;
 #endif
+}
+
+static float PackedEye = 0.0;
+
+// All packed shader reads use explicit eye-local or screen coordinates.
+float packed_eye()
+{
+    return StereoTarget.w >= 0.0 ? StereoTarget.w : (PackedEye > 0.0 ? 1.0 : 0.0);
+}
+
+float2 packed_origin(float4 image)
+{
+    float eye = packed_eye();
+    return image.z < 1.5 ? float2(eye * image.x * 0.5, 0.0) : float2(0.0, eye * image.y * 0.5);
+}
+
+int2 packed_texel(int2 p, bool screen_position)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
+        return p;
+    float2 origin = packed_origin(StereoSource);
+    float2 extent = StereoSource.xy * (StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5));
+    float2 local = float2(p);
+    if (screen_position)
+        local -= packed_origin(StereoTarget);
+    float2 physical = local + origin;
+    if ((flags & 4u) != 0u)
+        physical = clamp(physical, origin, max(origin, origin + extent - float2(1.0, 1.0)));
+    return int2(physical);
+}
+
+float2 packed_clamp_uv(float2 uv)
+{
+    if (StereoSource.z > 0.5 && (uint(StereoSource.w) & 4u) != 0u)
+    {
+        float2 extent = StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+        float2 origin = packed_origin(StereoSource) / StereoSource.xy;
+        float2 half_texel = float2(0.5, 0.5) / StereoSource.xy;
+        uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
+    }
+    return uv;
+}
+
+float2 packed_uv(float2 uv)
+{
+    uint flags = uint(StereoSource.w);
+    if (StereoSource.z < 0.5 || (flags & 1u) == 0u)
+        return uv;
+    if ((flags & 16u) != 0u) uv.x = frac(uv.x);
+    if ((flags & 32u) != 0u) uv.y = frac(uv.y);
+    float2 extent = StereoSource.z < 1.5 ? float2(0.5, 1.0) : float2(1.0, 0.5);
+    float2 origin = packed_origin(StereoSource) / StereoSource.xy;
+    uv = uv * extent + origin;
+    if ((flags & 4u) != 0u)
+    {
+        float2 half_texel = float2(0.5, 0.5) / StereoSource.xy;
+        uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
+    }
+    return uv;
 }
 
 #if (PS_AUTOMATIC_LOD != 1) && (PS_MANUAL_LOD == 1)
@@ -474,7 +536,7 @@ float4 sample_c_af(float2 uv, float uv_w)
 		for (int i = 0; i < aniso_ratio_i; i++)
 		{
 			float2 d = -aniso_line + (0.5f + i) * segment;	
-			float2 uv_sample = uv + d;
+			float2 uv_sample = packed_clamp_uv(uv + d);
 			float4 sample_colour = Texture.SampleLevel(TextureSampler, uv_sample, lod);
 			num += sample_colour;
 		}
@@ -490,7 +552,7 @@ float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 #if PS_TEX_IS_FB == 1
 	return RtLoad(xy);
 #elif PS_REGION_RECT == 1
-	return Texture.Load(int3(int2(uv), 0));
+	return Texture.Load(int3(packed_texel(int2(uv), false), 0));
 #else
 	if (PS_POINT_SAMPLER)
 	{
@@ -517,6 +579,10 @@ float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 	#endif
 #endif
 
+	if (StereoSource.z > 0.5)
+		uv = packed_uv(uv);
+	else
+	{
 	bool use_forced_eye = (StereoRemap.z >= 0.0f);
 	if (StereoRemap.x > 0.5f && (use_forced_eye || stereo_eye != 0.0f))
 	{
@@ -525,6 +591,8 @@ float4 sample_c(float2 uv, float uv_w, int2 xy, float stereo_eye)
 			uv.y = uv.y * 0.5f + eye_index * 0.5f;
 		else
 			uv.x = uv.x * 0.5f + eye_index * 0.5f;
+	}
+
 	}
 
 #if PS_ANISOTROPIC_FILTERING > 1
@@ -695,7 +763,7 @@ uint fetch_raw_depth(int2 xy)
 #if PS_TEX_IS_FB == 1
 	float4 col = RtLoad(xy);
 #else
-	float4 col = Texture.Load(int3(xy, 0));
+	float4 col = Texture.Load(int3(packed_texel(xy, true), 0));
 #endif
 	return (uint)(col.r * exp2(32.0f));
 }
@@ -705,7 +773,7 @@ float4 fetch_raw_color(int2 xy)
 #if PS_TEX_IS_FB == 1
 	return RtLoad(xy);
 #else
-	return Texture.Load(int3(xy, 0));
+	return Texture.Load(int3(packed_texel(xy, true), 0));
 #endif
 }
 
@@ -714,7 +782,7 @@ float4 fetch_c(int2 uv)
 #if PS_TEX_IS_FB == 1
 	return RtLoad(uv);
 #else
-	return Texture.Load(int3(uv, 0));
+	return Texture.Load(int3(packed_texel(uv, false), 0));
 #endif
 }
 
@@ -1347,6 +1415,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 void ps_main(PS_INPUT input)
 #endif
 {
+	PackedEye = input.stereo_eye;
 	if (input.stereo_eye != 0.0f)
 	{
 		if (StereoClipParams.x > 0.5f)
@@ -1725,7 +1794,7 @@ VS_OUTPUT vs_main(VS_INPUT input, uint instance_id : SV_InstanceID)
 	if (base_mode > 0)
 	{
 		bool stereo_instanced = (base_mode >= 3);
-		float eye_sign = stereo_instanced ? ((instance_id & 1u) ? 1.0f : -1.0f) : (StereoParams.x >= 0.0f ? 1.0f : -1.0f);
+		float eye_sign = stereo_instanced ? ((instance_id & 1u) ? 1.0f : -1.0f) : ((asuint(StereoParams.x) & 0x80000000u) != 0u ? -1.0f : 1.0f);
 		float eye_scale = 1.0f;
 		if (dominant_mode == 1)
 			eye_scale = (eye_sign < 0.0f) ? 0.0f : 2.0f;

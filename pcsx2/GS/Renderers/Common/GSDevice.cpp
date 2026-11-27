@@ -5,6 +5,7 @@
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "GS/GSUtil.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "Host.h"
 
 #include "common/Console.h"
@@ -21,6 +22,7 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
+#include <functional>
 
 const char* ShaderEntryPoint(ShaderConvert value)
 {
@@ -671,6 +673,8 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Usage usage, int width, int height,
 		}
 	}
 
+	// Pool entries are physical allocations; reset the previous logical layout.
+	t->SetPackedStereoAxis(GSPackedStereo::Axis::None);
 	if (t->IsRenderTarget())
 	{
 		if (clear)
@@ -813,6 +817,144 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 	return FetchSurface(GSTexture::Texture, w, h, levels, format, false, !m_features.prefer_new_textures || prefer_reuse);
 }
 
+GSTexture* GSDevice::CreatePackedRenderTarget(int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
+{
+	GSTexture* t = CreateFeedbackTarget(w, h, format, clear, prefer_reuse);
+	if (t)
+		t->SetPackedStereoAxis(GetPackedStereoAxis());
+	return t;
+}
+
+GSTexture* GSDevice::CreatePackedDepthStencil(int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
+{
+	GSTexture* t = FetchSurface(GetDepthStencilUsage(), w, h, 1, format, clear, prefer_reuse);
+	if (t)
+		t->SetPackedStereoAxis(GetPackedStereoAxis());
+	return t;
+}
+
+void GSDevice::DoStretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+	GSHWDrawConfig::ColorMaskSelector mask, ShaderConvertSelector shader, bool linear)
+{
+	const bool source_packed = src && src->IsPackedStereo();
+	const bool destination_packed = dst && dst->IsPackedStereo();
+	const bool enabled = IsPackedStereoEnabled();
+	// Utility draws must never sample their own attachment, even if eye rectangles
+	// don't overlap. Snapshot the atlas once, not into separate eye textures.
+	RecycledTexture snapshot;
+	if (src && src == dst)
+	{
+		snapshot.reset(CreateCompatible(src, false));
+		if (!snapshot)
+			return;
+		snapshot->SetPackedStereoAxis(src->GetPackedStereoAxis());
+		StretchRect(src, snapshot.get(), GSVector4(src->GetRect()),
+			GetConvertShader(src, snapshot.get(), 32, 32), Nearest);
+		src = snapshot.get();
+	}
+
+	if (!enabled || (!source_packed && !destination_packed))
+	{
+		DoStretchRectWithAssertions(src, sr, dst, dr, shader.SetMask(mask.wrgba).SetDepthOutput(dst && dst->IsDepthStencil()), BilnIf(linear));
+		return;
+	}
+
+	const unsigned count = destination_packed ? 2 : 1;
+	const unsigned canonical_eye = GSConfig.StereoDominantEye == GSStereoDominantEye::Right ? 1 : 0;
+	for (unsigned eye = 0; eye < count; eye++)
+	{
+		const unsigned source_eye = destination_packed ? eye : canonical_eye;
+		const GSVector4 source = src ? src->PackedStereoUV(sr, source_eye, linear) : sr;
+		const GSVector4 destination = dst ? dst->PackedStereoPixels(dr, eye) : dr;
+		DoStretchRectWithAssertions(src, source, dst, destination, shader.SetMask(mask.wrgba).SetDepthOutput(dst && dst->IsDepthStencil()), BilnIf(linear));
+	}
+}
+
+void GSDevice::StretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+	ShaderConvertSelector shader, bool linear)
+{
+	DoStretchRectPacked(src, sr, dst, dr, GSHWDrawConfig::ColorMaskSelector(shader.Mask()), shader, linear);
+}
+
+void GSDevice::StretchRectPacked(GSTexture* src, GSTexture* dst, const GSVector4& dr, ShaderConvertSelector shader, bool linear)
+{
+	StretchRectPacked(src, GSVector4(0, 0, 1, 1), dst, dr, shader, linear);
+}
+
+void GSDevice::StretchRectPacked(GSTexture* src, const GSVector4& sr, GSTexture* dst, const GSVector4& dr,
+	bool red, bool green, bool blue, bool alpha, ShaderConvertSelector shader)
+{
+	GSHWDrawConfig::ColorMaskSelector mask;
+	mask.wr = red;
+	mask.wg = green;
+	mask.wb = blue;
+	mask.wa = alpha;
+	DoStretchRectPacked(src, sr, dst, dr, mask, shader, false);
+}
+
+void GSDevice::DrawMultiStretchRectsPacked(const MultiStretchRect* rects, u32 count, GSTexture* dst, ShaderConvertSelector shader)
+{
+	shader = shader.SetDepthOutput(dst->IsDepthStencil());
+	if (count == 0)
+		return;
+
+	if (!IsPackedStereoEnabled())
+	{
+		DrawMultiStretchRects(rects, count, dst, shader);
+		return;
+	}
+	// Keep the backend batching fast path. Materialize physical rectangles once;
+	// backend overrides must not bypass the logical eye expansion.
+	std::vector<MultiStretchRect> physical;
+	physical.reserve(count * 2);
+	RecycledTexture snapshot;
+	for (u32 i = 0; i < count; i++)
+	{
+		if (rects[i].src != dst)
+			continue;
+		snapshot.reset(CreateCompatible(dst, false));
+		if (!snapshot)
+			return;
+		snapshot->SetPackedStereoAxis(dst->GetPackedStereoAxis());
+		StretchRect(dst, snapshot.get(), GSVector4(dst->GetRect()),
+			GetConvertShader(dst, snapshot.get(), 32, 32), Nearest);
+		break;
+	}
+	for (u32 i = 0; i < count; i++)
+	{
+		const MultiStretchRect& r = rects[i];
+		const unsigned eyes = dst->IsPackedStereo() ? 2 : 1;
+		for (unsigned eye = 0; eye < eyes; eye++)
+		{
+			MultiStretchRect p = r;
+			if (p.src == dst && snapshot)
+				p.src = snapshot.get();
+			const unsigned source_eye = dst->IsPackedStereo() ? eye :
+				(GSConfig.StereoDominantEye == GSStereoDominantEye::Right ? 1 : 0);
+			p.src_rect = r.src->PackedStereoUV(r.src_rect, source_eye, r.filter == Biln);
+			p.dst_rect = dst->PackedStereoPixels(r.dst_rect, eye);
+			physical.push_back(p);
+		}
+	}
+	DrawMultiStretchRects(physical.data(), static_cast<u32>(physical.size()), dst, shader);
+}
+
+void GSDevice::CopyRectPacked(GSTexture* src, GSTexture* dst, const GSVector4i& r, u32 x, u32 y)
+{
+	const bool source_packed = src->IsPackedStereo();
+	const bool enabled = IsPackedStereoEnabled();
+	if (!enabled || (!source_packed && !dst->IsPackedStereo()))
+	{
+		CopyRect(src, dst, r, x, y);
+		return;
+	}
+	// Stretch handles changing eye origins and native/depth copies consistently.
+	const GSVector4 uv = GSVector4(r) / GSVector4(src->GetSize()).xyxy();
+	const GSVector4 dr(static_cast<float>(x), static_cast<float>(y),
+		static_cast<float>(x + r.width()), static_cast<float>(y + r.height()));
+	StretchRectPacked(src, uv, dst, dr, GetConvertShader(src, dst, 32, 32), false);
+}
+
 GSTexture* GSDevice::CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse)
 {
 	return CreateTexture(size.x, size.y, mipmap_levels, format, prefer_reuse);
@@ -830,7 +972,10 @@ GSTexture* GSDevice::CreateCompatible(GSTexture* tex, const GSVector2i& size, bo
 
 GSTexture* GSDevice::CreateCompatible(GSTexture* tex, int w, int h, bool clear, bool prefer_reuse)
 {
-	return FetchSurface(tex->GetUsage(), w, h, 1, tex->GetFormat(), clear, prefer_reuse);
+	GSTexture* result = FetchSurface(tex->GetUsage(), w, h, 1, tex->GetFormat(), clear, prefer_reuse);
+	if (result)
+		result->SetPackedStereoAxis(tex->GetPackedStereoAxis());
+	return result;
 }
 
 void GSDevice::DoStretchRectWithAssertions(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex,
@@ -871,7 +1016,7 @@ void GSDevice::StretchRectAuto(GSTexture* sTex, const GSVector4& sRect, GSTextur
 		shader.SetFilter(Biln);
 		filter = Nearest;
 	}
-	StretchRect(sTex, sRect, dTex, dRect, shader, filter);
+	StretchRectPacked(sTex, sRect, dTex, dRect, shader, filter == Biln);
 }
 
 void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, Filter filter, u32 src_bpp, u32 dst_bpp)
@@ -887,7 +1032,7 @@ void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, Filter filter, 
 void GSDevice::StretchRectAutoMask(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 	bool red, bool green, bool blue, bool alpha, u32 src_bpp, u32 dst_bpp)
 {
-	StretchRect(sTex, sRect, dTex, dRect, GetConvertShaderMask(sTex, dTex, src_bpp, dst_bpp, red, green, blue, alpha), Nearest);
+	StretchRectPacked(sTex, sRect, dTex, dRect, GetConvertShaderMask(sTex, dTex, src_bpp, dst_bpp, red, green, blue, alpha), false);
 }
 
 void GSDevice::StretchRectAutoMask(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, u32 src_bpp, u32 dst_bpp)
@@ -916,7 +1061,9 @@ void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
 {
 	// Depending on num_rects, insertion sort may be better here.
 	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
-		return lhs.src < rhs.src || lhs.filter < rhs.filter;
+		if (lhs.src != rhs.src)
+			return std::less<GSTexture*>{}(lhs.src, rhs.src);
+		return lhs.filter < rhs.filter;
 	});
 }
 
@@ -942,7 +1089,12 @@ void GSDevice::ClearCurrent()
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
 {
 	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false))
+	{
+		const bool packed = (sTex[0] && sTex[0]->IsPackedStereo()) || (sTex[1] && sTex[1]->IsPackedStereo()) ||
+			(sTex[2] && sTex[2]->IsPackedStereo());
+		m_merge->SetPackedStereoAxis(packed ? GetPackedStereoAxis() : GSPackedStereo::Axis::None);
 		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, BilnIf(GSConfig.PCRTCOffsets));
+	}
 
 	m_current = m_merge;
 }
@@ -1117,6 +1269,7 @@ void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
 	const int h = ds->GetHeight();
 	if ((m_ds_as_rt = g_gs_device->CreateFeedbackTarget(w, h, GSTexture::Format::DepthColor, false, true)))
 	{
+		m_ds_as_rt->SetPackedStereoAxis(ds->GetPackedStereoAxis());
 		const GSVector4 dRect(drawarea);
 		const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);
 		StretchRectAuto(ds, sRect, m_ds_as_rt, dRect, Nearest);

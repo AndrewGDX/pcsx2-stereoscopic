@@ -826,7 +826,7 @@
         <item>
          <widget class="QCheckBox" name="stereoFixStencilShadows1">
           <property name="text">
-           <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5)</string>
+           <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
           </property>
          </widget>
         </item>

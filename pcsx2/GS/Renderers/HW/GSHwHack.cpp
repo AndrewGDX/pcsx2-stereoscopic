@@ -1120,8 +1120,12 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		return true;
 
 	const GSVector2i src_size(src->m_texture->GetSize());
+	const bool packed = src->m_texture->IsPackedStereo();
+	const GSVector2i lookup_size = packed ? src->GetUnscaledSize() : src_size;
+	GSTextureCache::Target* rt_again = g_texture_cache->LookupDrawTarget(Frame, lookup_size, src->m_scale, GSTextureCache::RenderTarget);
+	if (!rt_again)
+		return true;
 
-	GSTextureCache::Target* rt_again = g_texture_cache->LookupDrawTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
 	if ((rt_again->m_TEX0.PSM & 0x3) == PSMCT16)
 	{
 		GSVector4 dRect;
@@ -1129,21 +1133,20 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		GSVector4 source_rect = GSVector4(static_cast<float>(rt_again->m_valid.x) / static_cast<float>(rt_again->m_unscaled_size.x), static_cast<float>(rt_again->m_valid.y) / static_cast<float>(rt_again->m_unscaled_size.y),
 			static_cast<float>(rt_again->m_valid.z) / static_cast<float>(rt_again->m_unscaled_size.x), static_cast<float>(rt_again->m_valid.w) / static_cast<float>(rt_again->m_unscaled_size.y));
 
-		dRect = GSVector4(rt_again->m_valid) * rt_again->m_scale;
+		dRect = GSVector4(rt_again->m_valid) * (packed ? GetStereoScaleVector4(rt_again->m_scale) : GSVector4(rt_again->m_scale));
 		dRect.y /= 2;
 		dRect.w /= 2;
+		const GSVector2i size = packed ? GSTextureCache::ScaleRenderTargetSize(rt_again->m_unscaled_size, rt_again->m_scale) :
+			GSVector2i(rt_again->m_unscaled_size.x * rt_again->m_scale, rt_again->m_unscaled_size.y * rt_again->m_scale);
+		GSTexture* tex = packed ? g_gs_device->CreatePackedRenderTarget(size.x, size.y, GSTexture::Format::Color, false) :
+			g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
+		if (!tex)
+			return true;
+
 		rt_again->m_valid.y /= 2;
 		rt_again->m_valid.w /= 2;
 		rt_again->m_TEX0.PSM = PSMCT32;
-		GSTexture* tex = g_gs_device->CreateCompatible(rt_again->m_texture,
-			static_cast<int>(rt_again->m_unscaled_size.x * rt_again->m_scale),
-			static_cast<int>(rt_again->m_unscaled_size.y * rt_again->m_scale), false);
-
-		if (!tex)
-			return false;
-
-		g_gs_device->StretchRectAuto(rt_again->m_texture, source_rect, tex, dRect, Nearest);
-
+		g_gs_device->StretchRectPacked(rt_again->m_texture, source_rect, tex, dRect, ShaderConvert::COPY, false);
 		g_gs_device->Recycle(rt_again->m_texture);
 		rt_again->m_texture = tex;
 		rt = tex;
@@ -1160,7 +1163,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 				std::max(rt_again->m_unscaled_size.y, src->m_unscaled_size.y));
 			rt_again->ResizeTexture(new_size.x, new_size.y);
 			rt = rt_again->m_texture;
-			rt_size = new_size * GSVector2i(src->GetScale());
+			rt_size = packed ? rt->GetSize() : new_size * GSVector2i(src->GetScale());
 			rt_again->UpdateDrawn(GSVector4i::loadh(new_size));
 		}
 	}
@@ -1172,7 +1175,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	// This is kind of a bodge because the game confuses everything since the source is really 16bit and it assumes it's really drawing 16bit on the copy back, resizing the target.
 	const GSVector4 dRect(0, 0, copy_size.x, copy_size.y);
 
-	g_gs_device->StretchRectAutoMask(src->m_texture, sRect, rt, dRect, true, true, true, false);
+	g_gs_device->StretchRectPacked(src->m_texture, sRect, rt, dRect, true, true, true, false);
 
 	return false;
 }
@@ -1358,10 +1361,9 @@ bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 
 	GL_INS("MV_Growlanser: %x -> %x %dx%d", RSBP, RDBP, src->GetUnscaledWidth(), src->GetUnscaledHeight());
 
-	g_gs_device->StretchRectAuto(
-		src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
-		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()),
-		Nearest);
+	const GSVector4 dst_scale = dst->GetTexture()->IsPackedStereo() ? GetStereoScaleVector4(dst->GetScale()) : GSVector4(dst->GetScale());
+	g_gs_device->StretchRectPacked(src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
+		dst->GetTexture(), GSVector4(rc) * dst_scale, GetConvertShader(src->GetTexture(), dst->GetTexture(), 32, 32), false);
 
 	s_last_hacked_move_n = r.s_n;
 	return true;

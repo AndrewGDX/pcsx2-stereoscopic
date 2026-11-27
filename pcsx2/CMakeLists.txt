@@ -546,6 +546,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSRenderer.h
 	GS/Renderers/Common/GSShaderEnums.h
 	GS/Renderers/Common/GSTexture.h
+	GS/Renderers/Common/GSPackedStereo.h
 	GS/Renderers/Common/GSVertex.h
 	GS/Renderers/Common/GSVertexTrace.h
 	GS/Renderers/Null/GSRendererNull.h
