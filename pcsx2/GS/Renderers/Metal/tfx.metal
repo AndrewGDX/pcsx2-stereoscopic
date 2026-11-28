@@ -663,9 +663,10 @@ float packed_eye()
     return (in.stereo_eye > 0.0 ? 1.0 : 0.0);
 }
 
-float2 packed_origin(float4 image)
+float2 packed_origin(float4 image, bool source)
 {
-    float eye = packed_eye();
+    // Mono remapping selects the source eye only; screen coordinates still belong to the destination eye. (AI-assisted)
+    float eye = (source && cb.stereo_remap.x > 0.5 && cb.stereo_remap.z >= 0.0) ? cb.stereo_remap.z : packed_eye();
     return float2(eye * image.x * 0.5, 0.0);
 }
 
@@ -674,11 +675,11 @@ int2 packed_texel(int2 p, bool screen_position)
     uint flags = uint(cb.stereo_source.w);
     if (cb.stereo_source.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
         return p;
-    float2 origin = packed_origin(cb.stereo_source);
+    float2 origin = packed_origin(cb.stereo_source, true);
     float2 extent = cb.stereo_source.xy * (float2(0.5, 1.0));
     float2 local = float2(p);
     if (screen_position)
-        local -= packed_origin(cb.stereo_target);
+        local -= packed_origin(cb.stereo_target, false);
     float2 physical = local + origin;
     if ((flags & 4u) != 0u)
         physical = clamp(physical, origin, max(origin, origin + extent - float2(1.0, 1.0)));
@@ -690,7 +691,7 @@ float2 packed_clamp_uv(float2 uv)
     if (cb.stereo_source.z > 0.5 && (uint(cb.stereo_source.w) & 4u) != 0u)
     {
         float2 extent = float2(0.5, 1.0);
-        float2 origin = packed_origin(cb.stereo_source) / cb.stereo_source.xy;
+        float2 origin = packed_origin(cb.stereo_source, true) / cb.stereo_source.xy;
         float2 half_texel = float2(0.5, 0.5) / cb.stereo_source.xy;
         uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
     }
@@ -705,7 +706,7 @@ float2 packed_uv(float2 uv)
     if ((flags & 16u) != 0u) uv.x = fract(uv.x);
     if ((flags & 32u) != 0u) uv.y = fract(uv.y);
     float2 extent = float2(0.5, 1.0);
-    float2 origin = packed_origin(cb.stereo_source) / cb.stereo_source.xy;
+    float2 origin = packed_origin(cb.stereo_source, true) / cb.stereo_source.xy;
     uv = uv * extent + origin;
     if ((flags & 4u) != 0u)
     {

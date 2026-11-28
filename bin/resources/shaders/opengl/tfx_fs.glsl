@@ -214,9 +214,10 @@ float packed_eye()
     return (PSin.stereo_eye > 0.0 ? 1.0 : 0.0);
 }
 
-vec2 packed_origin(vec4 image)
+vec2 packed_origin(vec4 image, bool source)
 {
-    float eye = packed_eye();
+    // Mono remapping selects the source eye only; screen coordinates still belong to the destination eye. (AI-assisted)
+    float eye = (source && StereoRemap.x > 0.5 && StereoRemap.z >= 0.0) ? StereoRemap.z : packed_eye();
     return vec2(eye * image.x * 0.5, 0.0);
 }
 
@@ -225,11 +226,11 @@ ivec2 packed_texel(ivec2 p, bool screen_position)
     uint flags = uint(StereoSource.w);
     if (StereoSource.z < 0.5 || (flags & (screen_position ? 8u : 2u)) == 0u)
         return p;
-    vec2 origin = packed_origin(StereoSource);
+    vec2 origin = packed_origin(StereoSource, true);
     vec2 extent = StereoSource.xy * (vec2(0.5, 1.0));
     vec2 local = vec2(p);
     if (screen_position)
-        local -= packed_origin(StereoTarget);
+        local -= packed_origin(StereoTarget, false);
     vec2 physical = local + origin;
     if ((flags & 4u) != 0u)
         physical = clamp(physical, origin, max(origin, origin + extent - vec2(1.0, 1.0)));
@@ -241,7 +242,7 @@ vec2 packed_clamp_uv(vec2 uv)
     if (StereoSource.z > 0.5 && (uint(StereoSource.w) & 4u) != 0u)
     {
         vec2 extent = vec2(0.5, 1.0);
-        vec2 origin = packed_origin(StereoSource) / StereoSource.xy;
+        vec2 origin = packed_origin(StereoSource, true) / StereoSource.xy;
         vec2 half_texel = vec2(0.5, 0.5) / StereoSource.xy;
         uv = clamp(uv, origin + half_texel, max(origin + half_texel, origin + extent - half_texel));
     }
@@ -256,7 +257,7 @@ vec2 packed_uv(vec2 uv)
     if ((flags & 16u) != 0u) uv.x = fract(uv.x);
     if ((flags & 32u) != 0u) uv.y = fract(uv.y);
     vec2 extent = vec2(0.5, 1.0);
-    vec2 origin = packed_origin(StereoSource) / StereoSource.xy;
+    vec2 origin = packed_origin(StereoSource, true) / StereoSource.xy;
     uv = uv * extent + origin;
     if ((flags & 4u) != 0u)
     {

@@ -10641,7 +10641,10 @@ void GSRendererHW::SubmitPackedDraw(GSTextureCache::Source* tex, float separatio
 			static_cast<float>(source_image->GetPackedStereoAxis()), static_cast<float>(flags)) : GSVector4::zero();
 	m_conf.cb_ps.StereoTarget = GSVector4(static_cast<float>(target->GetWidth()), static_cast<float>(target->GetHeight()),
 		static_cast<float>(target->GetPackedStereoAxis()), 0.0f);
-	m_conf.cb_ps.StereoRemap = GSVector4(0, 0, -1, 0);
+	// Retain the selected source eye for packed remaps without compressing native sources. (AI-assisted)
+	// Picture-in-picture effects across games still need proper testing. (AI-assisted)
+	if (!source_packed)
+		m_conf.cb_ps.StereoRemap = GSVector4(0, 0, -1, 0);
 
 	const unsigned dominant = static_cast<unsigned>(GSConfig.StereoDominantEye);
 	const GSHWDrawConfig logical = m_conf;
