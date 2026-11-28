@@ -949,7 +949,7 @@ struct Pcsx2Config
 		float StereoConvergence = 20.0f;
 		float StereoUiDepth = 0.0f;
 		float StereoUiSecondLayerDepth = 0.0f;
-		int StereoUiDetectMode = 3;
+		int StereoUiDetectMode = 2;
 		int StereoUiDetectThreshold = 80;
 		bool StereoSwapEyes = false;
 		bool StereoDisableCorrectSbsFramebufferSize = false;

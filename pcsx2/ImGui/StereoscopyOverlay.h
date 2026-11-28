@@ -18,7 +18,7 @@ namespace StereoscopyOverlay
 	inline constexpr const char* HOTKEY = "ToggleStereoscopyOverlay";
 	inline constexpr const char* PAD_CHORD = "Pad1/L1 & Pad1/L2 & Pad1/L3";
 	inline constexpr const char* POSITION_KEY = "StereoscopyOverlayPosition";
-	inline constexpr const char* POSITIONS[] = {"Left", "Right", "Center"};
+	inline constexpr const char* POSITIONS[] = {"Left", "Center", "Right"};
 
 	enum class Control
 	{
@@ -67,6 +67,8 @@ namespace StereoscopyOverlay
 	void Toggle();
 	// Layer replacement already reloads settings; input handlers must defer that reload. (AI-assisted)
 	void Close(bool reload_game_settings = true);
+	// Queue a close without holding input/settings locks; ignore requests from an earlier opening. (AI-assisted)
+	void RequestClose();
 	void SetDefaultPadChordEnabled(bool enabled);
 	void OnPadInput(GenericInputBinding binding, float value, u64 source = 0);
 	void Update();

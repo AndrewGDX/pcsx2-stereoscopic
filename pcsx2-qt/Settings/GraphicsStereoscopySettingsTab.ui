@@ -231,13 +231,6 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="stereoProjectionDepth">
-        <property name="text">
-         <string>Projection-aware stereo depth (experimental)</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -275,17 +268,17 @@
         </item>
         <item>
          <property name="text">
-          <string>Unsafe</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>Safe</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string>Advanced</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unsafe</string>
          </property>
         </item>
        </widget>
@@ -434,56 +427,56 @@
            <item row="0" column="0">
             <widget class="QCheckBox" name="stereoRejectZTestAlways">
              <property name="text">
-              <string>Z test is Always</string>
+              <string>UI Detect 1: Reject Z Test Always</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="stereoStencilRequireZTestGequal">
              <property name="text">
-              <string>Z test is not GEQUAL or GREATER</string>
+              <string>UI Detect 2: Require ZTST GEQUAL/GREATER</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
             <widget class="QCheckBox" name="stereoRequireZVaries">
              <property name="text">
-              <string>Constant vertex Z</string>
+              <string>UI Detect 3: Require Varying Z</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
             <widget class="QCheckBox" name="stereoRejectFixedQ">
              <property name="text">
-              <string>Constant vertex Q</string>
+              <string>UI Detect 4: Reject Fixed Q</string>
              </property>
             </widget>
            </item>
            <item row="4" column="0">
             <widget class="QCheckBox" name="stereoUiDetectSkyDepth">
              <property name="text">
-              <string>Near-zero depth</string>
+              <string>UI Detect 5: Sky Depth</string>
              </property>
             </widget>
            </item>
            <item row="5" column="0">
             <widget class="QCheckBox" name="stereoUiDetectFst">
              <property name="text">
-              <string>Fixed texture coordinates (FST)</string>
+              <string>UI Detect 6: Fixed ST (FST)</string>
              </property>
             </widget>
            </item>
            <item row="6" column="0">
             <widget class="QCheckBox" name="stereoUiDetectFullscreenDrawArea">
              <property name="text">
-              <string>Fullscreen draw area</string>
+              <string>UI Detect: Fullscreen Draw Area</string>
              </property>
             </widget>
            </item>
            <item row="7" column="0">
             <widget class="QCheckBox" name="stereoUiDetectFullscreenSprite">
              <property name="text">
-              <string>Fullscreen sprite</string>
+              <string>UI Detect: Fullscreen Sprite</string>
              </property>
             </widget>
            </item>
@@ -497,41 +490,41 @@
         <item>
          <widget class="QGroupBox" name="stereoUiLayerConditions">
           <property name="title">
-           <string>Second Layer UI Detection</string>
+           <string>UI Second Layer Detection</string>
           </property>
           <layout class="QGridLayout" name="stereoUiLayerConditionsLayout">
            <item row="0" column="0">
             <widget class="QCheckBox" name="stereoUiSecondLayerSelector1">
              <property name="text">
-              <string>Fullscreen draw area</string>
+              <string>UI Second Layer 1: Fullscreen Draw Area</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="stereoUiSecondLayerSelector2">
              <property name="text">
-              <string>Constant Z and Q with depth testing</string>
+              <string>UI Second Layer 2: Require Z Varies  Reject Fixed Q</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
             <widget class="QCheckBox" name="stereoUiSecondLayerSelector3">
              <property name="text">
-              <string>No blend mixing</string>
+              <string>UI Second Layer 3: No Blend Mix</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
             <widget class="QCheckBox" name="stereoUiSecondLayerSelector4">
              <property name="text">
-              <string>Secondary color disabled with blend mixing</string>
+              <string>UI Second Layer 4: No Color Blend Mix</string>
              </property>
             </widget>
            </item>
            <item row="4" column="0">
             <widget class="QCheckBox" name="stereoUiSecondLayerSelector5">
              <property name="text">
-              <string>Advanced layer detection</string>
+              <string>UI Second Layer 5: Advanced Selector</string>
              </property>
             </widget>
            </item>
@@ -560,7 +553,7 @@
       <item row="0" column="0" colspan="4">
        <widget class="QCheckBox" name="stereoDisableCorrectSbsFramebufferSize">
         <property name="text">
-         <string>Alternative Rendering (Disable full framebuffer for each eye)</string>
+         <string>Disable full framebuffer for each eye (Alternative Rendering)</string>
         </property>
        </widget>
       </item>
@@ -649,6 +642,13 @@
      </property>
      <layout class="QGridLayout" name="stereoRenderingGroupLayout">
       <item row="0" column="0">
+       <widget class="QCheckBox" name="stereoProjectionDepth">
+        <property name="text">
+         <string>Depth Fix: Projection-aware stereo depth</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QCheckBox" name="stereoCloseDepthFix">
         <property name="text">
          <string>Depth Fix: God of War, Gun</string>
@@ -658,7 +658,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QCheckBox" name="stereoSkyFix">
         <property name="text">
          <string>Sky Fix: Killzone, Gran Turismo 4</string>
@@ -668,7 +668,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QCheckBox" name="stereoRequireRtaCorrection">
         <property name="text">
          <string>Shadows Fix 0: Target Alpha Correction (MK, COD)</string>
@@ -678,7 +678,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows1">
         <property name="text">
          <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
@@ -688,7 +688,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows2">
         <property name="text">
          <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
@@ -698,7 +698,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows3">
         <property name="text">
          <string>Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)</string>
@@ -708,7 +708,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows4">
         <property name="text">
          <string>Shadows Fix 4: Correct Inverted Depth Shadows</string>
@@ -718,7 +718,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QCheckBox" name="stereoRejectRegionRect">
         <property name="text">
          <string>PostFX Overlay Fix 1: Reject Region Rect</string>
@@ -728,7 +728,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QCheckBox" name="stereoRejectTfxDecal">
         <property name="text">
          <string>PostFX Overlay Fix 2: Reject TFX Decal</string>

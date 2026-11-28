@@ -63,7 +63,7 @@ struct InputBinding
 	InputBindingKey keys[MAX_KEYS_PER_BINDING] = {};
 	InputEventHandler handler;
 	bool overlay_navigation = false;
-	bool overlay_toggle = false;
+	bool overlay_hotkey = false;
 	u8 num_keys = 0;
 	u8 full_mask = 0;
 	u8 current_mask = 0;
@@ -635,7 +635,10 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 		if (ibinding)
 		{
 			ibinding->overlay_navigation = std::string_view(section) == "Pad1" && !std::string_view(key).starts_with("Macro");
-			ibinding->overlay_toggle = std::string_view(section) == "Hotkeys" && std::string_view(key) == StereoscopyOverlay::HOTKEY;
+			// Keep pause and menu access available while guest input is captured. (AI-assisted)
+			ibinding->overlay_hotkey = std::string_view(section) == "Hotkeys" &&
+			                           (std::string_view(key) == StereoscopyOverlay::HOTKEY || std::string_view(key) == "TogglePause" ||
+										   std::string_view(key) == "OpenPauseMenu");
 			// Check for SDL2-3 migrations
 			for (u32 i = 0; i < ibinding->num_keys; i++)
 			{
@@ -946,7 +949,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_
 							const bool captured = StereoscopyOverlay::IsOpen();
 							if (pad_index == 0)
 								StereoscopyOverlay::OnPadInput(generic, scaled, key.MaskDirection().bits);
-							Pad::SetControllerState(pad_index, bind_index, captured ? 0.0f : scaled);
+							Pad::SetControllerState(pad_index, bind_index, (captured || StereoscopyOverlay::IsOpen()) ? 0.0f : scaled);
 						}},
 						bi.bind_type, si, section.c_str(), bi.name, is_profile);
 				}
@@ -1160,6 +1163,14 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 			s_overlay_held_inputs.insert(physical);
 		else
 			s_overlay_held_inputs.erase(physical);
+		// Escape always exits, even with no pad mappings or a disconnected controller. (AI-assisted)
+		if (key.source_type == InputSourceType::Keyboard && value != 0.0f &&
+			ConvertHostKeyboardStringToCode("Escape") == static_cast<s32>(key.data))
+		{
+			ProcessEvent(key, 0.0f, true);
+			StereoscopyOverlay::Close();
+			return true;
+		}
 		return ProcessEvent(key, value, false);
 	}
 	if (s_overlay_held_inputs.contains(physical))
@@ -1274,7 +1285,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 
 				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
 				{
-					const bool captured = (overlay_capture || StereoscopyOverlay::IsOpen()) && !binding->overlay_toggle;
+					const bool captured = (overlay_capture || StereoscopyOverlay::IsOpen()) && !binding->overlay_hotkey;
 					const s32 pressed = (skip_button_handlers || captured) ? -1 : static_cast<s32>(value_to_pass > 0.0f);
 					std::get<InputButtonEventHandler>(binding->handler)(pressed);
 				}
@@ -1348,7 +1359,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 
 				if (current_mask == binding->full_mask)
 				{
-					std::get<InputButtonEventHandler>(binding->handler)(0.0f);
+					std::get<InputButtonEventHandler>(binding->handler)(StereoscopyOverlay::IsOpen() ? -1 : 0);
 					matched = true;
 					break;
 				}
@@ -1359,6 +1370,9 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 				break;
 		}
 	} while (matched);
+
+	// Source resets can run while settings/input locks are held. (AI-assisted)
+	StereoscopyOverlay::RequestClose();
 }
 
 bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key,
@@ -1531,6 +1545,14 @@ void InputManager::OnInputDeviceConnected(const std::string_view identifier, con
 
 void InputManager::OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier)
 {
+	// Backends do not guarantee release events for buttons held at disconnection. (AI-assisted)
+	const auto matches_device = [key](InputBindingKey input) {
+		return input.source_type == key.source_type && input.source_index == key.source_index;
+	};
+	std::erase_if(s_active_inputs, matches_device);
+	std::erase_if(s_overlay_held_inputs, matches_device);
+	StereoscopyOverlay::RequestClose();
+
 	if (VMManager::HasValidVM())
 		USB::InputDeviceDisconnected(identifier);
 
@@ -1665,6 +1687,8 @@ void InputManager::UpdateContinuedVibration()
 
 void InputManager::SetHook(InputInterceptHook::Callback callback)
 {
+	// Binding capture consumes the overlay's exit controls too. (AI-assisted)
+	StereoscopyOverlay::RequestClose();
 	std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
 	pxAssert(!m_event_intercept_callback);
 	m_event_intercept_callback = std::move(callback);
@@ -1703,6 +1727,8 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 
 void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si, bool is_binding_profile, bool is_hotkey_profile)
 {
+	// Replaced mappings may remove the controls used to dismiss the overlay. (AI-assisted)
+	StereoscopyOverlay::RequestClose();
 	PauseVibration();
 
 	std::unique_lock lock(s_binding_map_write_lock);
@@ -1807,7 +1833,7 @@ void InputManager::BeginOverlayCapture()
 		for (auto it = range.first; it != range.second; ++it)
 		{
 			InputBinding& binding = *it->second;
-			if (binding.overlay_navigation || binding.overlay_toggle)
+			if (binding.overlay_navigation || binding.overlay_hotkey)
 				continue;
 			if (IsAxisHandler(binding.handler))
 				std::get<InputAxisEventHandler>(binding.handler)(key, 0.0f);

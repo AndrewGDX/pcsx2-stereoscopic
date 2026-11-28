@@ -10293,18 +10293,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			bool ui_detect;
 			switch (GSConfig.StereoUiDetectMode)
 			{
-			case 0: // Off
-				ui_detect = false;
-				break;
-			case 1: // Unsafe
-				ui_detect = ui_detection_threshold;
-				break;
-			case 2: // Safe
-				ui_detect = ui_detection_threshold && z_range <= 0.01f;
-				break;
-			case 3: // Advanced
-				ui_detect = ui_detection_threshold && ui_advanced_detect;
-				break;
+				default:
+				case 0: // Off
+					ui_detect = false;
+					break;
+				case 1: // Safe
+					ui_detect = ui_detection_threshold && z_range <= 0.01f;
+					break;
+				case 2: // Advanced
+					ui_detect = ui_detection_threshold && ui_advanced_detect;
+					break;
+				case 3: // Unsafe
+					ui_detect = ui_detection_threshold;
+					break;
 			}
 
 			ui_detect |= GSConfig.StereoRejectZTestAlways && m_cached_ctx.TEST.ZTST == ZTST_ALWAYS || // moves clouds in gta 3, moves moon map is broken in gta lcs

@@ -35,7 +35,7 @@ namespace
 {
 	using namespace StereoscopyOverlay;
 	constexpr const char* SECTION = "EmuCore/GS";
-	const char* const s_StereoUiDetectMode[] = {"Off", "Unsafe", "Safe", "Advanced", nullptr};
+	const char* const s_StereoUiDetectMode[] = {"Off", "Safe", "Advanced", "Unsafe", nullptr};
 	const char* const s_StereoFeedbackLoopFix[] = {"Off", "Safe", "Moderate", "Full", nullptr};
 	const char* const s_StereoSbsRemapFix[] = {"Off", "Safe", "Moderate", "Full", nullptr};
 	const Setting s_settings[] = {
@@ -44,32 +44,32 @@ namespace
 		{"StereoSwapEyes", "Swap Eyes", "Stereo Output", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSeparation", "Separation", "Depth", Control::Number, 0, 100.0f, 0.1f, nullptr},
 		{"StereoConvergence", "Convergence", "Depth", Control::Number, 0, 1000.0f, 0.1f, nullptr},
-		{"StereoProjectionDepth", "Projection-aware stereo depth (experimental)", "Depth", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoUiDetectMode", "UI Detection Mode", "UI Detection", Control::Choice, 0, 3, 1, s_StereoUiDetectMode},
 		{"StereoUiDepth", "UI Depth", "UI Detection", Control::Number, -100, 50, 1, nullptr},
 		{"StereoUiSecondLayerDepth", "Second Layer Parallax", "UI Detection", Control::Number, -25, 25, 1, nullptr},
 		{"StereoUiDetectThreshold", "UI Detection Threshold", "UI Detection", Control::Number, 0, 1000, 1, nullptr},
-		{"StereoRejectZTestAlways", "Z test is Always", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoStencilRequireZTestGequal", "Z test is not GEQUAL or GREATER", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoRequireZVaries", "Constant vertex Z", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoRejectFixedQ", "Constant vertex Q", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiDetectSkyDepth", "Near-zero depth", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiDetectFst", "Fixed texture coordinates (FST)", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiDetectFullscreenDrawArea", "Fullscreen draw area", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiDetectFullscreenSprite", "Fullscreen sprite", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiSecondLayerSelector1", "Fullscreen draw area", "Second Layer UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiSecondLayerSelector2", "Constant Z and Q with depth testing", "Second Layer UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiSecondLayerSelector3", "No blend mixing", "Second Layer UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiSecondLayerSelector4", "Secondary color disabled with blend mixing", "Second Layer UI Detection", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoUiSecondLayerSelector5", "Advanced layer detection", "Second Layer UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoRejectZTestAlways", "UI Detect 1: Reject Z Test Always", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoStencilRequireZTestGequal", "UI Detect 2: Require ZTST GEQUAL/GREATER", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoRequireZVaries", "UI Detect 3: Require Varying Z", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoRejectFixedQ", "UI Detect 4: Reject Fixed Q", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiDetectSkyDepth", "UI Detect 5: Sky Depth", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiDetectFst", "UI Detect 6: Fixed ST (FST)", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiDetectFullscreenDrawArea", "UI Detect: Fullscreen Draw Area", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiDetectFullscreenSprite", "UI Detect: Fullscreen Sprite", "Additional UI Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiSecondLayerSelector1", "UI Second Layer 1: Fullscreen Draw Area", "UI Second Layer Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiSecondLayerSelector2", "UI Second Layer 2: Require Z Varies  Reject Fixed Q", "UI Second Layer Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiSecondLayerSelector3", "UI Second Layer 3: No Blend Mix", "UI Second Layer Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiSecondLayerSelector4", "UI Second Layer 4: No Color Blend Mix", "UI Second Layer Detection", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoUiSecondLayerSelector5", "UI Second Layer 5: Advanced Selector", "UI Second Layer Detection", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoPackedEnable", "Enable improved packed renderer", "Improved Packed Renderer", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoPackedIntegerReads", "Accurate integer framebuffer reads", "Improved Packed Renderer", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoPackedMonoFullscreen", "Keep overlays at screen depth", "Improved Packed Renderer", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoPackedEffectDepthFix", "Fix framebuffer effect depth", "Improved Packed Renderer", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoDisableCorrectSbsFramebufferSize", "Alternative Rendering (Disable full framebuffer for each eye)", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoDisableCorrectSbsFramebufferSize", "Disable full framebuffer for each eye (Alternative Rendering)", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSbsRemapMono", "Picture-in-Picture Fix: Mono SBS Remap", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFeedbackLoopFix", "Feedback Loop Fix", "Presentation Fixes", Control::Choice, 0, 3, 1, s_StereoFeedbackLoopFix},
 		{"StereoSbsRemapFix", "SBS Remap Fix", "Presentation Fixes", Control::Choice, 0, 3, 1, s_StereoSbsRemapFix},
+		{"StereoProjectionDepth", "Depth Fix: Projection-aware stereo depth", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoCloseDepthFix", "Depth Fix: God of War, Gun", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSkyFix", "Sky Fix: Killzone, Gran Turismo 4", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRequireRtaCorrection", "Shadows Fix 0: Target Alpha Correction (MK, COD)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
@@ -106,6 +106,8 @@ namespace
 	std::mutex s_mutex;
 	State s_state;
 	std::atomic_bool s_open{false};
+	std::atomic_bool s_fullscreen_ui_active{false};
+	std::atomic_uint64_t s_generation{0};
 	bool s_pad_chord_enabled = false;
 	bool s_chord_latched = false;
 	std::array<bool, static_cast<size_t>(GenericInputBinding::Count)> s_buttons{};
@@ -304,7 +306,7 @@ void StereoscopyOverlay::Toggle()
 		Close();
 		return;
 	}
-	if (!VMManager::HasValidVM())
+	if (!VMManager::HasValidVM() || s_fullscreen_ui_active.load(std::memory_order_acquire))
 		return;
 	const std::string filename = GetGameSettingsFilename();
 	bool scope_changed;
@@ -363,9 +365,22 @@ void StereoscopyOverlay::Toggle()
 	s_buttons.fill(false);
 	for (auto& sources : s_button_sources)
 		sources.clear();
+	s_generation.fetch_add(1, std::memory_order_acq_rel);
 	s_open.store(true, std::memory_order_release);
 	InputManager::BeginOverlayCapture();
 	Pad::ClearInputState();
+}
+
+void StereoscopyOverlay::RequestClose()
+{
+	const u64 generation = s_generation.load(std::memory_order_acquire);
+	if (!IsOpen())
+		return;
+	// A queued close must not affect an overlay opened after this request. (AI-assisted)
+	Host::RunOnCPUThread([generation]() {
+		if (s_generation.load(std::memory_order_acquire) == generation)
+			Close();
+	});
 }
 
 void StereoscopyOverlay::Close(bool reload_game_settings)
@@ -549,11 +564,13 @@ void StereoscopyOverlay::Update()
 
 void StereoscopyOverlay::Render()
 {
+	const bool fullscreen_ui_active = FullscreenUI::HasActiveWindow();
+	s_fullscreen_ui_active.store(fullscreen_ui_active, std::memory_order_release);
 	if (!IsOpen())
 		return;
-	if (FullscreenUI::HasActiveWindow())
+	if (fullscreen_ui_active)
 	{
-		Host::RunOnCPUThread([]() { Close(); });
+		RequestClose();
 		return;
 	}
 	State state;
@@ -575,33 +592,30 @@ void StereoscopyOverlay::Render()
 		// Mixed-DPI monitor transitions need proper testing on Windows and Linux. (AI-assisted)
 		const float height = available_height * 0.9f;
 		const float scale = std::max(0.1f, std::min({ImGuiManager::GetGlobalScale(), available_width * 0.65f / 680.0f, height / 480.0f}));
-		const float width = 680.0f * scale;
+		const float width = 510.0f * scale;
 		const float margin = 12.0f;
-		const float x = state.position == 0 ? margin : state.position == 1 ? viewport.width - width - margin :
+		const float x = state.position == 0 ? margin : state.position == 2 ? viewport.width - width - margin :
 		                                                                     (viewport.width - width) * 0.5f;
 		const float y = (viewport.height - height) * 0.5f;
 		const float pad = 20.0f * scale;
 		const float row_height = (state.game ? 60.0f : 52.0f) * scale;
 		const float group_height = 38.0f * scale;
 		const float top = y + 96.0f * scale;
-		const float position_y = y + height - 64.0f * scale;
-		const float bottom = position_y - 16.0f * scale;
+		const float bottom = y + height - 16.0f * scale;
+		auto item_height = [&](size_t index) { return index == SETTING_COUNT ? 48 * scale : row_height; };
 		auto starts_group = [](size_t index, size_t first_index) {
-			return index == first_index || std::string_view(s_settings[index].group) != s_settings[index - 1].group;
+			return index == first_index || index == SETTING_COUNT || std::string_view(s_settings[index].group) != s_settings[index - 1].group;
 		};
 		auto rows_height = [&](size_t start, size_t end) {
 			float total = 0;
 			for (size_t i = start; i <= end; i++)
-				total += row_height + (starts_group(i, start) ? group_height : 0.0f);
+				total += item_height(i) + (starts_group(i, start) ? group_height : 0.0f);
 			return total;
 		};
-		if (state.selected < SETTING_COUNT)
-		{
-			if (state.selected < first)
-				first = state.selected;
-			while (first < state.selected && rows_height(first, state.selected) > bottom - top)
-				first++;
-		}
+		if (state.selected < first)
+			first = state.selected;
+		while (first < state.selected && rows_height(first, state.selected) > bottom - top)
+			first++;
 		// Draw in logical eye coordinates, then transform both vertices and scissor rectangles. (AI-assisted)
 		const int vertex_start = draw->VtxBuffer.Size;
 		auto point = [&](float px, float py) { return ImVec2(px * viewport.scale_x + viewport.offset_x, py * viewport.scale_y + viewport.offset_y); };
@@ -622,27 +636,30 @@ void StereoscopyOverlay::Render()
 			const bool position = index == SETTING_COUNT;
 			const Setting* setting = position ? nullptr : &s_settings[index];
 			const bool enabled = position || IsEnabled(*setting, state.options);
-			const float item_height = position ? 48 * scale : row_height;
+			const float height = item_height(index);
+			const ImU32 color = enabled ? IM_COL32_WHITE : IM_COL32(255, 255, 255, 110);
 			if (state.selected == index)
-				draw->AddRectFilled(ImVec2(x + 8 * scale, ry), ImVec2(x + width - 8 * scale, ry + item_height - 3 * scale), IM_COL32(255, 255, 255, 48), 5 * scale);
+				draw->AddRectFilled(ImVec2(x + 8 * scale, ry), ImVec2(x + width - 8 * scale, ry + height - 3 * scale), IM_COL32(255, 255, 255, 48), 5 * scale);
 			const float control_x = x + width * 0.60f;
 			const char* label = position ? TRANSLATE("StereoscopyOverlay", "Overlay position") : TRANSLATE("GraphicsSettingsWidget", setting->label);
-			const float label_width = width * 0.56f - pad;
+			const float label_width = !position && setting->control == Control::Toggle ?
+			                              width - pad * 2 - 40 * scale :
+			                              width * 0.56f - pad;
 			float label_size = 22 * scale;
 			const float label_height = (state.game && !position ? 35.0f : 43.0f) * scale;
 			while (label_size > 12 * scale && font->CalcTextSizeA(label_size, FLT_MAX, label_width, label).y > label_height)
 				label_size -= scale;
-			draw->AddText(font, label_size, ImVec2(x + pad, ry + 5 * scale), enabled ? IM_COL32_WHITE : IM_COL32(255, 255, 255, 110), label, nullptr, label_width);
+			draw->AddText(font, label_size, ImVec2(x + pad, ry + 5 * scale), color, label, nullptr, label_width);
 			if (state.game && !position)
 				text(x + pad, ry + 43 * scale, state.values[index].custom ? TRANSLATE("StereoscopyOverlay", "Custom") : TRANSLATE("StereoscopyOverlay", "Global"), 11 * scale, width * 0.5f, enabled);
 			if (!position && setting->control == Control::Toggle)
 			{
 				const ImVec2 a(x + width - pad - 24 * scale, ry + 9 * scale), b(a.x + 22 * scale, a.y + 22 * scale);
-				draw->AddRect(a, b, IM_COL32_WHITE, 2 * scale, 2 * scale);
+				draw->AddRect(a, b, color, 2 * scale, 2 * scale);
 				if (Checked(state.values[index].current))
 				{
-					draw->AddLine(ImVec2(a.x + 4 * scale, a.y + 11 * scale), ImVec2(a.x + 9 * scale, a.y + 17 * scale), IM_COL32_WHITE, 2 * scale);
-					draw->AddLine(ImVec2(a.x + 9 * scale, a.y + 17 * scale), ImVec2(a.x + 19 * scale, a.y + 4 * scale), IM_COL32_WHITE, 2 * scale);
+					draw->AddLine(ImVec2(a.x + 4 * scale, a.y + 11 * scale), ImVec2(a.x + 9 * scale, a.y + 17 * scale), color, 2 * scale);
+					draw->AddLine(ImVec2(a.x + 9 * scale, a.y + 17 * scale), ImVec2(a.x + 19 * scale, a.y + 4 * scale), color, 2 * scale);
 				}
 			}
 			else if (!position && setting->control == Control::Number)
@@ -652,8 +669,8 @@ void StereoscopyOverlay::Render()
 				const float center = ry + 22 * scale;
 				const float fraction = std::clamp((number - setting->minimum) / (setting->maximum - setting->minimum), 0.0f, 1.0f);
 				draw->AddLine(ImVec2(control_x, center), ImVec2(right, center), IM_COL32(255, 255, 255, 90), 3 * scale);
-				draw->AddLine(ImVec2(control_x, center), ImVec2(control_x + (right - control_x) * fraction, center), IM_COL32_WHITE, 3 * scale);
-				draw->AddCircleFilled(ImVec2(control_x + (right - control_x) * fraction, center), 5 * scale, IM_COL32_WHITE);
+				draw->AddLine(ImVec2(control_x, center), ImVec2(control_x + (right - control_x) * fraction, center), color, 3 * scale);
+				draw->AddCircleFilled(ImVec2(control_x + (right - control_x) * fraction, center), 5 * scale, color);
 				text(right + 10 * scale, ry + 8 * scale, setting->step < 1 ? fmt::format("{:.1f}", number) : fmt::format("{:.0f}", number), 22 * scale, 75 * scale, enabled);
 			}
 			else
@@ -667,25 +684,23 @@ void StereoscopyOverlay::Render()
 			}
 		};
 		float row_y = top;
-		for (size_t i = first; i < SETTING_COUNT; i++)
+		for (size_t i = first; i <= SETTING_COUNT; i++)
 		{
 			const bool group = starts_group(i, first);
-			if (row_y + row_height + (group ? group_height : 0.0f) > bottom)
+			if (row_y + item_height(i) + (group ? group_height : 0.0f) > bottom)
 				break;
 			if (group)
 			{
 				// Keep section boundaries visible even when scrolling starts midway through a group. (AI-assisted)
 				draw->AddRectFilled(ImVec2(x + 8 * scale, row_y + 4 * scale), ImVec2(x + width - 8 * scale, row_y + group_height - 4 * scale), IM_COL32(255, 255, 255, 28), 3 * scale);
 				draw->AddRectFilled(ImVec2(x + 8 * scale, row_y + 4 * scale), ImVec2(x + 11 * scale, row_y + group_height - 4 * scale), IM_COL32_WHITE);
-				text(x + pad, row_y + 8 * scale, TRANSLATE("GraphicsSettingsWidget", s_settings[i].group), 19 * scale, width - pad * 2);
+				text(x + pad, row_y + 8 * scale, TRANSLATE("GraphicsSettingsWidget", i == SETTING_COUNT ? "Overlay" : s_settings[i].group), 19 * scale, width - pad * 2);
 				row_y += group_height;
 			}
 			row(i, row_y);
-			row_y += row_height;
+			row_y += item_height(i);
 		}
-		draw->AddLine(ImVec2(x + pad, position_y - 6 * scale), ImVec2(x + width - pad, position_y - 6 * scale), IM_COL32(255, 255, 255, 70));
-		row(SETTING_COUNT, position_y);
-		text(x + width - pad - 50 * scale, y + 56 * scale, fmt::format("{}/{}", std::min(state.selected + 1, SETTING_COUNT), SETTING_COUNT), 14 * scale, 50 * scale);
+		text(x + width - pad - 50 * scale, y + 56 * scale, fmt::format("{}/{}", state.selected + 1, SETTING_COUNT + 1), 14 * scale, 50 * scale);
 		for (int v = vertex_start; v < draw->VtxBuffer.Size; v++)
 			draw->VtxBuffer[v].pos = point(draw->VtxBuffer[v].pos.x, draw->VtxBuffer[v].pos.y);
 		for (int c = command_start; c < draw->CmdBuffer.Size; c++)

@@ -13,7 +13,6 @@
 #include <QtCore/QSignalBlocker>
 
 #include "pcsx2/Host.h"
-#include "pcsx2/ImGui/StereoscopyOverlay.h"
 #include "pcsx2/Patch.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
@@ -71,26 +70,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	m_hardware_rendering_tab = setupTab(m_hw, tr("Rendering"));
 	m_software_rendering_tab = setupTab(m_sw, tr("Rendering"));
 	m_stereoscopy_tab = setupTab(m_stereo, tr("Stereoscopy"));
-	// Overlay placement is a frontend preference, independent of per-game GS settings. (AI-assisted)
-	{
-		auto* group = new QGroupBox(tr("In-game Overlay"), m_stereoscopy_tab);
-		auto* layout = new QGridLayout(group);
-		auto* position = new QComboBox(group);
-		for (const char* name : StereoscopyOverlay::POSITIONS)
-			position->addItem(tr(name));
-		position->setObjectName(QStringLiteral("stereoscopyOverlayPosition"));
-		const std::string current = Host::GetBaseStringSettingValue("UI", StereoscopyOverlay::POSITION_KEY, "Left");
-		for (int i = 0; i < static_cast<int>(std::size(StereoscopyOverlay::POSITIONS)); i++)
-			if (current == StereoscopyOverlay::POSITIONS[i])
-				position->setCurrentIndex(i);
-		layout->addWidget(new QLabel(tr("Overlay position:"), group), 0, 0);
-		layout->addWidget(position, 0, 1);
-		m_stereo.stereoscopyLayout->insertWidget(1, group);
-		connect(position, &QComboBox::currentIndexChanged, this, [](int index) {
-			Host::SetBaseStringSettingValue("UI", StereoscopyOverlay::POSITION_KEY, StereoscopyOverlay::POSITIONS[index]);
-			Host::CommitBaseSettingChanges();
-		});
-	}
 	// Show stereoscopy descriptions in the help panel instead of popup tooltips (AI-assisted).
 	for (QCheckBox* check : m_stereoscopy_tab->findChildren<QCheckBox*>())
 	{
@@ -198,7 +177,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_stereo.stereoSeparation, "EmuCore/GS", "StereoSeparation", 20.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_stereo.stereoConvergence, "EmuCore/GS", "StereoConvergence", 20.0f);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoProjectionDepth, "EmuCore/GS", "StereoProjectionDepth", false);
-	dialog()->registerWidgetHelp(m_stereo.stereoProjectionDepth, tr("Projection-aware stereo depth"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_stereo.stereoProjectionDepth, tr("Depth Fix: Projection-aware stereo depth"), tr("Unchecked"),
 		tr("Automatically correct stereo depth for backgrounds and weapons rendered with a different projection. Learns from recent frames and preserves the game's depth tests. Experimental: may misidentify passes in some games. Enable per game as needed."));
 	auto bind_depth_slider = [](QSlider* slider, QDoubleSpinBox* spin) {
 		slider->setValue(qRound(spin->value() * 10.0));
@@ -220,7 +199,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, m_stereo.stereoUiSecondLayerDepth, "EmuCore/GS", "StereoUiSecondLayerDepth", 1.0f, 0.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_stereo.stereoSbsRemapFix, "EmuCore/GS", "StereoSbsRemapFix", 3);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_stereo.stereoFeedbackLoopFix, "EmuCore/GS", "StereoFeedbackLoopFix", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_stereo.stereoUiDetectMode, "EmuCore/GS", "StereoUiDetectMode", 3);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_stereo.stereoUiDetectMode, "EmuCore/GS", "StereoUiDetectMode", 2);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_stereo.stereoUiDetectThreshold, "EmuCore/GS", "StereoUiDetectThreshold", 80);
 	connect(m_stereo.stereoUiDepth, &QSlider::valueChanged, this, &GraphicsSettingsWidget::onUiDepthChanged);
 	connect(m_stereo.stereoUiSecondLayerDepth, &QSlider::valueChanged, this, &GraphicsSettingsWidget::onUiSecondLayerDepthChanged);
@@ -906,35 +885,35 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Render detected framebuffer effects without stereo disparity. Higher levels match more effects. Enabling the improved packed renderer sets this to Off; you can change it afterward."));
 		dialog()->registerWidgetHelp(m_stereo.stereoSbsRemapFix, tr("SBS Remap Fix"), tr("Full"),
 			tr("Sample the matching eye from framebuffer textures. Higher levels match more draws. Enabling the improved packed renderer sets this to Full; you can change it afterward."));
-		dialog()->registerWidgetHelp(m_stereo.stereoRequireZVaries, tr("Constant Vertex Z"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoRequireZVaries, tr("UI Detect 3: Require Varying Z"), tr("Unchecked"),
 			tr("Treat draws whose vertices share the same Z value as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectSkyDepth, tr("Near-Zero Depth"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectSkyDepth, tr("UI Detect 5: Sky Depth"), tr("Unchecked"),
 			tr("Treat draws whose maximum Z is below 2 as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFst, tr("Fixed Texture Coordinates"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFst, tr("UI Detect 6: Fixed ST (FST)"), tr("Unchecked"),
 			tr("Treat draws using fixed texture coordinates (PRIM.FST) as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFullscreenDrawArea, tr("Fullscreen Draw Area"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFullscreenDrawArea, tr("UI Detect: Fullscreen Draw Area"), tr("Unchecked"),
 			tr("Treat draws covering the full target area as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFullscreenSprite, tr("Fullscreen Sprite"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiDetectFullscreenSprite, tr("UI Detect: Fullscreen Sprite"), tr("Unchecked"),
 			tr("Treat render-target sprites or full-area blended sprites as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector1, tr("Fullscreen Draw Area"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector1, tr("UI Second Layer 1: Fullscreen Draw Area"), tr("Unchecked"),
 			tr("Apply Second Layer Parallax to draws covering the full target area."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector2, tr("Constant Z and Q with Depth Testing"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector2, tr("UI Second Layer 2: Require Z Varies  Reject Fixed Q"), tr("Unchecked"),
 			tr("Apply Second Layer Parallax when Z and Q are constant and the depth comparison is not Always."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector3, tr("No Blend Mixing"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector3, tr("UI Second Layer 3: No Blend Mix"), tr("Unchecked"),
 			tr("Apply Second Layer Parallax when shader blend mixing is inactive."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector4, tr("Secondary Color Disabled with Blend Mixing"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector4, tr("UI Second Layer 4: No Color Blend Mix"), tr("Unchecked"),
 			tr("Apply Second Layer Parallax when secondary color output is disabled and shader blend mixing is active."));
-		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector5, tr("Advanced Layer Detection"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoUiSecondLayerSelector5, tr("UI Second Layer 5: Advanced Selector"), tr("Unchecked"),
 			tr("Apply Second Layer Parallax to constant-Z draws without GEQUAL or GREATER depth comparisons when depth writes, flat shading, or manual LOD behavior identifies a second layer."));
 		dialog()->registerWidgetHelp(m_stereo.stereoCloseDepthFix, tr("Close Depth Fix"), tr("Unchecked"),
 			tr("Adjusts stereo depth for games that use clamped depth, such as God of War and Gun."));
 		dialog()->registerWidgetHelp(m_stereo.stereoSkyFix, tr("Sky Fix"), tr("Unchecked"),
 			tr("Adjusts sky depth when distant objects appear too close. May require tuning for individual games."));
-		dialog()->registerWidgetHelp(m_stereo.stereoStencilRequireZTestGequal, tr("Z Test Is Not GEQUAL or GREATER"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoStencilRequireZTestGequal, tr("UI Detect 2: Require ZTST GEQUAL/GREATER"), tr("Unchecked"),
 			tr("Treat draws as UI when their depth comparison is neither GEQUAL nor GREATER."));
 		dialog()->registerWidgetHelp(m_stereo.stereoSbsRemapMono, tr("SBS Remap Mono"), tr("Unchecked"),
 			tr("Force SBS remap to sample only the left half for both eyes."));
-		dialog()->registerWidgetHelp(m_stereo.stereoDisableCorrectSbsFramebufferSize, tr("Disable Correct SBS Framebuffer Size"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoDisableCorrectSbsFramebufferSize, tr("Disable full framebuffer for each eye (Alternative Rendering)"), tr("Unchecked"),
 			tr("Uses half the horizontal resolution for each eye. Can help some games and break others.<br> "
 			   "If this option is disabled, some games require Feedback Loop Fix to be Off."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRequireRtaCorrection, tr("Require RTA Correction"), tr("Unchecked"),
@@ -949,9 +928,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Alternate stencil shadow fix for God of War."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows4, tr("Correct Inverted Depth Shadows"), tr("Unchecked"),
 			tr("Corrects stereo depth for alpha-only shadow geometry that uses inverted 24-bit depth, as in Jak II. Depth testing and writes remain unchanged."));
-		dialog()->registerWidgetHelp(m_stereo.stereoRejectFixedQ, tr("Constant Vertex Q"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoRejectFixedQ, tr("UI Detect 4: Reject Fixed Q"), tr("Unchecked"),
 			tr("Treat draws whose vertices share the same Q value as UI."));
-		dialog()->registerWidgetHelp(m_stereo.stereoRejectZTestAlways, tr("Z Test Is Always"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_stereo.stereoRejectZTestAlways, tr("UI Detect 1: Reject Z Test Always"), tr("Unchecked"),
 			tr("Treat draws using the Always depth comparison as UI."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRejectTfxDecal, tr("Reject TFX Decal"), tr("Unchecked"),
 			tr("Skip non-region draws using the DECAL texture function (Tekken 5)."));
@@ -1305,7 +1284,7 @@ void GraphicsSettingsWidget::onStereoscopicModeChanged()
 			 m_stereo.stereoPackedGroup, m_stereo.stereoPresentationGroup, m_stereo.stereoRenderingGroup,
 			 m_stereo.stereoDebugGroup})
 		group->setEnabled(enabled);
-	const bool threshold = dialog()->getEffectiveIntValue("EmuCore/GS", "StereoUiDetectMode", 3) != 0;
+	const bool threshold = dialog()->getEffectiveIntValue("EmuCore/GS", "StereoUiDetectMode", 2) != 0;
 	m_stereo.stereoUiDetectThresholdLabel->setEnabled(threshold);
 	m_stereo.stereoUiDetectThreshold->setEnabled(threshold);
 	m_stereo.stereoUiDetectThresholdValue->setEnabled(threshold);
