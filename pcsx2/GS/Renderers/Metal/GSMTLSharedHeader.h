@@ -35,13 +35,14 @@ struct GSMTLPresentPSUniform
 {
 	vector_float4 source_rect;
 	vector_float4 target_rect;
-	vector_float2 source_size;
-	vector_float2 target_size;
-	vector_float2 target_resolution;
-	vector_float2 rcp_target_resolution; ///< 1 / target_resolution
 	vector_float2 source_resolution;
-	vector_float2 rcp_source_resolution; ///< 1 / source_resolution
-	float time;
+	vector_float2 target_resolution;
+	float shift, tilt, vignette_width, vignette_x;
+	float vignette_y, extend_border, cut_offset, vignette_offset;
+	float contrast_intensity, contrast_focus, contrast_midpoint, gamma_strength;
+	float blend_opacity, blend_focus, blend_midpoint, temperature;
+	float black_point, levels_scale, time;
+	uint32_t flags;
 };
 
 struct GSMTLInterlacePSUniform

@@ -17,23 +17,135 @@ struct VS_OUTPUT
 
 cbuffer cb0 : register(b0)
 {
-	float4 u_source_rect;
-	float4 u_target_rect;
-	float2 u_source_size;
-	float2 u_target_size;
-	float2 u_target_resolution;
-	float2 u_rcp_target_resolution; // 1 / u_target_resolution
-	float2 u_source_resolution;
-	float2 u_rcp_source_resolution; // 1 / u_source_resolution
-	float u_time;
+float4 u_source_rect;
+float4 u_target_rect;
+float2 u_source_resolution;
+float2 u_target_resolution;
+float4 u_geometry;
+float4 u_edges;
+float4 u_contrast;
+float4 u_blend;
+float3 u_levels_time;
+uint u_flags;
+
 };
+#define u_shift u_geometry.x
+#define u_tilt u_geometry.y
+#define u_vignette_width u_geometry.z
+#define u_vignette_x u_geometry.w
+#define u_vignette_y u_edges.x
+#define u_extend_border u_edges.y
+#define u_cut_offset u_edges.z
+#define u_vignette_offset u_edges.w
+#define u_contrast_intensity u_contrast.x
+#define u_contrast_focus u_contrast.y
+#define u_contrast_midpoint u_contrast.z
+#define u_gamma_strength u_contrast.w
+#define u_blend_opacity u_blend.x
+#define u_blend_focus u_blend.y
+#define u_blend_midpoint u_blend.z
+#define u_temperature u_blend.w
+#define u_black_point u_levels_time.x
+#define u_levels_scale u_levels_time.y
+#define u_time u_levels_time.z
+#define u_source_size ((u_source_rect.zw - u_source_rect.xy) * u_source_resolution)
+#define u_target_size abs(u_target_rect.zw - u_target_rect.xy)
+#define u_rcp_source_resolution (1.0 / u_source_resolution)
+#define u_rcp_target_resolution (1.0 / u_target_resolution)
+
 
 Texture2D Texture;
 SamplerState TextureSampler;
 
+// Eye-local sampling and final color processing; flags mirror GSPresentationEffects. (AI-assisted)
+bool EffectsActive() { return (u_flags & 127u) != 0u; }
+bool EffectEnabled(uint flag) { return (u_flags & flag) != 0u; }
+
+float2 EyeUV(float2 uv)
+{
+	return (uv - u_source_rect.xy) / max(u_source_rect.zw - u_source_rect.xy, float2(1e-8, 1e-8));
+}
+
+float2 AdjustedEyeUV(float2 uv)
+{
+	return EyeUV(uv) + float2(u_shift, u_tilt);
+}
+
+float2 SampleUV(float2 uv)
+{
+	if (!EffectsActive())
+		return uv;
+	float2 extent = u_source_rect.zw - u_source_rect.xy;
+	float2 half_texel = min(0.5 / u_source_resolution, extent * 0.5);
+	float2 inset = half_texel;
+	if (EffectEnabled(2u))
+		inset = max(inset, float2(u_extend_border, 0.0) * extent);
+	return clamp(u_source_rect.xy + AdjustedEyeUV(uv) * extent,
+		u_source_rect.xy + inset, u_source_rect.zw - inset);
+}
+
+float Modulation(float luminance, float midpoint, float focus)
+{
+	float distance = clamp(abs(luminance - midpoint) / max(max(midpoint, 1.0 - midpoint), 1e-6), 0.0, 1.0);
+	return 1.0 - pow(distance, focus);
+}
+
+float4 Finish(float2 uv, float4 color)
+{
+	if (!EffectsActive())
+		return color;
+	float2 q = EyeUV(uv);
+	float2 adjusted = AdjustedEyeUV(uv);
+	if (EffectEnabled(1u) && !EffectEnabled(2u) && (any(adjusted < float2(0.0, 0.0)) || any(adjusted > float2(1.0, 1.0))))
+		return float4(0.0, 0.0, 0.0, 0.0);
+	if (EffectEnabled(64u))
+	{
+		float3 work = clamp(color.rgb, 0.0, 1.0);
+		float brightness = max(max(work.r, work.g), work.b);
+		float line_pos = abs(frac(q.y * u_source_size.y) - 0.5) * 2.0;
+		float beam_line = line_pos * lerp(0.6, 0.3, brightness);
+		color.rgb = work * exp2(-lerp(0.5, 1.0, line_pos) * beam_line * beam_line * 1.5);
+	}
+	if (EffectEnabled(8u))
+	{
+		float3 linear_color = pow(max(color.rgb, float3(0.0, 0.0, 0.0)), float3(2.2, 2.2, 2.2));
+		float luminance = dot(linear_color, float3(0.2126, 0.7152, 0.0722));
+		float contrast = lerp(1.0, u_contrast_intensity, Modulation(luminance, u_contrast_midpoint, u_contrast_focus));
+		float adjusted_luminance = max(0.0, lerp(u_contrast_midpoint, luminance, contrast));
+		float ratio = adjusted_luminance / max(luminance, 1e-6);
+		float gamma = clamp(1.0 - log2(max(ratio, 1e-6)) * u_gamma_strength * 0.25, 0.5, 1.5);
+		linear_color = luminance <= 1e-6 ? float3(0.0, 0.0, 0.0) : linear_color * ratio;
+		color.rgb = clamp(pow(linear_color, ((1.0 / 2.2) / gamma).xxx), 0.0, 1.0);
+	}
+	if (EffectEnabled(16u))
+	{
+		float luminance = dot(pow(max(color.rgb, float3(0.0, 0.0, 0.0)), float3(2.2, 2.2, 2.2)), float3(0.2126, 0.7152, 0.0722));
+		float3 low = 2.0 * color.rgb * color.rgb;
+		float3 high = 1.0 - 2.0 * (1.0 - color.rgb) * (1.0 - color.rgb);
+		float3 blended = float3(color.r < 0.5 ? low.r : high.r, color.g < 0.5 ? low.g : high.g, color.b < 0.5 ? low.b : high.b);
+		color.rgb = clamp(lerp(color.rgb, clamp(blended, 0.0, 1.0), u_blend_opacity * Modulation(luminance, u_blend_midpoint, u_blend_focus)), 0.0, 1.0);
+	}
+	if (EffectEnabled(32u))
+		color.rgb = clamp((color.rgb * float3(1.0 + u_temperature, 1.0, 1.0 - u_temperature) - u_black_point) * u_levels_scale, 0.0, 1.0);
+	float fade = 1.0;
+	if (EffectEnabled(4u))
+	{
+		float offset = EffectEnabled(2u) ? u_vignette_offset : 0.0;
+		float horizontal = smoothstep(0.0, u_vignette_width * 2.0, q.x - offset) * (1.0 - smoothstep(1.0 - u_vignette_width * 2.0, 1.0, q.x + offset));
+		float vertical = smoothstep(0.0, u_vignette_width, adjusted.y) * (1.0 - smoothstep(1.0 - u_vignette_width, 1.0, adjusted.y));
+		fade -= max(u_vignette_x * (1.0 - horizontal), u_vignette_y * (1.0 - vertical));
+	}
+	if (EffectEnabled(2u) && u_cut_offset > 0.0)
+	{
+		float cut = smoothstep(0.0, 0.02, q.x - u_cut_offset) * (1.0 - smoothstep(0.98, 1.0, q.x + u_cut_offset));
+		fade -= 1.0 - cut;
+	}
+	return color * clamp(fade, 0.0, 1.0);
+}
+
 float4 sample_c(float2 uv)
 {
-	return Texture.Sample(TextureSampler, uv);
+	return Texture.Sample(TextureSampler, SampleUV(uv));
 }
 
 struct PS_INPUT
@@ -63,7 +175,7 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = sample_c(input.t);
+	output.c = Finish(input.t, sample_c(input.t));
 
 	return output;
 }
@@ -98,7 +210,7 @@ PS_OUTPUT ps_filter_scanlines(PS_INPUT input)
 
 	uint4 p = (uint4)input.p;
 
-	output.c = ps_scanlines(input, p.y % 2);
+	output.c = Finish(input.t, ps_scanlines(input, p.y % 2));
 
 	return output;
 }
@@ -109,7 +221,7 @@ PS_OUTPUT ps_filter_diagonal(PS_INPUT input)
 
 	uint4 p = (uint4)input.p;
 
-	output.c = ps_crt(input, (p.x + (p.y % 3)) % 3);
+	output.c = Finish(input.t, ps_crt(input, (p.x + (p.y % 3)) % 3));
 
 	return output;
 }
@@ -120,8 +232,8 @@ PS_OUTPUT ps_filter_triangular(PS_INPUT input)
 
 	uint4 p = (uint4)input.p;
 
-	// output.c = ps_crt(input, ((p.x + (p.y & 1) * 3) >> 1) % 3);
-	output.c = ps_crt(input, ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3);
+	// output.c = Finish(input.t, ps_crt(input, ((p.x + (p.y & 1) * 3) >> 1) % 3));
+	output.c = Finish(input.t, ps_crt(input, ((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3));
 
 	return output;
 }
@@ -134,7 +246,7 @@ PS_OUTPUT ps_filter_complex(PS_INPUT input) // triangular
 	float2 texdim; 
 	Texture.GetDimensions(texdim.x, texdim.y);
 
-	output.c = (0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y));
+	output.c = Finish(input.t, (0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y)));
 
 	return output;
 }
@@ -175,14 +287,14 @@ float3 ToSrgb(float3 c)
 
 float3 Fetch(float2 pos, float2 off)
 {
-	pos = (floor(pos * u_target_size + off) + float2(0.5, 0.5)) / u_target_size;
+	pos = (floor(pos * (EffectsActive() ? u_source_size : u_target_size) + off) + float2(0.5, 0.5)) / (EffectsActive() ? u_source_size : u_target_size);
 	if (max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5)
 	{
 		return float3(0.0, 0.0, 0.0);
 	}
 	else
 	{
-		return ToLinear(Texture.Sample(TextureSampler, pos.xy).rgb);
+		return ToLinear(sample_c(EffectsActive() ? u_source_rect.xy + pos.xy * (u_source_rect.zw - u_source_rect.xy) : pos.xy).rgb);
 	}
 }
 
@@ -413,9 +525,9 @@ float3 Mask(float2 pos)
 
 float4 LottesCRTPass(float4 fragcoord)
 {
-	float4 color;
+	float4 color = float4(0.0, 0.0, 0.0, 1.0);
 	fragcoord -= u_target_rect;
-	float2 inSize = u_target_resolution - (2 * u_target_rect.xy);
+	float2 inSize = (EffectsActive() ? u_target_size : u_target_resolution - (2 * u_target_rect.xy));
 
 	float2 pos = Warp(fragcoord.xy / inSize);
 	color.rgb = Tri(pos);
@@ -432,7 +544,7 @@ float4 LottesCRTPass(float4 fragcoord)
 PS_OUTPUT ps_filter_lottes(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	output.c = LottesCRTPass(input.p);
+	output.c = Finish(input.t, LottesCRTPass(input.p));
 
 	return output;
 }
@@ -452,7 +564,7 @@ PS_OUTPUT ps_4x_rgss(PS_INPUT input)
 	color += sample_c(input.t + float2(-s,-l) * dxy).rgb;
 	color += sample_c(input.t + float2(-l, s) * dxy).rgb;
 
-	output.c = float4(color * 0.25,1);
+	output.c = Finish(input.t, float4(color * 0.25,1));
 	return output;
 }
 
@@ -475,6 +587,6 @@ PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
 		}
 	}
 
-	output.c = float4(col / div, 1);
+	output.c = Finish(input.t, float4(col / div, 1));
 	return output;
 }

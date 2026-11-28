@@ -512,16 +512,17 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				return false;
 			m_present[i].SetFormattedName("Present pipe %s", name);
 
-			// This is a bit disgusting, but it saves allocating a UBO when no shaders currently need it.
 			m_present[i].RegisterUniform("u_source_rect");
 			m_present[i].RegisterUniform("u_target_rect");
-			m_present[i].RegisterUniform("u_source_size");
-			m_present[i].RegisterUniform("u_target_size");
-			m_present[i].RegisterUniform("u_target_resolution");
-			m_present[i].RegisterUniform("u_rcp_target_resolution");
 			m_present[i].RegisterUniform("u_source_resolution");
-			m_present[i].RegisterUniform("u_rcp_source_resolution");
-			m_present[i].RegisterUniform("u_time");
+			m_present[i].RegisterUniform("u_target_resolution");
+			m_present[i].RegisterUniform("u_geometry");
+			m_present[i].RegisterUniform("u_edges");
+			m_present[i].RegisterUniform("u_contrast");
+			m_present[i].RegisterUniform("u_blend");
+			m_present[i].RegisterUniform("u_levels_time");
+			m_present[i].RegisterUniform("u_flags");
+
 		}
 	}
 
@@ -1914,7 +1915,7 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 }
 
-void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, Filter filter)
+void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, const GSPresentationEffects::Parameters& effects, Filter filter)
 {
 	CommitClear(sTex, true);
 
@@ -1922,19 +1923,20 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
-	cb.SetTime(shaderTime);
+	cb.Effects = effects;
 
 	GLProgram& prog = m_present[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform4fv(0, cb.SourceRect.F32);
 	prog.Uniform4fv(1, cb.TargetRect.F32);
-	prog.Uniform2fv(2, &cb.SourceSize.x);
-	prog.Uniform2fv(3, &cb.TargetSize.x);
-	prog.Uniform2fv(4, &cb.TargetResolution.x);
-	prog.Uniform2fv(5, &cb.RcpTargetResolution.x);
-	prog.Uniform2fv(6, &cb.SourceResolution.x);
-	prog.Uniform2fv(7, &cb.RcpSourceResolution.x);
-	prog.Uniform1f(8, cb.TimeAndPad.x);
+	prog.Uniform2fv(2, &cb.SourceResolution.x);
+	prog.Uniform2fv(3, &cb.TargetResolution.x);
+	prog.Uniform4fv(4, &effects.shift);
+	prog.Uniform4fv(5, &effects.vignette_y);
+	prog.Uniform4fv(6, &effects.contrast_intensity);
+	prog.Uniform4fv(7, &effects.blend_opacity);
+	prog.Uniform3fv(8, &effects.black_point);
+	prog.Uniform1ui(9, effects.flags);
 
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);

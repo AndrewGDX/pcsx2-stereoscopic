@@ -546,6 +546,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSRenderer.h
 	GS/Renderers/Common/GSShaderEnums.h
 	GS/Renderers/Common/GSTexture.h
+	GS/Renderers/Common/GSPresentationEffects.h
 	GS/Renderers/Common/GSPackedStereo.h
 	GS/Renderers/Common/GSStereoPresentation.h
 	GS/Renderers/Common/GSStereoProjection.h

@@ -42,7 +42,7 @@ private:
 	bool Merge(int field);
 	bool BeginPresentFrame(bool frame_skip);
 	void EndPresentFrame();
-	void PresentFrameTexture(GSTexture* current, const GSVector4i& src_rect, const GSVector4& src_uv, const GSVector4& draw_rect);
+	void PresentFrameTexture(GSTexture* current, const GSVector4i& src_rect, const GSVector4& src_uv, const GSVector4& draw_rect, const GSVector2& native_size);
 
 	u64 m_shader_time_start = 0;
 

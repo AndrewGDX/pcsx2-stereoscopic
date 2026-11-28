@@ -1328,7 +1328,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		PresentShader conv = static_cast<PresentShader>(i);
 		NSString* name = [NSString stringWithCString:ShaderEntryPoint(conv) encoding:NSUTF8StringEncoding];
 		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
-		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", ShaderEntryPoint(conv) + 3]);
+		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(conv == PresentShader::COPY ? @"ps_present_copy" : name), [NSString stringWithFormat:@"present_%s", ShaderEntryPoint(conv) + 3]);
 	}
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
@@ -1771,22 +1771,20 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
-static_assert(offsetof(DisplayConstantBuffer, SourceRect)          == offsetof(GSMTLPresentPSUniform, source_rect));
-static_assert(offsetof(DisplayConstantBuffer, TargetRect)          == offsetof(GSMTLPresentPSUniform, target_rect));
-static_assert(offsetof(DisplayConstantBuffer, TargetSize)          == offsetof(GSMTLPresentPSUniform, target_size));
-static_assert(offsetof(DisplayConstantBuffer, TargetResolution)    == offsetof(GSMTLPresentPSUniform, target_resolution));
-static_assert(offsetof(DisplayConstantBuffer, RcpTargetResolution) == offsetof(GSMTLPresentPSUniform, rcp_target_resolution));
-static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(GSMTLPresentPSUniform, source_resolution));
-static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
-static_assert(offsetof(DisplayConstantBuffer, TimeAndPad.x)        == offsetof(GSMTLPresentPSUniform, time));
+static_assert(offsetof(DisplayConstantBuffer, SourceRect) == offsetof(GSMTLPresentPSUniform, source_rect));
+static_assert(offsetof(DisplayConstantBuffer, TargetRect) == offsetof(GSMTLPresentPSUniform, target_rect));
+static_assert(offsetof(DisplayConstantBuffer, SourceResolution) == offsetof(GSMTLPresentPSUniform, source_resolution));
+static_assert(offsetof(DisplayConstantBuffer, TargetResolution) == offsetof(GSMTLPresentPSUniform, target_resolution));
+static_assert(offsetof(DisplayConstantBuffer, Effects) == offsetof(GSMTLPresentPSUniform, shift));
+static_assert(offsetof(DisplayConstantBuffer, Effects) + offsetof(GSPresentationEffects::Parameters, flags) == offsetof(GSMTLPresentPSUniform, flags));
 
-void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, Filter filter)
+void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, const GSPresentationEffects::Parameters& effects, Filter filter)
 { @autoreleasepool {
 	GSVector2i ds = dTex ? dTex->GetSize() : GetWindowSize();
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
-	cb.SetTime(shaderTime);
+	cb.Effects = effects;
 	id<MTLRenderPipelineState> pipe = m_present_pipeline[static_cast<int>(shader)];
 
 	if (dTex)

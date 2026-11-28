@@ -665,6 +665,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		// Little bit ugly, but we can't do CAS inside the render pass.
 		GSVector4i src_rect;
 		GSVector4 src_uv, draw_rect;
+		GSVector2 native_size;
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current && !blank_frame)
 		{
@@ -674,6 +675,10 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P);
 			s_last_draw_rect = draw_rect;
+			const GSVector2i resolution = PCRTCDisplays.GetResolution();
+			const GSVector2 scale = GetStereoScaleVector2();
+			native_size = GSVector2(resolution.x * scale.x * (src_uv.z - src_uv.x),
+				resolution.y * scale.y * (src_uv.w - src_uv.y));
 
 			if (GSConfig.CASMode != GSCASMode::Disabled)
 			{
@@ -700,7 +705,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		{
 			if (current && !blank_frame)
 			{
-				PresentFrameTexture(current, src_rect, src_uv, draw_rect);
+				PresentFrameTexture(current, src_rect, src_uv, draw_rect, native_size);
 			}
 
 			EndPresentFrame();
@@ -962,7 +967,7 @@ void GSRenderer::StopGSDump()
 
 // Redraws while paused must preserve the same per-eye borders and eye order. (AI-assisted)
 // Paused window resizing needs proper testing across graphics backends. (AI-assisted)
-void GSRenderer::PresentFrameTexture(GSTexture* current, const GSVector4i& src_rect, const GSVector4& src_uv, const GSVector4& draw_rect)
+void GSRenderer::PresentFrameTexture(GSTexture* current, const GSVector4i& src_rect, const GSVector4& src_uv, const GSVector4& draw_rect, const GSVector2& native_size)
 {
 	const u64 current_time = Common::Timer::GetCurrentValue();
 	const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
@@ -987,23 +992,33 @@ void GSRenderer::PresentFrameTexture(GSTexture* current, const GSVector4i& src_r
 
 	if (GSConfig.StereoMode != GSStereoMode::Off)
 	{
+		const GSVector2 eye_native_size(native_size.x * 0.5f, native_size.y);
+		const auto source_size = [&](const GSVector4& uv) {
+			return GSVector2((uv.z - uv.x) * current->GetWidth(), (uv.w - uv.y) * current->GetHeight());
+		};
+		const GSPresentationEffects::Parameters effects[] = {
+			GSPresentationEffects::Prepare(GSConfig, GSPresentationEffects::Eye::Left, eye_native_size, source_size(src_uv_l), shader_time, flip_y),
+			GSPresentationEffects::Prepare(GSConfig, GSPresentationEffects::Eye::Right, eye_native_size, source_size(src_uv_r), shader_time, flip_y)};
 		const auto rects = GSStereoPresentation::GetRects(GSConfig.StereoMode, window_width, window_height,
 			flip_y, GSConfig.StereoSwapEyes, [&](int width, int height, unsigned eye) {
 				return CalculateDrawDstRect(width, height, eye ? src_rect_right : src_rect_left,
 					eye ? right_src_size : left_src_size, s_display_alignment, flip_y, is_progressive);
 			});
 		g_gs_device->PresentRect(current, src_uv_l, nullptr, rects[0],
-			s_tv_shader_indices[GSConfig.TVShader], shader_time,
+			s_tv_shader_indices[GSConfig.TVShader], effects[0],
 			BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 		g_gs_device->PresentRect(current, src_uv_r, nullptr, rects[1],
-			s_tv_shader_indices[GSConfig.TVShader], shader_time,
+			s_tv_shader_indices[GSConfig.TVShader], effects[1],
 			BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 	}
 	else
 	{
 		// Normal mono presentation
 		g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-			s_tv_shader_indices[GSConfig.TVShader], shader_time, BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
+			s_tv_shader_indices[GSConfig.TVShader],
+			GSPresentationEffects::Prepare(GSConfig, GSPresentationEffects::Eye::Mono, native_size,
+				GSVector2(src_rect.width(), src_rect.height()), shader_time, flip_y),
+			BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 	}
 }
 
@@ -1021,7 +1036,11 @@ void GSRenderer::PresentCurrentFrame()
 				GetVideoMode() == GSVideoMode::SDTV_480P));
 			s_last_draw_rect = draw_rect;
 
-			PresentFrameTexture(current, src_rect, src_uv, draw_rect);
+			const GSVector2i resolution = PCRTCDisplays.GetResolution();
+			const GSVector2 scale = GetStereoScaleVector2();
+			const GSVector2 native_size(resolution.x * scale.x * (src_uv.z - src_uv.x),
+				resolution.y * scale.y * (src_uv.w - src_uv.y));
+			PresentFrameTexture(current, src_rect, src_uv, draw_rect, native_size);
 		}
 
 		EndPresentFrame();

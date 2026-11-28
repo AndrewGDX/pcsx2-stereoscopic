@@ -17,6 +17,10 @@
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
+#include "pcsx2/ImGui/StereoscopyOverlay.h"
+#include "common/MemorySettingsInterface.h"
+#include "common/SettingsWrapper.h"
+#include <QtWidgets/QDoubleSpinBox>
 
 struct RendererInfo
 {
@@ -546,6 +550,59 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_CAS_MODE));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
+
+	// All three settings interfaces share shader ranges, dependencies, and precision. (AI-assisted)
+	{
+		MemorySettingsInterface defaults;
+		SettingsSaveWrapper save(defaults);
+		Pcsx2Config::GSOptions factory;
+		factory.LoadSave(save);
+		std::string_view previous_group;
+		QGroupBox* group = nullptr;
+		QGridLayout* grid = nullptr;
+		int row = 0;
+		for (const auto& setting : StereoscopyOverlay::GetSettings(StereoscopyOverlay::Tab::Shaders))
+		{
+			if (previous_group != setting.group)
+			{
+				previous_group = setting.group;
+				group = new QGroupBox(tr(setting.group), m_post.verticalLayout->parentWidget());
+				grid = new QGridLayout(group);
+				grid->setColumnStretch(0, 1);
+				m_post.verticalLayout->insertWidget(m_post.verticalLayout->count() - 1, group);
+				row = 0;
+			}
+			QWidget* control;
+			if (setting.control == StereoscopyOverlay::Control::Toggle)
+			{
+				auto* check = new QCheckBox(tr(setting.label), group);
+				check->setObjectName(QString::fromUtf8(setting.key));
+				SettingWidgetBinder::BindWidgetToBoolSetting(sif, check, "EmuCore/GS", setting.key, false);
+				connect(check, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateShaderControls);
+				grid->addWidget(check, row++, 0, 1, 2);
+				control = check;
+			}
+			else
+			{
+				auto* spin = new QDoubleSpinBox(group);
+				spin->setObjectName(QString::fromUtf8(setting.key));
+				spin->setDecimals(setting.precision);
+				spin->setRange(setting.minimum, setting.maximum);
+				spin->setSingleStep(setting.step);
+				auto* label = new QLabel(tr(setting.label), group);
+				label->setObjectName(QString::fromUtf8(setting.key) + QStringLiteral("Label"));
+				label->setBuddy(spin);
+				grid->addWidget(label, row, 0);
+				grid->addWidget(spin, row++, 1);
+				SettingWidgetBinder::BindWidgetToFloatSetting(sif, spin, "EmuCore/GS", setting.key, defaults.GetFloatValue("EmuCore/GS", setting.key));
+				control = spin;
+			}
+			dialog()->registerWidgetHelp(control, tr(setting.label),
+				QString::fromStdString(defaults.GetStringValue("EmuCore/GS", setting.key)), tr(setting.help));
+		}
+		connect(m_stereo.stereoscopicMode, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::updateShaderControls);
+		updateShaderControls();
+	}
 
 	connect(m_post.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
@@ -1715,3 +1772,24 @@ void GraphicsSettingsWidget::onUiDetectThresholdChanged()
 																							QString::number(value));
 }
 #include "moc_GraphicsSettingsWidget.cpp"
+
+void GraphicsSettingsWidget::updateShaderControls()
+{
+	Pcsx2Config::GSOptions options;
+	options.StereoMode = dialog()->getEffectiveStringValue("EmuCore/GS", "StereoMode", "Half SBS (Side-by-Side)") == "Off" ? GSStereoMode::Off : GSStereoMode::HalfSideBySide;
+	options.StereoFix_EnableShiftTilt = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableShiftTilt", false);
+	options.StereoFix_EnableVignette = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableVignette", false);
+	options.StereoFix_ExtendEdges = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_ExtendEdges", false);
+	options.StereoFix_EnableAutoGamma = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableAutoGamma", false);
+	options.StereoFix_EnableLuminanceBlend = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
+	options.StereoFix_EnableLevels = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableLevels", false);
+	options.StereoFix_EnableCRTFilter = dialog()->getEffectiveBoolValue("EmuCore/GS", "StereoFix_EnableCRTFilter", false);
+	for (const auto& setting : StereoscopyOverlay::GetSettings(StereoscopyOverlay::Tab::Shaders))
+	{
+		const bool enabled = StereoscopyOverlay::IsEnabled(setting, options);
+		if (auto* widget = findChild<QWidget*>(QString::fromUtf8(setting.key)))
+			widget->setEnabled(enabled);
+		if (auto* label = findChild<QWidget*>(QString::fromUtf8(setting.key) + QStringLiteral("Label")))
+			label->setEnabled(enabled);
+	}
+}

@@ -266,14 +266,14 @@ TEST(StereoscopyOverlay, ControlsMatchSerializedSettingsAndExcludeDebugFilters)
 			EXPECT_GT(setting.maximum, setting.minimum);
 	}
 	EXPECT_TRUE(debug_action);
-	EXPECT_EQ(seen.size(), 41u);
+	EXPECT_EQ(seen.size(), 61u);
 }
 
 TEST(StereoscopyOverlay, DisabledControlsFollowQtDependencies)
 {
 	Pcsx2Config::GSOptions options;
 	options.StereoMode = GSStereoMode::Off;
-	for (const auto& setting : StereoscopyOverlay::GetSettings())
+	for (const auto& setting : StereoscopyOverlay::GetSettings(StereoscopyOverlay::Tab::Stereoscopy))
 		EXPECT_EQ(StereoscopyOverlay::IsEnabled(setting, options), std::string_view(setting.key) == "StereoMode");
 	options.StereoMode = GSStereoMode::HalfSideBySide;
 	options.StereoPackedEnable = false;

@@ -7,6 +7,7 @@
 #include "common/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSPresentationEffects.h"
 #include "GS/Renderers/Common/GSShaderEnums.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSVertex.h"
@@ -577,40 +578,28 @@ enum class HWBlendType
 	BMIX2_OVERFLOW          = 3, // Blending Cs might overflow, try to compensate.
 };
 
+// Keep the complete presentation payload within Vulkan's portable 128-byte limit. (AI-assisted)
 struct alignas(16) DisplayConstantBuffer
 {
-	GSVector4 SourceRect; // +0,xyzw
-	GSVector4 TargetRect; // +16,xyzw
-	GSVector2 SourceSize; // +32,xy
-	GSVector2 TargetSize; // +40,zw
-	GSVector2 TargetResolution; // +48,xy
-	GSVector2 RcpTargetResolution; // +56,zw
-	GSVector2 SourceResolution; // +64,xy
-	GSVector2 RcpSourceResolution; // +72,zw
-	GSVector4 TimeAndPad; // seconds since GS init +76,xyzw
-	// +96
+	GSVector4 SourceRect;
+	GSVector4 TargetRect;
+	GSVector2 SourceResolution;
+	GSVector2 TargetResolution;
+	GSPresentationEffects::Parameters Effects;
 
-	// assumes that sRect is normalized
-	void SetSource(const GSVector4& sRect, const GSVector2i& sSize)
+	void SetSource(const GSVector4& rect, const GSVector2i& size)
 	{
-		SourceRect = sRect;
-		SourceResolution = GSVector2(static_cast<float>(sSize.x), static_cast<float>(sSize.y));
-		RcpSourceResolution = GSVector2(1.0f) / SourceResolution;
-		SourceSize = GSVector2((sRect.z - sRect.x) * SourceResolution.x, (sRect.w - sRect.y) * SourceResolution.y);
+		SourceRect = rect;
+		SourceResolution = GSVector2(static_cast<float>(size.x), static_cast<float>(size.y));
 	}
-	void SetTarget(const GSVector4& dRect, const GSVector2i& dSize)
+	void SetTarget(const GSVector4& rect, const GSVector2i& size)
 	{
-		TargetRect = dRect;
-		TargetResolution = GSVector2(static_cast<float>(dSize.x), static_cast<float>(dSize.y));
-		RcpTargetResolution = GSVector2(1.0f) / TargetResolution;
-		TargetSize = GSVector2(dRect.z - dRect.x, dRect.w - dRect.y);
-	}
-	void SetTime(float time)
-	{
-		TimeAndPad = GSVector4(time);
+		TargetRect = rect;
+		TargetResolution = GSVector2(static_cast<float>(size.x), static_cast<float>(size.y));
 	}
 };
-static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
+static_assert(sizeof(DisplayConstantBuffer) == 128);
+static_assert(offsetof(DisplayConstantBuffer, Effects) == 48);
 
 struct alignas(16) MergeConstantBuffer
 {
@@ -1720,7 +1709,7 @@ public:
 	void StretchRectAutoMask(GSTexture* sTex, GSTexture* dTex, bool red, bool green, bool blue, bool alpha, u32 src_bpp = 32, u32 dst_bpp = 32);
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
-	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, Filter filter) = 0;
+	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, const GSPresentationEffects::Parameters& effects, Filter filter) = 0;
 
 	/// Same as doing StretchRect for each item, except tries to batch together rectangles in as few draws as possible.
 	/// The provided list should be sorted by texture, the implementations only check if it's the same as the last.

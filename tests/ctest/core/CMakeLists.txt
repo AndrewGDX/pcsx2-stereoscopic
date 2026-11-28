@@ -1,5 +1,6 @@
 add_pcsx2_test(core_test
 	patch_tests.cpp
+	GS/presentation_effects_tests.cpp
 	GS/stereoscopy_tests.cpp
 	GS/stereoscopy_projection_tests.cpp
 	GS/stereoscopy_shadow_tests.cpp

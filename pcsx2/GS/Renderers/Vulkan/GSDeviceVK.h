@@ -386,7 +386,7 @@ public:
 	{
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
 		NUM_UTILITY_SAMPLERS = 1,
-		CONVERT_PUSH_CONSTANTS_SIZE = 96,
+		CONVERT_PUSH_CONSTANTS_SIZE = 128,
 
 		NUM_CAS_PIPELINES = 2,
 	};
@@ -602,7 +602,7 @@ public:
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-		PresentShader shader, float shaderTime, Filter filter) override;
+		PresentShader shader, const GSPresentationEffects::Parameters& effects, Filter filter) override;
 	void DrawMultiStretchRects(
 		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvertSelector shader);

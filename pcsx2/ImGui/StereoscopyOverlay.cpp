@@ -80,6 +80,26 @@ namespace
 		{"StereoRejectRegionRect", "PostFX Overlay Fix 1: Reject Region Rect", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRejectTfxDecal", "PostFX Overlay Fix 2: Reject TFX Decal", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoDebugAction", "Debug Action", "Debug Rendering", Control::Enum, 0, 5, 1, Pcsx2Config::GSOptions::StereoDebugActionNames},
+		{"StereoFix_EnableShiftTilt", TRANSLATE_NOOP("GraphicsSettingsWidget", "Shift and Tilt"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Stereo Adjustments"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Move the two eye images in opposite directions. Shift and tilt use native-resolution pixels and remain consistent when internal resolution changes.")},
+		{"StereoFix_Shift", TRANSLATE_NOOP("GraphicsSettingsWidget", "Shift"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Stereo Adjustments"), Control::Number, -30.0f, 30.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Horizontal displacement in native-resolution pixels for each eye.")},
+		{"StereoFix_Tilt", TRANSLATE_NOOP("GraphicsSettingsWidget", "Tilt"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Stereo Adjustments"), Control::Number, -10.0f, 10.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Vertical displacement in native-resolution pixels for each eye.")},
+		{"StereoFix_EnableVignette", TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Fade the borders of each eye image. Available with stereoscopic output.")},
+		{"StereoFix_VignetteSize", TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette Size"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette"), Control::Number, 0.0f, 1.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Width of the smooth border fade.")},
+		{"StereoFix_VignetteX", TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette X"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette"), Control::Number, 0.0f, 2.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Strength of the horizontal border fade.")},
+		{"StereoFix_VignetteY", TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette Y"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette"), Control::Number, 0.0f, 2.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Strength of the vertical border fade.")},
+		{"StereoFix_ExtendEdges", TRANSLATE_NOOP("GraphicsSettingsWidget", "Extend Edges"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Edge Adjustments"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Fill exposed borders by extending pixels from the same eye.")},
+		{"StereoFix_ExtendBorder", TRANSLATE_NOOP("GraphicsSettingsWidget", "Extend Border"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Edge Adjustments"), Control::Number, 0.0f, 0.1f, 0.0001f, nullptr, Tab::Shaders, 4, TRANSLATE_NOOP("GraphicsSettingsWidget", "Normalized inset of the sampled horizontal edge. Useful for hiding edge artifacts.")},
+		{"StereoFix_CutOffset", TRANSLATE_NOOP("GraphicsSettingsWidget", "Cut Offset"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Edge Adjustments"), Control::Number, 0.0f, 200.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Cut the extended horizontal edges. Uses source-image pixel units.")},
+		{"StereoFix_VignetteOffset", TRANSLATE_NOOP("GraphicsSettingsWidget", "Vignette Offset"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Edge Adjustments"), Control::Number, 0.0f, 250.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Move the horizontal fade inward. Uses source-image pixel units and requires edge extension.")},
+		{"StereoFix_EnableAutoGamma", TRANSLATE_NOOP("GraphicsSettingsWidget", "Enable Luminance Contrast"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Image Adjustments"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Adjust luminance contrast around the midpoint with dynamic gamma compensation. Also available in mono.")},
+		{"StereoFix_ContrastIntensity", TRANSLATE_NOOP("GraphicsSettingsWidget", "Contrast Intensity"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Image Adjustments"), Control::Number, 0.01f, 1.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Contrast multiplier near the luminance midpoint. Lower values compress contrast.")},
+		{"StereoFix_EnableLuminanceBlend", TRANSLATE_NOOP("GraphicsSettingsWidget", "Enable Luminance Blend"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Image Adjustments"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Apply a luminance-weighted self-overlay blend. Also available in mono.")},
+		{"StereoFix_Opacity", TRANSLATE_NOOP("GraphicsSettingsWidget", "Blend Opacity"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Image Adjustments"), Control::Number, 0.0f, 1.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Maximum strength of the luminance blend.")},
+		{"StereoFix_EnableLevels", TRANSLATE_NOOP("GraphicsSettingsWidget", "Enable Levels"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Levels"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Adjust black and white levels and color temperature. Also available in mono.")},
+		{"StereoFix_BlackLevel", TRANSLATE_NOOP("GraphicsSettingsWidget", "Black Level"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Levels"), Control::Number, 0.0f, 16.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Input black level in the 0-255 color range.")},
+		{"StereoFix_WhiteLevel", TRANSLATE_NOOP("GraphicsSettingsWidget", "White Level"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Levels"), Control::Number, 0.0f, 32.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Amount removed from the input white level in the 0-255 color range.")},
+		{"StereoFix_Temperature", TRANSLATE_NOOP("GraphicsSettingsWidget", "Temperature"), TRANSLATE_NOOP("GraphicsSettingsWidget", "Levels"), Control::Number, -1.0f, 1.0f, 0.01f, nullptr, Tab::Shaders, 2, TRANSLATE_NOOP("GraphicsSettingsWidget", "Warm or cool the image by adjusting red and blue.")},
+		{"StereoFix_EnableCRTFilter", TRANSLATE_NOOP("GraphicsSettingsWidget", "CRT Filter"), TRANSLATE_NOOP("GraphicsSettingsWidget", "CRT"), Control::Toggle, 0.0f, 1.0f, 1.0f, nullptr, Tab::Shaders, 0, TRANSLATE_NOOP("GraphicsSettingsWidget", "Add brightness-dependent CRT scanlines after the selected TV filter. Also available in mono.")},
 	};
 
 	constexpr size_t SETTING_COUNT = std::size(s_settings);
@@ -101,7 +121,7 @@ namespace
 		bool game = false;
 		int position = 0;
 		int initial_position = 0;
-		size_t selected = 0;
+		Navigation navigation;
 	};
 	std::mutex s_mutex;
 	State s_state;
@@ -171,15 +191,15 @@ namespace
 	void Change(int direction, bool reset, bool confirm, float acceleration = 1.0f)
 	{
 		std::lock_guard lock(s_mutex);
-		if (s_state.selected == SETTING_COUNT)
+		if (s_state.navigation.Index() == SETTING_COUNT)
 		{
 			s_state.position = reset ? 0 : std::clamp(s_state.position + direction, 0, static_cast<int>(std::size(POSITIONS)) - 1);
 			return;
 		}
-		const Setting& setting = s_settings[s_state.selected];
+		const Setting& setting = s_settings[s_state.navigation.Index()];
 		if (!IsEnabled(setting, s_state.options))
 			return;
-		Value& value = s_state.values[s_state.selected];
+		Value& value = s_state.values[s_state.navigation.Index()];
 		const std::string previous = value.current;
 		if (reset)
 			value.current = s_state.game ? value.fallback : value.factory;
@@ -194,7 +214,7 @@ namespace
 		{
 			const float number = std::clamp(Number(value.current) + direction * setting.step * acceleration,
 				setting.minimum, setting.maximum);
-			value.current = fmt::format("{:.1f}", number);
+			value.current = FormatNumber(setting, number);
 		}
 		else
 			return;
@@ -221,8 +241,7 @@ namespace
 	void Navigate(int direction)
 	{
 		std::lock_guard lock(s_mutex);
-		const int count = static_cast<int>(SETTING_COUNT) + 1;
-		s_state.selected = (static_cast<int>(s_state.selected) + direction + count) % count;
+		s_state.navigation.Move(direction);
 	}
 	void DirectionAction(float acceleration)
 	{
@@ -274,11 +293,65 @@ void StereoscopyOverlay::SettingsTransaction::Commit(SettingsInterface& settings
 }
 
 std::span<const StereoscopyOverlay::Setting> StereoscopyOverlay::GetSettings() { return s_settings; }
+
+std::span<const StereoscopyOverlay::Setting> StereoscopyOverlay::GetSettings(Tab tab)
+{
+	const auto all = GetSettings();
+	const auto first = std::find_if(all.begin(), all.end(), [tab](const Setting& s) { return s.tab == tab; });
+	const auto last = std::find_if(first, all.end(), [tab](const Setting& s) { return s.tab != tab; });
+	return {first, last};
+}
+
+std::string StereoscopyOverlay::FormatNumber(const Setting& setting, float value)
+{
+	const int precision = setting.precision >= 0 ? setting.precision : setting.step < 1 ? 1 : 0;
+	return fmt::format("{:.{}f}", value, precision);
+}
+
+size_t StereoscopyOverlay::Navigation::Index() const
+{
+	const auto settings = GetSettings(tab);
+	const size_t row = selected[static_cast<size_t>(tab)];
+	return row == settings.size() ? GetSettings().size() : static_cast<size_t>(settings.data() - GetSettings().data()) + row;
+}
+
+void StereoscopyOverlay::Navigation::Move(int direction)
+{
+	const int count = static_cast<int>(GetSettings(tab).size()) + 1;
+	size_t& row = selected[static_cast<size_t>(tab)];
+	row = (static_cast<int>(row) + direction + count) % count;
+}
+
+void StereoscopyOverlay::Navigation::Switch(int direction)
+{
+	tab = static_cast<Tab>((static_cast<int>(tab) + direction + 2) % 2);
+}
+
 bool StereoscopyOverlay::IsOpen() { return s_open.load(std::memory_order_acquire); }
 
 bool StereoscopyOverlay::IsEnabled(const Setting& setting, const Pcsx2Config::GSOptions& options)
 {
 	const std::string_view key(setting.key);
+	if (setting.tab == Tab::Shaders)
+	{
+		if (key == "StereoFix_EnableAutoGamma" || key == "StereoFix_EnableLuminanceBlend" || key == "StereoFix_EnableLevels" || key == "StereoFix_EnableCRTFilter")
+			return true;
+		if (key == "StereoFix_ContrastIntensity")
+			return options.StereoFix_EnableAutoGamma;
+		if (key == "StereoFix_Opacity")
+			return options.StereoFix_EnableLuminanceBlend;
+		if (key == "StereoFix_BlackLevel" || key == "StereoFix_WhiteLevel" || key == "StereoFix_Temperature")
+			return options.StereoFix_EnableLevels;
+		if (options.StereoMode == GSStereoMode::Off)
+			return false;
+		if (key == "StereoFix_Shift" || key == "StereoFix_Tilt")
+			return options.StereoFix_EnableShiftTilt;
+		if (key == "StereoFix_VignetteSize" || key == "StereoFix_VignetteX" || key == "StereoFix_VignetteY")
+			return options.StereoFix_EnableVignette;
+		if (key == "StereoFix_ExtendBorder" || key == "StereoFix_CutOffset" || key == "StereoFix_VignetteOffset")
+			return options.StereoFix_ExtendEdges;
+		return true;
+	}
 	if (key == "StereoMode")
 		return true;
 	if (options.StereoMode == GSStereoMode::Off)
@@ -363,14 +436,23 @@ void StereoscopyOverlay::Toggle()
 	}
 	{
 		std::lock_guard lock(s_mutex);
-		state.selected = s_state.selected;
+		state.navigation = s_state.navigation;
+		state.navigation.tab = Tab::Stereoscopy;
 		s_state = std::move(state);
+	}
+	// Retain shoulders until release, but do not repeat game navigation held before opening. (AI-assisted)
+	for (size_t i = 0; i < s_buttons.size(); i++)
+	{
+		const auto binding = static_cast<GenericInputBinding>(i);
+		if (binding != GenericInputBinding::L1 && binding != GenericInputBinding::R1 &&
+			binding != GenericInputBinding::L2 && binding != GenericInputBinding::L3)
+		{
+			s_buttons[i] = false;
+			s_button_sources[i].clear();
+		}
 	}
 	s_preview_dirty = false;
 	s_next_scope_check = Clock::now() + std::chrono::milliseconds(500);
-	s_buttons.fill(false);
-	for (auto& sources : s_button_sources)
-		sources.clear();
 	s_generation.fetch_add(1, std::memory_order_acq_rel);
 	s_open.store(true, std::memory_order_release);
 	InputManager::BeginOverlayCapture();
@@ -453,9 +535,6 @@ void StereoscopyOverlay::Close(bool reload_game_settings)
 				Host::AddOSDMessage(fmt::format("{}: {}", TRANSLATE("StereoscopyOverlay", "Could not save stereoscopy settings"), error.GetDescription()), 10.0f);
 		}
 	}
-	s_buttons.fill(false);
-	for (auto& sources : s_button_sources)
-		sources.clear();
 	s_preview_dirty = false;
 	if (scope_changed && reload_game_settings)
 	{
@@ -492,9 +571,6 @@ void StereoscopyOverlay::SetDefaultPadChordEnabled(bool enabled)
 {
 	s_pad_chord_enabled = enabled;
 	s_chord_latched = false;
-	s_buttons.fill(false);
-	for (auto& sources : s_button_sources)
-		sources.clear();
 }
 
 void StereoscopyOverlay::OnPadInput(GenericInputBinding binding, float value, u64 source)
@@ -525,6 +601,12 @@ void StereoscopyOverlay::OnPadInput(GenericInputBinding binding, float value, u6
 	}
 	if (!IsOpen() || down == was_down || !down || s_chord_latched)
 		return;
+	if (binding == GenericInputBinding::L1 || binding == GenericInputBinding::R1)
+	{
+		std::lock_guard lock(s_mutex);
+		s_state.navigation.Switch(binding == GenericInputBinding::L1 ? -1 : 1);
+		return;
+	}
 	s_hold_start = Clock::now();
 	s_next_repeat = s_hold_start + std::chrono::milliseconds(350);
 	if (binding == GenericInputBinding::Circle)
@@ -601,7 +683,12 @@ void StereoscopyOverlay::Render()
 	const int eye_count = GSConfig.StereoMode == GSStereoMode::Off ? 1 : 2;
 	ImDrawList* draw = ImGui::GetForegroundDrawList();
 	ImFont* font = ImGuiManager::GetStandardFont();
-	static size_t first = 0;
+	const size_t tab_index = static_cast<size_t>(state.navigation.tab);
+	const auto settings = GetSettings(state.navigation.tab);
+	const size_t begin = static_cast<size_t>(settings.data() - s_settings);
+	const size_t selected = state.navigation.selected[tab_index];
+	size_t first = state.navigation.first[tab_index];
+	const auto index_at = [&](size_t row) { return row == settings.size() ? SETTING_COUNT : begin + row; };
 	for (int eye = 0; eye < eye_count; eye++)
 	{
 		const auto& viewport = eyes[eye];
@@ -614,9 +701,9 @@ void StereoscopyOverlay::Render()
 		const float group_height = 38.0f * scale;
 		const float top = y + 96.0f * scale;
 		const float bottom = y + height - 16.0f * scale;
-		auto item_height = [&](size_t index) { return index == SETTING_COUNT ? 48 * scale : row_height; };
-		auto starts_group = [](size_t index, size_t first_index) {
-			return index == first_index || index == SETTING_COUNT || std::string_view(s_settings[index].group) != s_settings[index - 1].group;
+		auto item_height = [&](size_t row) { return row == settings.size() ? 48 * scale : row_height; };
+		auto starts_group = [&](size_t row, size_t first_row) {
+			return row == first_row || row == settings.size() || std::string_view(settings[row].group) != settings[row - 1].group;
 		};
 		auto rows_height = [&](size_t start, size_t end) {
 			float total = 0;
@@ -624,9 +711,9 @@ void StereoscopyOverlay::Render()
 				total += item_height(i) + (starts_group(i, start) ? group_height : 0.0f);
 			return total;
 		};
-		if (state.selected < first)
-			first = state.selected;
-		while (first < state.selected && rows_height(first, state.selected) > bottom - top)
+		if (selected < first)
+			first = selected;
+		while (first < selected && rows_height(first, selected) > bottom - top)
 			first++;
 		// Draw in logical eye coordinates, then transform both vertices and scissor rectangles. (AI-assisted)
 		const int vertex_start = draw->VtxBuffer.Size;
@@ -641,16 +728,22 @@ void StereoscopyOverlay::Render()
 				size *= max_width / measured;
 			draw->AddText(font, size, ImVec2(px, py), enabled ? IM_COL32_WHITE : IM_COL32(255, 255, 255, 110), str.data(), str.data() + str.size());
 		};
-		text(x + pad, y + 16 * scale, TRANSLATE("StereoscopyOverlay", "Stereoscopy"), 32 * scale, width - pad * 2);
+		const bool stereo_tab = state.navigation.tab == Tab::Stereoscopy;
+		const float tab_width = (width - pad * 2) * 0.5f;
+		text(x + pad, y + 16 * scale, TRANSLATE("StereoscopyOverlay", "[L1] Stereoscopy"), 26 * scale, tab_width - 8 * scale, stereo_tab);
+		text(x + pad + tab_width, y + 16 * scale, TRANSLATE("StereoscopyOverlay", "Shaders [R1]"), 26 * scale, tab_width, !stereo_tab);
+		const float active_x = x + pad + (stereo_tab ? 0.0f : tab_width);
+		draw->AddLine(ImVec2(active_x, y + 48 * scale), ImVec2(active_x + tab_width - 8 * scale, y + 48 * scale), IM_COL32_WHITE, 2 * scale);
 		text(x + pad, y + 56 * scale, state.subtitle, 20 * scale, width - pad * 2 - 70 * scale);
 		draw->AddLine(ImVec2(x + pad, y + 86 * scale), ImVec2(x + width - pad, y + 86 * scale), IM_COL32(255, 255, 255, 90));
-		auto row = [&](size_t index, float ry) {
+		auto row = [&](size_t row_index, float ry) {
+			const size_t index = index_at(row_index);
 			const bool position = index == SETTING_COUNT;
 			const Setting* setting = position ? nullptr : &s_settings[index];
 			const bool enabled = position || IsEnabled(*setting, state.options);
-			const float height = item_height(index);
+			const float height = item_height(row_index);
 			const ImU32 color = enabled ? IM_COL32_WHITE : IM_COL32(255, 255, 255, 110);
-			if (state.selected == index)
+			if (selected == row_index)
 				draw->AddRectFilled(ImVec2(x + 8 * scale, ry), ImVec2(x + width - 8 * scale, ry + height - 3 * scale), IM_COL32(255, 255, 255, 48), 5 * scale);
 			const float control_x = x + width * 0.60f;
 			const char* label = position ? TRANSLATE("StereoscopyOverlay", "Overlay position") : TRANSLATE("GraphicsSettingsWidget", setting->label);
@@ -683,7 +776,7 @@ void StereoscopyOverlay::Render()
 				draw->AddLine(ImVec2(control_x, center), ImVec2(right, center), IM_COL32(255, 255, 255, 90), 3 * scale);
 				draw->AddLine(ImVec2(control_x, center), ImVec2(control_x + (right - control_x) * fraction, center), color, 3 * scale);
 				draw->AddCircleFilled(ImVec2(control_x + (right - control_x) * fraction, center), 5 * scale, color);
-				text(right + 10 * scale, ry + 8 * scale, setting->step < 1 ? fmt::format("{:.1f}", number) : fmt::format("{:.0f}", number), 22 * scale, 75 * scale, enabled);
+				text(right + 10 * scale, ry + 8 * scale, FormatNumber(*setting, number), 22 * scale, 75 * scale, enabled);
 			}
 			else
 			{
@@ -696,7 +789,7 @@ void StereoscopyOverlay::Render()
 			}
 		};
 		float row_y = top;
-		for (size_t i = first; i <= SETTING_COUNT; i++)
+		for (size_t i = first; i <= settings.size(); i++)
 		{
 			const bool group = starts_group(i, first);
 			if (row_y + item_height(i) + (group ? group_height : 0.0f) > bottom)
@@ -706,13 +799,13 @@ void StereoscopyOverlay::Render()
 				// Keep section boundaries visible even when scrolling starts midway through a group. (AI-assisted)
 				draw->AddRectFilled(ImVec2(x + 8 * scale, row_y + 4 * scale), ImVec2(x + width - 8 * scale, row_y + group_height - 4 * scale), IM_COL32(255, 255, 255, 28), 3 * scale);
 				draw->AddRectFilled(ImVec2(x + 8 * scale, row_y + 4 * scale), ImVec2(x + 11 * scale, row_y + group_height - 4 * scale), IM_COL32_WHITE);
-				text(x + pad, row_y + 8 * scale, TRANSLATE("GraphicsSettingsWidget", i == SETTING_COUNT ? "Overlay" : s_settings[i].group), 19 * scale, width - pad * 2);
+				text(x + pad, row_y + 8 * scale, TRANSLATE("GraphicsSettingsWidget", i == settings.size() ? "Overlay" : settings[i].group), 19 * scale, width - pad * 2);
 				row_y += group_height;
 			}
 			row(i, row_y);
 			row_y += item_height(i);
 		}
-		text(x + width - pad - 50 * scale, y + 56 * scale, fmt::format("{}/{}", state.selected + 1, SETTING_COUNT + 1), 14 * scale, 50 * scale);
+		text(x + width - pad - 50 * scale, y + 56 * scale, fmt::format("{}/{}", selected + 1, settings.size() + 1), 14 * scale, 50 * scale);
 		for (int v = vertex_start; v < draw->VtxBuffer.Size; v++)
 			draw->VtxBuffer[v].pos = point(draw->VtxBuffer[v].pos.x, draw->VtxBuffer[v].pos.y);
 		for (int c = command_start; c < draw->CmdBuffer.Size; c++)
@@ -722,5 +815,10 @@ void StereoscopyOverlay::Render()
 			clip = ImVec4(a.x, a.y, b.x, b.y);
 		}
 		draw->PopClipRect();
+	}
+	{
+		std::lock_guard lock(s_mutex);
+		if (s_state.navigation.tab == state.navigation.tab && s_state.navigation.selected[tab_index] == selected)
+			s_state.navigation.first[tab_index] = first;
 	}
 }

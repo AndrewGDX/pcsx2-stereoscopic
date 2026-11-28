@@ -2030,6 +2030,9 @@
     <ClInclude Include="GS\Renderers\Common\GSDevice.h">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSPresentationEffects.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSShaderEnums.h">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>

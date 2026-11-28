@@ -12,6 +12,9 @@
 #include "ImGui/FullscreenUI_Internal.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
+#include "ImGui/StereoscopyOverlay.h"
+#include "common/MemorySettingsInterface.h"
+#include "common/SettingsWrapper.h"
 #include "Input/InputManager.h"
 #include "MTGS.h"
 #include "Patch.h"
@@ -3348,6 +3351,50 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		};
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shader"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
 			s_tv_shaders, std::size(s_tv_shaders), true);
+	}
+
+	// Restore shader controls without duplicating their ranges and enable rules. (AI-assisted)
+	{
+		static MemorySettingsInterface defaults;
+		static const bool initialized = [&]() {
+			Pcsx2Config::GSOptions factory;
+			SettingsSaveWrapper save(defaults);
+			factory.LoadSave(save);
+			return true;
+		}();
+		(void)initialized;
+		Pcsx2Config::GSOptions options;
+		std::string mode = Host::Internal::GetBaseSettingsLayer()->GetStringValue("EmuCore/GS", "StereoMode", "Half SBS (Side-by-Side)");
+		if (IsEditingGameSettings(bsi))
+			mode = bsi->GetStringValue("EmuCore/GS", "StereoMode", mode.c_str());
+		options.StereoMode = mode == "Off" ? GSStereoMode::Off : GSStereoMode::HalfSideBySide;
+		options.StereoFix_EnableShiftTilt = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableShiftTilt", false);
+		options.StereoFix_EnableVignette = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableVignette", false);
+		options.StereoFix_ExtendEdges = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_ExtendEdges", false);
+		options.StereoFix_EnableAutoGamma = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableAutoGamma", false);
+		options.StereoFix_EnableLuminanceBlend = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableLuminanceBlend", false);
+		options.StereoFix_EnableLevels = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableLevels", false);
+		options.StereoFix_EnableCRTFilter = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "StereoFix_EnableCRTFilter", false);
+		std::string_view previous_group;
+		for (const auto& setting : StereoscopyOverlay::GetSettings(StereoscopyOverlay::Tab::Shaders))
+		{
+			if (previous_group != setting.group)
+			{
+				previous_group = setting.group;
+				MenuHeading(Host::TranslateToCString("GraphicsSettingsWidget", setting.group));
+			}
+			const char* label = Host::TranslateToCString("GraphicsSettingsWidget", setting.label);
+			const char* help = Host::TranslateToCString("GraphicsSettingsWidget", setting.help);
+			const bool enabled = StereoscopyOverlay::IsEnabled(setting, options);
+			if (setting.control == StereoscopyOverlay::Control::Toggle)
+				DrawToggleSetting(bsi, label, help, "EmuCore/GS", setting.key, false, enabled);
+			else
+			{
+				const char* format = setting.precision == 4 ? "%.4f" : setting.precision == 2 ? "%.2f" : "%.0f";
+				DrawFloatSpinBoxSetting(bsi, label, help, "EmuCore/GS", setting.key,
+					defaults.GetFloatValue("EmuCore/GS", setting.key), setting.minimum, setting.maximum, setting.step, 1.0f, format, enabled);
+			}
+		}
 	}
 
 	static constexpr const char* s_gsdump_compression[] = {
