@@ -177,9 +177,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_stereo.stereoSeparation, "EmuCore/GS", "StereoSeparation", 20.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_stereo.stereoConvergence, "EmuCore/GS", "StereoConvergence", 20.0f);
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_stereo.stereoConvergenceCycleValues,
-		"EmuCore/GS", "StereoConvergenceCycleValues", "10, 20, 30, 60");
+		"EmuCore/GS", "StereoConvergenceCycleValues", "10, 20, 30, 60, 120");
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoProjectionDepth, "EmuCore/GS", "StereoProjectionDepth", false);
-	dialog()->registerWidgetHelp(m_stereo.stereoProjectionDepth, tr("Depth Fix: Projection-aware stereo depth"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_stereo.stereoProjectionDepth, tr("Projection-aware stereo depth"), tr("Unchecked"),
 		tr("Automatically correct stereo depth for backgrounds and weapons rendered with a different projection. Learns from recent frames and preserves the game's depth tests. Experimental: may misidentify passes in some games. Enable per game as needed."));
 	auto bind_depth_slider = [](QSlider* slider, QDoubleSpinBox* spin) {
 		slider->setValue(qRound(spin->value() * 10.0));

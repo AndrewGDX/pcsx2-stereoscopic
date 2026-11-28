@@ -947,7 +947,7 @@ struct Pcsx2Config
 		GSStereoDominantEye StereoDominantEye = GSStereoDominantEye::None;
 		float StereoSeparation = 20.0f;
 		float StereoConvergence = 20.0f;
-		std::string StereoConvergenceCycleValues = "10, 20, 30, 60";
+		std::string StereoConvergenceCycleValues = "10, 20, 30, 60, 120";
 		float StereoUiDepth = 0.0f;
 		float StereoUiSecondLayerDepth = 0.0f;
 		int StereoUiDetectMode = 2;

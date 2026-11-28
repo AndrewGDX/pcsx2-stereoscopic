@@ -3,6 +3,7 @@
 
 // Overlay settings transactions and binding compatibility. (AI-assisted)
 #include "ImGui/StereoscopyOverlay.h"
+#include "GS/Renderers/Common/GSStereoPresentation.h"
 #include "Input/InputManager.h"
 #include "LayeredSettingsInterface.h"
 #include "SIO/Pad/Pad.h"
@@ -61,6 +62,45 @@ namespace
 		LayeredSettingsInterface m_settings;
 	};
 } // namespace
+
+TEST(StereoscopyOverlay, LayoutFitsBothEyesInEveryOutputMode)
+{
+	for (unsigned mode = 0; mode < static_cast<unsigned>(GSStereoMode::Count); mode++)
+	{
+		for (const auto& [width, height] : {std::pair{1920, 1080}, std::pair{3840, 1080},
+				 std::pair{1920, 2160}, std::pair{1101, 731}, std::pair{51, 31}})
+		{
+			for (float global_scale : {0.5f, 1.0f, 2.0f})
+			{
+				SCOPED_TRACE(testing::Message() << "mode=" << mode << " size=" << width << "x" << height << " scale=" << global_scale);
+				const auto eyes = GSStereoPresentation::GetEyes(static_cast<GSStereoMode>(mode), width, height, false);
+				const auto layout = StereoscopyOverlay::GetLayout(std::min(eyes[0].width, eyes[1].width),
+					std::min(eyes[0].height, eyes[1].height), global_scale);
+				EXPECT_GT(layout.scale, 0.0f);
+				for (const auto& eye : eyes)
+				{
+					EXPECT_LE(layout.width + 2.0f * layout.margin, eye.width);
+					EXPECT_LE(layout.height, eye.height);
+					// The header and at least one grouped game-settings row must remain visible. (AI-assisted)
+					EXPECT_LE((96.0f + 38.0f + 60.0f + 16.0f) * layout.scale, layout.height);
+				}
+			}
+		}
+	}
+}
+
+TEST(StereoscopyOverlay, NarrowFullSbsUsesTheCurrentPanelWidth)
+{
+	const auto eyes = GSStereoPresentation::GetEyes(GSStereoMode::FullSideBySide, 1100, 730, false);
+	const auto layout = StereoscopyOverlay::GetLayout(eyes[0].width, eyes[0].height, 1.0f);
+	EXPECT_FLOAT_EQ(layout.width, 550.0f * 0.65f);
+}
+
+TEST(StereoscopyOverlay, EmptyViewportDoesNotRender)
+{
+	EXPECT_FLOAT_EQ(StereoscopyOverlay::GetLayout(0, 1080, 1.0f).scale, 0.0f);
+	EXPECT_FLOAT_EQ(StereoscopyOverlay::GetLayout(1920, 0, 1.0f).scale, 0.0f);
+}
 
 TEST_F(StereoscopyOverlayInput, BothSticksResumeWithoutAnExactZeroReading)
 {

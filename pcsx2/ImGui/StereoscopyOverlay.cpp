@@ -67,15 +67,15 @@ namespace
 		{"StereoPackedEffectDepthFix", "Fix framebuffer effect depth", "Improved Packed Renderer", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoDisableCorrectSbsFramebufferSize", "Disable full framebuffer for each eye (Alternative Rendering)", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSbsRemapMono", "Picture-in-Picture Fix: Mono SBS Remap", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoProjectionDepth", "Projection-aware stereo depth", "Presentation Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFeedbackLoopFix", "Feedback Loop Fix", "Presentation Fixes", Control::Choice, 0, 3, 1, s_StereoFeedbackLoopFix},
 		{"StereoSbsRemapFix", "SBS Remap Fix", "Presentation Fixes", Control::Choice, 0, 3, 1, s_StereoSbsRemapFix},
-		{"StereoProjectionDepth", "Depth Fix: Projection-aware stereo depth", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoCloseDepthFix", "Depth Fix: God of War, Gun", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoSkyFix", "Sky Fix: Killzone, Gran Turismo 4", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRequireRtaCorrection", "Shadows Fix 0: Target Alpha Correction (CoD, Medal of Honor)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFixStencilShadows1", "Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3, MK)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFixStencilShadows2", "Shadows Fix 2: Alternate Stencil Shadows (Flatout)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
-		{"StereoFixStencilShadows3", "Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoFixStencilShadows3", "Shadows Fix 3: Fix Stencil Shadows (God of War)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFixStencilShadows4", "Shadows Fix 4: Correct Inverted Depth Shadows", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRejectRegionRect", "PostFX Overlay Fix 1: Reject Region Rect", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRejectTfxDecal", "PostFX Overlay Fix 2: Reject TFX Decal", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
@@ -568,6 +568,14 @@ void StereoscopyOverlay::Update()
 	}
 }
 
+StereoscopyOverlay::Layout StereoscopyOverlay::GetLayout(int available_width, int available_height, float global_scale)
+{
+	const float height = std::max(available_height, 0) * 0.9f;
+	// Fit the current panel width, including narrow full-format eye viewports. (AI-assisted)
+	const float scale = std::max(0.0f, std::min({global_scale, available_width * 0.65f / 510.0f, height / 480.0f}));
+	return {scale, 510.0f * scale, height, 12.0f * scale};
+}
+
 void StereoscopyOverlay::Render()
 {
 	const bool fullscreen_ui_active = FullscreenUI::HasActiveWindow();
@@ -586,6 +594,10 @@ void StereoscopyOverlay::Render()
 	}
 	const ImVec2 display = ImGui::GetIO().DisplaySize;
 	const auto eyes = GSStereoPresentation::GetEyes(GSConfig.StereoMode, static_cast<int>(display.x), static_cast<int>(display.y), false);
+	const auto [scale, width, height, margin] = GetLayout(std::min(eyes[0].width, eyes[1].width),
+		std::min(eyes[0].height, eyes[1].height), ImGuiManager::GetGlobalScale());
+	if (scale <= 0.0f)
+		return;
 	const int eye_count = GSConfig.StereoMode == GSStereoMode::Off ? 1 : 2;
 	ImDrawList* draw = ImGui::GetForegroundDrawList();
 	ImFont* font = ImGuiManager::GetStandardFont();
@@ -593,13 +605,7 @@ void StereoscopyOverlay::Render()
 	for (int eye = 0; eye < eye_count; eye++)
 	{
 		const auto& viewport = eyes[eye];
-		const float available_width = static_cast<float>(std::min(eyes[0].width, eyes[1].width));
-		const float available_height = static_cast<float>(std::min(eyes[0].height, eyes[1].height));
 		// Mixed-DPI monitor transitions need proper testing on Windows and Linux. (AI-assisted)
-		const float height = available_height * 0.9f;
-		const float scale = std::max(0.1f, std::min({ImGuiManager::GetGlobalScale(), available_width * 0.65f / 680.0f, height / 480.0f}));
-		const float width = 510.0f * scale;
-		const float margin = 12.0f;
 		const float x = state.position == 0 ? margin : state.position == 2 ? viewport.width - width - margin :
 		                                                                     (viewport.width - width) * 0.5f;
 		const float y = (viewport.height - height) * 0.5f;

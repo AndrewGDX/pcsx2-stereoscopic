@@ -62,6 +62,15 @@ namespace StereoscopyOverlay
 	std::span<const Setting> GetSettings();
 	bool IsEnabled(const Setting& setting, const Pcsx2Config::GSOptions& options);
 
+	struct Layout
+	{
+		float scale;
+		float width;
+		float height;
+		float margin;
+	};
+	Layout GetLayout(int available_width, int available_height, float global_scale);
+
 	// CPU thread lifecycle/input. Rendering only reads a synchronized snapshot.
 	bool IsOpen();
 	void Toggle();
