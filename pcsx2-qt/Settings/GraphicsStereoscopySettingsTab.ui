@@ -688,10 +688,10 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="stereoRequireRtaCorrection">
         <property name="text">
-         <string>Shadows Fix 0: Target Alpha Correction (COD)</string>
+         <string>Shadows Fix 0: Target Alpha Correction (CoD, Medal of Honor)</string>
         </property>
         <property name="toolTip">
-         <string>Disable stereo displacement for draws using target alpha correction, such as COD shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1.</string>
+         <string>Disable stereo displacement for draws using target alpha correction, such as CoD and Medal of Honor shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1.</string>
         </property>
        </widget>
       </item>
@@ -708,10 +708,10 @@
       <item row="5" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows2">
         <property name="text">
-         <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+         <string>Shadows Fix 2: Alternate Stencil Shadows (Flatout)</string>
         </property>
         <property name="toolTip">
-         <string>Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)</string>
+         <string>Keep untextured, destination-alpha-tested offscreen shadow masks at screen depth, as in FlatOut 2. Preserve stereo depth for scene geometry and depth passes. With the improved packed renderer enabled, render masks in both eyes. Enable per game as needed.</string>
         </property>
        </widget>
       </item>

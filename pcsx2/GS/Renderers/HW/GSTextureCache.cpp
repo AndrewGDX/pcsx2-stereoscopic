@@ -6463,9 +6463,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				return nullptr;
 			}
 
-			if (!is_8bits)
+			// Indexed conversion also writes a two-eye atlas. Mark it before placing
+			// each eye so neither conversion overwrites the other. (AI-assisted)
+			// Other games' indexed target conversions still need proper testing. (AI-assisted)
+			if (!is_8bits || packed_indexed)
 				dTex->SetPackedStereoAxis(sTex->GetPackedStereoAxis());
-			else if (!packed_indexed)
+			else
 				dTex->SetPackedStereoAxis(GSPackedStereo::Axis::None);
 			src->m_shared_texture = false;
 			src->m_target_direct = false;

@@ -10272,9 +10272,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			break;
 		}
 
+		// Shadow silhouettes are rendered into an offscreen mask before being
+		// projected onto world geometry. Displacing the mask itself distorts the
+		// shadow; material and depth passes must keep their world disparity. (AI-assisted)
+		// Other games' mask-generation pipelines still need proper testing. (AI-assisted)
+		const bool alternate_shadow_mask = m_vt.m_primclass == GS_TRIANGLE_CLASS &&
+		                                   !m_process_texture && !PRIM->ABE && m_conf.rt && m_conf.colormask.wa &&
+		                                   m_cached_ctx.TEST.DATE && m_cached_ctx.TEST.ZTE && m_cached_ctx.TEST.ZTST == ZTST_ALWAYS &&
+		                                   m_cached_ctx.ZBUF.ZMSK && !m_conf.depth.zwe &&
+		                                   !frame_matches_display_buffer1 && !frame_matches_display_buffer2;
+
 		const bool stereo_enabled = GSConfig.StereoMode != GSStereoMode::Off && (!safe_master_fix && (!GSConfig.StereoRequireRtaCorrection || !m_conf.ps.rta_correction) // Tekken 4, MK shadows fix
 		                                                                                && (!GSConfig.StereoFixStencilShadows1 || !(m_vt.m_eq.q && !m_vt.m_eq.z && depth_active)) // Tekken 5 shadows fix
-		                                                                                && (!GSConfig.StereoFixStencilShadows2 || !(m_conf.ps.blend_mix == 0 && !m_conf.ps.tcc && !m_conf.ps.automatic_lod && !m_conf.ps.adjs)) // Tekken 4, Onimusha 3 shadows fix
+		                                                                                && (!GSConfig.StereoFixStencilShadows2 || !alternate_shadow_mask) // Alternate stencil shadow passes
 		                                                                                && (GSConfig.StereoDebugAction != GSStereoDebugAction::Mono || !disable_stereo_pass)
 
 		                                                                            || checked_objects_stereo_override || checked_objects_sbs_remap_override);
@@ -10457,7 +10467,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			m_conf.instance_count = 1;
 			// A mono policy still needs a complete image in each atlas eye.
-			if (IsPackedStereoEnabled() && (GSConfig.StereoRequireRtaCorrection || GSConfig.StereoFixStencilShadows1))
+			if (IsPackedStereoEnabled() && (GSConfig.StereoRequireRtaCorrection || GSConfig.StereoFixStencilShadows1 || GSConfig.StereoFixStencilShadows2))
 				SubmitPackedDraw(tex, 0.0f, 0.0f, 0.0f, true);
 			else
 				g_gs_device->RenderHW(m_conf);

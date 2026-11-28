@@ -919,13 +919,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Uses half the horizontal resolution for each eye. Can help some games and break others.<br> "
 			   "If this option is disabled, some games require Feedback Loop Fix to be Off."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRequireRtaCorrection, tr("Target Alpha Correction"), tr("Unchecked"),
-			tr("Disable stereo displacement for draws using target alpha correction, such as COD shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1."));
+			tr("Disable stereo displacement for draws using target alpha correction, such as CoD and Medal of Honor shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRejectRegionRect, tr("Reject Region Rect"), tr("Unchecked"),
 			tr("Skip draws that use the region rectangle path."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows1, tr("Fix Stencil Shadows"), tr("Unchecked"),
 			tr("Disable stereo displacement for stencil shadow passes in Tekken 5, MGS 3, and MK. With the improved packed renderer enabled, render mono draws in both eyes."));
-		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows2, tr("Stencil Shadows 2"), tr("Unchecked"),
-			tr("Alternate stencil shadow fix for specific titles."));
+		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows2, tr("Alternate Stencil Shadows"), tr("Unchecked"),
+			tr("Keep untextured, destination-alpha-tested offscreen shadow masks at screen depth, as in FlatOut 2. Preserve stereo depth for scene geometry and depth passes. With the improved packed renderer enabled, render masks in both eyes. Enable per game as needed."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows3, tr("Stencil Shadows 3"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for God of War."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows4, tr("Correct Inverted Depth Shadows"), tr("Unchecked"),
