@@ -108,7 +108,8 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
 	if (old_config.StereoProjectionDepth != GSConfig.StereoProjectionDepth || old_config.StereoMode != GSConfig.StereoMode)
 		m_stereo_projection.Reset();
-	if (old_config.StereoFixStencilShadows4 != GSConfig.StereoFixStencilShadows4 || old_config.StereoMode != GSConfig.StereoMode)
+	if (old_config.StereoFixStencilShadows3 != GSConfig.StereoFixStencilShadows3 ||
+		old_config.StereoFixStencilShadows4 != GSConfig.StereoFixStencilShadows4 || old_config.StereoMode != GSConfig.StereoMode)
 		m_stereo_shadow.Reset();
 	GSRenderer::UpdateSettings(old_config);
 	m_mipmap = GSConfig.HWMipmap;
@@ -2815,18 +2816,30 @@ void GSRendererHW::Draw()
 
 	m_stereo_inverted_shadow_draw = false;
 
-	if (GSConfig.StereoFixStencilShadows4 && GSConfig.StereoMode != GSStereoMode::Off)
+	if ((GSConfig.StereoFixStencilShadows3 || GSConfig.StereoFixStencilShadows4) && GSConfig.StereoMode != GSStereoMode::Off)
 	{
 		// Observe original GS registers before optimized clears can return early.
-		// Jak II alternates between normal and inverted-depth shadow passes.
+		// Jak II and God of War invert depth before drawing shadow volumes. (AI-assisted)
 		const GSVector4i bounds = GSVector4i((m_vt.m_min.p.upld(m_vt.m_max.p) + GSVector4::cxpr(0.4f)).round<Round_NearestInt>())
 		                              .rintersect(context->scissor.in);
 		const GSStereoShadow::Key key{context->ZBUF.Block(), context->FRAME.FBW};
 		const GSStereoShadow::Rect rect{bounds.x, bounds.y, bounds.z, bounds.w};
 		const GIFRegALPHA& alpha = context->ALPHA;
+		// God of War counts shadow-volume faces in green, with opposite winding
+		// encoded as 1/255. Keep both face groups on the same recovered depth.
+		// Other scenes and Gun still need proper testing. (AI-assisted)
+		const bool green_shadow_volume = GSConfig.StereoFixStencilShadows3 &&
+		                                 m_vt.m_primclass == GS_TRIANGLE_CLASS && !PRIM->TME && !PRIM->IIP && PRIM->ABE &&
+		                                 !m_vt.m_eq.z && m_vt.m_eq.q && context->FRAME.PSM == PSMCT32 &&
+		                                 context->FRAME.FBMSK == 0xffff00ff && context->ZBUF.PSM == PSMZ24 &&
+		                                 context->ZBUF.ZMSK && context->TEST.ZTE && context->TEST.ZTST >= ZTST_GEQUAL &&
+		                                 !context->TEST.ATE && !context->TEST.DATE && !m_draw_env->PABE.PABE &&
+		                                 alpha.A == 0 && alpha.B == 2 && alpha.C == 2 && alpha.D == 1 && alpha.FIX == 128;
+		const bool inversion_format = (context->FRAME.PSM == PSMCT32 && context->FRAME.FBMSK == 0xff000000) ||
+		                              (GSConfig.StereoFixStencilShadows3 && context->FRAME.PSM == PSMCT24 && context->FRAME.FBMSK == 0);
 		const bool invert_depth = m_vt.m_primclass == GS_SPRITE_CLASS && !PRIM->TME && PRIM->ABE &&
-		                          context->FRAME.PSM == PSMCT32 && context->ZBUF.PSM == PSMZ24 &&
-		                          context->FRAME.Block() == context->ZBUF.Block() && context->FRAME.FBMSK == 0xff000000 &&
+		                          inversion_format && context->ZBUF.PSM == PSMZ24 &&
+		                          context->FRAME.Block() == context->ZBUF.Block() &&
 		                          context->ZBUF.ZMSK && context->TEST.ZTE && context->TEST.ZTST == ZTST_ALWAYS &&
 		                          (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS) && !context->TEST.DATE &&
 		                          !m_draw_env->PABE.PABE && m_draw_env->COLCLAMP.CLAMP &&
@@ -2856,11 +2869,13 @@ void GSRendererHW::Draw()
 			else
 				m_stereo_shadow.Reset();
 		}
-		else if ((context->TEST.ZTE && !context->ZBUF.ZMSK) || (context->FRAME.FBMSK & 0xffffff) != 0xffffff)
+		else if ((context->TEST.ZTE && !context->ZBUF.ZMSK) ||
+				 ((context->FRAME.FBMSK & 0xffffff) != 0xffffff && !green_shadow_volume))
 			m_stereo_shadow.Reset();
 		else
 			m_stereo_inverted_shadow_draw = context->ZBUF.PSM == PSMZ24 &&
 			                                m_vt.m_primclass == GS_TRIANGLE_CLASS && !m_vt.m_eq.z && m_vt.m_eq.q &&
+			                                (GSConfig.StereoFixStencilShadows4 || green_shadow_volume) &&
 			                                (context->TEST.ZTE && context->TEST.ZTST >= ZTST_GEQUAL) && m_stereo_shadow.IsInverted(key, rect);
 	}
 
@@ -9592,9 +9607,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	GSVector4 stereo_projection_depth = GetStereoProjectionDepth(tex);
 	// Only invert stereo depth within a proven buffer-inversion interval.
-	// Matching alpha-only geometry outside that interval keeps its original Z.
+	// Shadow geometry outside that interval keeps its original Z. (AI-assisted)
 	// Other games and partial inversion passes still need proper testing. (AI-assisted)
-	if (m_stereo_inverted_shadow_draw && m_conf.colormask.wrgba == 8)
+	if (m_stereo_inverted_shadow_draw &&
+		(m_conf.colormask.wrgba == 8 || (GSConfig.StereoFixStencilShadows3 && m_conf.colormask.wrgba == 2)))
 		stereo_projection_depth = GSVector4(-1.0f, 16777215.0f, 1.0f, 0.0f);
 	HandleFlatShadedVertices();
 
@@ -10389,14 +10405,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			    separation = ui_detect ? 0.01f : (GSConfig.StereoSeparation + 0.000001f) * 0.001f;
 			}
 
-			float convergence = ui_detect ? 1.0f : GSConfig.StereoConvergence * GSConfig.StereoConvergence * 50.0f;
+			const float convergence = ui_detect ? 1.0f : GSConfig.StereoConvergence * GSConfig.StereoConvergence * 50.0f;
 			const float screen_depth = ui_detect ? ui_depth * 100.0f : GSConfig.StereoCloseDepthFix ? 1.0f : 0.0f;
 			const int dominant_mode = static_cast<int>(GSConfig.StereoDominantEye);
-
-			if (GSConfig.StereoFixStencilShadows3 && !ui_detect && m_vt.m_eq.rgba != 0xFFFF && !m_conf.ps.iip && m_vt.m_eq.q) // God of War, Gun shadows fix
-			{
-				convergence = -convergence;
-			}
 
 			if (IsPackedStereoEnabled())
 			{
