@@ -919,6 +919,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoDominantEye) &&
 		OpEqu(StereoSeparation) &&
 		OpEqu(StereoConvergence) &&
+		OpEqu(StereoConvergenceCycleValues) &&
 		OpEqu(StereoUiDepth) &&
 		OpEqu(StereoUiSecondLayerDepth) &&
 		OpEqu(StereoUiDetectMode) &&
@@ -1398,6 +1399,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEnumEx(StereoDominantEye, "StereoDominantEye", StereoDominantEyeNames);
 	SettingsWrapEntry(StereoSeparation);
 	SettingsWrapEntry(StereoConvergence);
+	SettingsWrapEntry(StereoConvergenceCycleValues);
 	SettingsWrapEntry(StereoUiDepth);
 	SettingsWrapEntry(StereoUiSecondLayerDepth);
 	SettingsWrapEntry(StereoUiDetectMode);

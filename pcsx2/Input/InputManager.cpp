@@ -884,7 +884,8 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 
 void InputManager::AddHotkeyBindings(SettingsInterface& si, bool is_profile)
 {
-	if (is_profile && !si.GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false))
+	if (is_profile && (!si.GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false) ||
+						  !si.GetBoolValue("UI", "ConvergenceCycleHotkeyInitialized", false)))
 	{
 		StereoscopyOverlay::MigrateHotkey(si);
 		si.Save();

@@ -250,6 +250,7 @@ void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "LoadStateFromSlot", "Keyboard/F3");
 	si.SetStringValue("Hotkeys", "SaveStateToSlot", "Keyboard/F1");
 	si.SetStringValue("Hotkeys", "NextSaveStateSlot", "Keyboard/F2");
+	si.SetStringValue("Hotkeys", "CycleConvergence", "Keyboard/Control & Keyboard/Shift & Keyboard/F2");
 	si.SetStringValue("Hotkeys", "PreviousSaveStateSlot", "Keyboard/Shift & Keyboard/F2");
 
 	// PCSX2 Controller Settings - Hotkeys - System

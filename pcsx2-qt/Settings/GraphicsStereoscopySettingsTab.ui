@@ -231,6 +231,23 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="stereoConvergenceCycleValuesLabel">
+        <property name="text">
+         <string>Convergence Cycle:</string>
+        </property>
+        <property name="buddy">
+         <cstring>stereoConvergenceCycleValues</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="stereoConvergenceCycleValues">
+        <property name="toolTip">
+         <string>Comma-separated convergence values from 0 to 1000. Invalid entries and duplicates are skipped.</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

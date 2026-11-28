@@ -144,6 +144,7 @@ namespace VMManager
 
 	/// Applies stereoscopy edits without reloading input bindings or unrelated core settings.
 	void RefreshStereoscopySettings();
+	void CycleStereoConvergence();
 
 	/// Reloads game specific settings, and applys any changes present.
 	bool ReloadGameSettings();

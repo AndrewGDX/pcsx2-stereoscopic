@@ -159,6 +159,11 @@ DEFINE_HOTKEY("ToggleStereoscopyOverlay", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 		if (pressed == 1)
 			StereoscopyOverlay::Toggle();
 	})
+DEFINE_HOTKEY("CycleConvergence", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+	TRANSLATE_NOOP("Hotkeys", "Cycle Convergence"), [](s32 pressed) {
+		if (pressed == 1)
+			VMManager::CycleStereoConvergence();
+	})
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
 	[](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM() && CanPause())

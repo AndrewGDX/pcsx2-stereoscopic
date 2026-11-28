@@ -1396,7 +1396,8 @@ bool QtHost::InitializeConfig()
 			SaveSettings();
 	}
 
-	if (!s_base_settings_interface->GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false))
+	if (!s_base_settings_interface->GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false) ||
+		!s_base_settings_interface->GetBoolValue("UI", "ConvergenceCycleHotkeyInitialized", false))
 	{
 		StereoscopyOverlay::MigrateHotkey(*s_base_settings_interface);
 		SaveSettings();

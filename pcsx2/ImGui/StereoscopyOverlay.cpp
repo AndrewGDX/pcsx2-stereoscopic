@@ -292,6 +292,12 @@ bool StereoscopyOverlay::IsEnabled(const Setting& setting, const Pcsx2Config::GS
 
 void StereoscopyOverlay::MigrateHotkey(SettingsInterface& settings)
 {
+	if (!settings.GetBoolValue("UI", "ConvergenceCycleHotkeyInitialized", false))
+	{
+		if (!settings.ContainsValue("Hotkeys", "CycleConvergence"))
+			settings.SetStringValue("Hotkeys", "CycleConvergence", "Keyboard/Control & Keyboard/Shift & Keyboard/F2");
+		settings.SetBoolValue("UI", "ConvergenceCycleHotkeyInitialized", true);
+	}
 	if (settings.GetBoolValue("UI", "StereoscopyOverlayHotkeyInitialized", false))
 		return;
 	if (!settings.ContainsValue("Hotkeys", HOTKEY))

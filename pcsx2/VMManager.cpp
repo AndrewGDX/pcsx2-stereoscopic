@@ -63,7 +63,10 @@
 #include "discord_rpc.h"
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <atomic>
+#include <cmath>
+#include <iterator>
 #include <mutex>
 #include <sstream>
 #include <common/RedtapeWilCom.h>
@@ -768,6 +771,37 @@ void VMManager::ApplySettings()
 	EmuConfig.CopyRuntimeConfig(old_config);
 	LoadSettings();
 	CheckForConfigChanges(old_config);
+}
+
+// Runtime-only adjustment: settings interfaces retain the saved convergence. (AI-assisted)
+void VMManager::CycleStereoConvergence()
+{
+	if (!HasValidVM())
+		return;
+
+	std::vector<float> values;
+	for (std::string_view token : StringUtil::SplitString(EmuConfig.GS.StereoConvergenceCycleValues, ','))
+	{
+		token = StringUtil::StripWhitespace(token);
+		if (token.empty())
+			continue;
+		std::string_view remaining;
+		const auto value = StringUtil::FromChars<float>(token, &remaining);
+		if (!value || !remaining.empty() || !std::isfinite(*value) || *value < 0.0f || *value > 1000.0f)
+			continue;
+		if (std::find(values.begin(), values.end(), *value) == values.end())
+			values.push_back(*value);
+	}
+	if (values.empty())
+		return;
+
+	const auto current = std::find(values.begin(), values.end(), EmuConfig.GS.StereoConvergence);
+	const float next = (current == values.end() || std::next(current) == values.end()) ? values.front() : *std::next(current);
+	MTGS::WaitGS(false);
+	const Pcsx2Config old_config(EmuConfig);
+	EmuConfig.GS.StereoConvergence = next;
+	// Interaction with live overlay edits needs proper testing. (AI-assisted)
+	CheckForGSConfigChanges(old_config);
 }
 
 void VMManager::RefreshStereoscopySettings()
