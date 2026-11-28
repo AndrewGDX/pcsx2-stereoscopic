@@ -2993,7 +2993,10 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 		if (!tex)
 			return nullptr;
 
-		if (rescaler.m_scale == 1.0f && type == RenderTarget)
+		// The box filter uses absolute destination pixels, without resolving eye
+		// origins. Packed resizes use the eye-aware conversion below. (AI-assisted)
+		const bool packed_rescale = IsPackedStereoEnabled() && dst->m_texture->IsPackedStereo();
+		if (rescaler.m_scale == 1.0f && type == RenderTarget && !packed_rescale)
 		{
 			// When using native HPO, the top-left column/row of pixels are often not drawn. Clamp these away to avoid sampling black,
 			// causing bleeding into the edges of the downsampled texture.
@@ -8294,7 +8297,9 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 			// or relocation. Only ordinary growth/shrink copies crop the source.
 			const GSVector4 uv = require_new_rect ? GSVector4(0, 0, 1, 1) :
 				GSVector4(rc) / GSVector4(m_texture->GetSize()).xyxy();
-			const ShaderConvert shader = tex->IsDepthStencil() ? ShaderConvert::DEPTH_COPY : ShaderConvert::COPY;
+			// Depth attachments need the depth-output variant, including packed resizes.
+			// Other backends still need proper testing. (AI-assisted)
+			const ShaderConvertSelector shader = GetConvertShader(m_texture, tex, 32, 32);
 			for (unsigned eye = 0; eye < 2; eye++)
 				g_gs_device->StretchRect(m_texture, m_texture->PackedStereoUV(uv, eye), tex,
 					tex->PackedStereoPixels(GSVector4(rc), eye), shader, BilnIf(tex->IsDepthStencil()));

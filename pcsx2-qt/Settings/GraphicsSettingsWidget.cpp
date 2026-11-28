@@ -916,12 +916,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_stereo.stereoDisableCorrectSbsFramebufferSize, tr("Disable full framebuffer for each eye (Alternative Rendering)"), tr("Unchecked"),
 			tr("Uses half the horizontal resolution for each eye. Can help some games and break others.<br> "
 			   "If this option is disabled, some games require Feedback Loop Fix to be Off."));
-		dialog()->registerWidgetHelp(m_stereo.stereoRequireRtaCorrection, tr("Require RTA Correction"), tr("Unchecked"),
-			tr("Fixes shadows in some games (fix is not perfect at the moment)"));
+		dialog()->registerWidgetHelp(m_stereo.stereoRequireRtaCorrection, tr("Target Alpha Correction"), tr("Unchecked"),
+			tr("Disable stereo displacement for draws using target alpha correction, such as COD shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRejectRegionRect, tr("Reject Region Rect"), tr("Unchecked"),
 			tr("Skip draws that use the region rectangle path."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows1, tr("Fix Stencil Shadows"), tr("Unchecked"),
-			tr("Disable stereoscopy for stencil shadow passes (Tekken 5, Soul Calibur 3). With the improved packed renderer enabled, also duplicate legacy mono draws into both eyes."));
+			tr("Disable stereo displacement for stencil shadow passes in Tekken 5, MGS 3, and MK. With the improved packed renderer enabled, render mono draws in both eyes."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows2, tr("Stencil Shadows 2"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for specific titles."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows3, tr("Stencil Shadows 3"), tr("Unchecked"),

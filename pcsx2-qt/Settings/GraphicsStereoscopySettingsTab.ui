@@ -671,20 +671,20 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="stereoRequireRtaCorrection">
         <property name="text">
-         <string>Shadows Fix 0: Target Alpha Correction (MK, COD)</string>
+         <string>Shadows Fix 0: Target Alpha Correction (COD)</string>
         </property>
         <property name="toolTip">
-         <string>Shadows Fix 0: Target Alpha Correction (MK, COD)</string>
+         <string>Disable stereo displacement for draws using target alpha correction, such as COD shadows. With the improved packed renderer enabled, render mono draws in both eyes. Works independently of Shadows Fix 1.</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
        <widget class="QCheckBox" name="stereoFixStencilShadows1">
         <property name="text">
-         <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
+         <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3, MK)</string>
         </property>
         <property name="toolTip">
-         <string>Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)</string>
+         <string>Disable stereo displacement for stencil shadow passes in Tekken 5, MGS 3, and MK. With the improved packed renderer enabled, render mono draws in both eyes.</string>
         </property>
        </widget>
       </item>

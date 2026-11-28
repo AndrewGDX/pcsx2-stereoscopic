@@ -10457,7 +10457,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			m_conf.instance_count = 1;
 			// A mono policy still needs a complete image in each atlas eye.
-			if (IsPackedStereoEnabled() && GSConfig.StereoFixStencilShadows1)
+			if (IsPackedStereoEnabled() && (GSConfig.StereoRequireRtaCorrection || GSConfig.StereoFixStencilShadows1))
 				SubmitPackedDraw(tex, 0.0f, 0.0f, 0.0f, true);
 			else
 				g_gs_device->RenderHW(m_conf);
