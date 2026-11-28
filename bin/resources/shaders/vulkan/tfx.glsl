@@ -88,7 +88,7 @@ void main()
 		float stereo_z = StereoDepth.z > 0.5f ?
 			(StereoDepth.z > 1.5f ? a_q : float(a_z)) * StereoDepth.x + StereoDepth.y : float(z);
 		float depth = 1.0f - (stereo_z * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
-		gl_Position.x += clamp(eye_sep * depth, -0.15f, 0.15f);
+		gl_Position.x += clamp(eye_sep * min(depth, 1.0f), -0.2f, 0.2f);
 
 		gl_Position.x *= 0.5f;
 		gl_Position.x += eye_sign * 0.5f;
@@ -210,7 +210,7 @@ ProcessedVertex load_vertex(uint index)
 		float stereo_z = StereoDepth.z > 0.5f ?
 			(StereoDepth.z > 1.5f ? a_q : float(a_z)) * StereoDepth.x + StereoDepth.y : float(z);
 		float depth = 1.0f - (stereo_z * 0.00000000006f - StereoParams.z * 0.0005f) * StereoParams.y;
-		vtx.p.x += clamp(eye_sep * depth, -0.15f, 0.15f);
+		vtx.p.x += clamp(eye_sep * min(depth, 1.0f), -0.2f, 0.2f);
 
 		{
 			vtx.p.x *= 0.5f;
