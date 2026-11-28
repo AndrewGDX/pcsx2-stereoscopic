@@ -709,6 +709,16 @@
        </widget>
       </item>
       <item row="6" column="0">
+       <widget class="QCheckBox" name="stereoFixStencilShadows4">
+        <property name="text">
+         <string>Shadows Fix 4: Correct Inverted Depth Shadows</string>
+        </property>
+        <property name="toolTip">
+         <string>Correct stereo depth for alpha-only shadows that use inverted 24-bit depth, as in Jak II.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
        <widget class="QCheckBox" name="stereoRejectRegionRect">
         <property name="text">
          <string>PostFX Overlay Fix 1: Reject Region Rect</string>
@@ -718,7 +728,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QCheckBox" name="stereoRejectTfxDecal">
         <property name="text">
          <string>PostFX Overlay Fix 2: Reject TFX Decal</string>

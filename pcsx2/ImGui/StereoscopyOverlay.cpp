@@ -76,6 +76,7 @@ namespace
 		{"StereoFixStencilShadows1", "Shadows Fix 1: Fix Stencil Shadows (Tekken 5, MGS 3)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFixStencilShadows2", "Shadows Fix 2: Fix Stencil Shadows (Tekken 4, Onimusha 3, Medal of Honor)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoFixStencilShadows3", "Shadows Fix 3: Fix Stencil Shadows (God of War, Gun)", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
+		{"StereoFixStencilShadows4", "Shadows Fix 4: Correct Inverted Depth Shadows", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRejectRegionRect", "PostFX Overlay Fix 1: Reject Region Rect", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoRejectTfxDecal", "PostFX Overlay Fix 2: Reject TFX Decal", "Rendering Fixes", Control::Toggle, 0, 1, 1, nullptr},
 		{"StereoDebugAction", "Debug Action", "Debug Rendering", Control::Enum, 0, 5, 1, Pcsx2Config::GSOptions::StereoDebugActionNames},

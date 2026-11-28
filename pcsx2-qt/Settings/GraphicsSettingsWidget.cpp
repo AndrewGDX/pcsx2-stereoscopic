@@ -264,6 +264,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoFixStencilShadows1, "EmuCore/GS", "StereoFixStencilShadows1", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoFixStencilShadows2, "EmuCore/GS", "StereoFixStencilShadows2", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoFixStencilShadows3, "EmuCore/GS", "StereoFixStencilShadows3", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoFixStencilShadows4, "EmuCore/GS", "StereoFixStencilShadows4", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoRequirePerspectiveUV, "EmuCore/GS", "StereoRequirePerspectiveUV", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoRequireZVaries, "EmuCore/GS", "StereoRequireZVaries", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_stereo.stereoRequireDepthActive, "EmuCore/GS", "StereoRequireDepthActive", false);
@@ -946,6 +947,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Alternate stencil shadow fix for specific titles."));
 		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows3, tr("Stencil Shadows 3"), tr("Unchecked"),
 			tr("Alternate stencil shadow fix for God of War."));
+		dialog()->registerWidgetHelp(m_stereo.stereoFixStencilShadows4, tr("Correct Inverted Depth Shadows"), tr("Unchecked"),
+			tr("Corrects stereo depth for alpha-only shadow geometry that uses inverted 24-bit depth, as in Jak II. Depth testing and writes remain unchanged."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRejectFixedQ, tr("Constant Vertex Q"), tr("Unchecked"),
 			tr("Treat draws whose vertices share the same Q value as UI."));
 		dialog()->registerWidgetHelp(m_stereo.stereoRejectZTestAlways, tr("Z Test Is Always"), tr("Unchecked"),

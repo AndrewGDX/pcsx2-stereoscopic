@@ -7,6 +7,7 @@
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/Renderers/Common/GSStereoProjection.h"
+#include "GS/Renderers/Common/GSStereoShadow.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSState.h"
 #include "GS/MultiISA.h"
@@ -342,6 +343,8 @@ private:
 	float m_userhacks_tcoffset_y = 0.0f;
 	float m_stereo_ui_detect_threshold_cutoff = 0.0f;
 	GSStereoProjection::Tracker m_stereo_projection;
+	GSStereoShadow::Tracker m_stereo_shadow;
+	bool m_stereo_inverted_shadow_draw = false;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
 

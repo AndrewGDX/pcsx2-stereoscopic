@@ -40,6 +40,7 @@ TEST(Stereoscopy, FreshConfigurationUsesHalfSbsAndPackedDefaults)
 	EXPECT_EQ(options.StereoDebugAction, GSStereoDebugAction::None);
 	EXPECT_TRUE(options.StereoPackedEnable);
 	EXPECT_FALSE(options.StereoProjectionDepth);
+	EXPECT_FALSE(options.StereoFixStencilShadows4);
 	EXPECT_EQ(options.StereoFeedbackLoopFix, 0);
 	EXPECT_EQ(options.StereoSbsRemapFix, 3);
 }
@@ -60,6 +61,7 @@ TEST(Stereoscopy, EveryOutputAndDebugActionRoundTrips)
 			options.StereoFeedbackLoopFix = 2;
 			options.StereoSbsRemapFix = 1;
 			options.StereoProjectionDepth = true;
+			options.StereoFixStencilShadows4 = true;
 			SettingsSaveWrapper save(settings);
 			options.LoadSave(save);
 			Pcsx2Config::GSOptions restored;
@@ -72,6 +74,7 @@ TEST(Stereoscopy, EveryOutputAndDebugActionRoundTrips)
 			EXPECT_EQ(restored.StereoFeedbackLoopFix, 2);
 			EXPECT_EQ(restored.StereoSbsRemapFix, 1);
 			EXPECT_TRUE(restored.StereoProjectionDepth);
+			EXPECT_TRUE(restored.StereoFixStencilShadows4);
 			EXPECT_FALSE(settings.ContainsValue("EmuCore/GS", "StereoDisableInstancedRendering"));
 			EXPECT_FALSE(settings.ContainsValue("EmuCore/GS", "StereoFlipRendering"));
 			EXPECT_FALSE(settings.ContainsValue("EmuCore/GS", "StereoEnableFullSbsAspectRatio"));

@@ -970,6 +970,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(StereoFixStencilShadows1) &&
 		OpEqu(StereoFixStencilShadows2) &&
 		OpEqu(StereoFixStencilShadows3) &&
+		OpEqu(StereoFixStencilShadows4) &&
 		OpEqu(StereoRequirePerspectiveUV) &&
 		OpEqu(StereoRequireZVaries) &&
 		OpEqu(StereoRequireDepthActive) &&
@@ -1448,6 +1449,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(StereoFixStencilShadows1);
 	SettingsWrapEntry(StereoFixStencilShadows2);
 	SettingsWrapEntry(StereoFixStencilShadows3);
+	SettingsWrapEntry(StereoFixStencilShadows4);
 	SettingsWrapEntry(StereoRequirePerspectiveUV);
 	SettingsWrapEntry(StereoRequireZVaries);
 	SettingsWrapEntry(StereoRequireDepthActive);

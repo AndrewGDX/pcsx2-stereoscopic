@@ -94,6 +94,7 @@ float GSRendererHW::GetUpscaleMultiplier()
 void GSRendererHW::Reset(bool hardware_reset)
 {
 	m_stereo_projection.Reset();
+	m_stereo_shadow.Reset();
 	// Read back on CSR Reset, conditional downloading on render swap etc handled elsewhere.
 	if (!hardware_reset)
 		g_texture_cache->ReadbackAll();
@@ -107,6 +108,8 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
 	if (old_config.StereoProjectionDepth != GSConfig.StereoProjectionDepth || old_config.StereoMode != GSConfig.StereoMode)
 		m_stereo_projection.Reset();
+	if (old_config.StereoFixStencilShadows4 != GSConfig.StereoFixStencilShadows4 || old_config.StereoMode != GSConfig.StereoMode)
+		m_stereo_shadow.Reset();
 	GSRenderer::UpdateSettings(old_config);
 	m_mipmap = GSConfig.HWMipmap;
 	SetTCOffset();
@@ -161,6 +164,8 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 	m_skip = 0;
 	m_skip_offset = 0;
 
+	// Inversion transactions are scoped to one rendered field.
+	m_stereo_shadow.Reset();
 	GSRenderer::VSync(field, registers_written, idle_frame);
 	if (GSConfig.StereoProjectionDepth && GSConfig.StereoMode != GSStereoMode::Off && !idle_frame)
 		m_stereo_projection.EndFrame();
@@ -2293,6 +2298,8 @@ void GSRendererHW::HandleManualDeswizzle()
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
+	// Transfers may overwrite or alias the tracked depth storage.
+	m_stereo_shadow.Reset();
 	// printf("HW: [%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", static_cast<int>(g_perfmon.GetFrame()), r.left, r.top, r.right, r.bottom, static_cast<int>(BITBLTBUF.DBP), static_cast<int>(BITBLTBUF.DPSM));
 
 	// This is gross, but if the EE write loops, we need to split it on the 2048 border.
@@ -2804,6 +2811,57 @@ void GSRendererHW::Draw()
 	{
 		GL_INS("HW: Warning skipping a draw call (%lld)", s_n);
 		return;
+	}
+
+	m_stereo_inverted_shadow_draw = false;
+
+	if (GSConfig.StereoFixStencilShadows4 && GSConfig.StereoMode != GSStereoMode::Off)
+	{
+		// Observe original GS registers before optimized clears can return early.
+		// Jak II alternates between normal and inverted-depth shadow passes.
+		const GSVector4i bounds = GSVector4i((m_vt.m_min.p.upld(m_vt.m_max.p) + GSVector4::cxpr(0.4f)).round<Round_NearestInt>())
+		                              .rintersect(context->scissor.in);
+		const GSStereoShadow::Key key{context->ZBUF.Block(), context->FRAME.FBW};
+		const GSStereoShadow::Rect rect{bounds.x, bounds.y, bounds.z, bounds.w};
+		const GIFRegALPHA& alpha = context->ALPHA;
+		const bool invert_depth = m_vt.m_primclass == GS_SPRITE_CLASS && !PRIM->TME && PRIM->ABE &&
+		                          context->FRAME.PSM == PSMCT32 && context->ZBUF.PSM == PSMZ24 &&
+		                          context->FRAME.Block() == context->ZBUF.Block() && context->FRAME.FBMSK == 0xff000000 &&
+		                          context->ZBUF.ZMSK && context->TEST.ZTE && context->TEST.ZTST == ZTST_ALWAYS &&
+		                          (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS) && !context->TEST.DATE &&
+		                          !m_draw_env->PABE.PABE && m_draw_env->COLCLAMP.CLAMP &&
+		                          alpha.A == 0 && alpha.B == 1 && alpha.C == 2 && alpha.D == 2 && alpha.FIX == 128 &&
+		                          m_vt.m_eq.rgba == 0xffff && (m_vt.m_min.c.rgba32() & 0xffffff) == 0xffffff &&
+		                          bounds.eq(context->scissor.in);
+		if (invert_depth)
+		{
+			// Coverage must be checked before optimized paths can skip DrawPrims.
+			// Reject fractional, overlapping, or incomplete inversion rectangles.
+			std::array<GSStereoShadow::Rect, 64> sprites;
+			bool valid = idx_buff.tail > 0 && (idx_buff.tail % 2) == 0 && idx_buff.tail / 2 <= sprites.size();
+			for (u32 i = 0; valid && i < idx_buff.tail; i += 2)
+			{
+				const GSVertex& a = vtx_buff.buff[idx_buff.buff[i]];
+				const GSVertex& b = vtx_buff.buff[idx_buff.buff[i + 1]];
+				const int x0 = static_cast<int>(a.XYZ.X) - static_cast<int>(context->XYOFFSET.OFX);
+				const int y0 = static_cast<int>(a.XYZ.Y) - static_cast<int>(context->XYOFFSET.OFY);
+				const int x1 = static_cast<int>(b.XYZ.X) - static_cast<int>(context->XYOFFSET.OFX);
+				const int y1 = static_cast<int>(b.XYZ.Y) - static_cast<int>(context->XYOFFSET.OFY);
+				valid = ((x0 | y0 | x1 | y1) & 15) == 0;
+				sprites[i / 2] = {std::min(x0, x1) / 16, std::min(y0, y1) / 16,
+					std::max(x0, x1) / 16, std::max(y0, y1) / 16};
+			}
+			if (valid && GSStereoShadow::Covers(std::span(sprites.data(), idx_buff.tail / 2), rect))
+				m_stereo_shadow.Invert(key, rect);
+			else
+				m_stereo_shadow.Reset();
+		}
+		else if ((context->TEST.ZTE && !context->ZBUF.ZMSK) || (context->FRAME.FBMSK & 0xffffff) != 0xffffff)
+			m_stereo_shadow.Reset();
+		else
+			m_stereo_inverted_shadow_draw = context->ZBUF.PSM == PSMZ24 &&
+			                                m_vt.m_primclass == GS_TRIANGLE_CLASS && !m_vt.m_eq.z && m_vt.m_eq.q &&
+			                                (context->TEST.ZTE && context->TEST.ZTST >= ZTST_GEQUAL) && m_stereo_shadow.IsInverted(key, rect);
 	}
 
 	// Sometimes everything will get reset and it will draw a single black point in the top left corner,
@@ -9532,7 +9590,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
-	const GSVector4 stereo_projection_depth = GetStereoProjectionDepth(tex);
+	GSVector4 stereo_projection_depth = GetStereoProjectionDepth(tex);
+	// Only invert stereo depth within a proven buffer-inversion interval.
+	// Matching alpha-only geometry outside that interval keeps its original Z.
+	// Other games and partial inversion passes still need proper testing. (AI-assisted)
+	if (m_stereo_inverted_shadow_draw && m_conf.colormask.wrgba == 8)
+		stereo_projection_depth = GSVector4(-1.0f, 16777215.0f, 1.0f, 0.0f);
 	HandleFlatShadedVertices();
 
 	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);

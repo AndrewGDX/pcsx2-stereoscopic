@@ -1161,6 +1161,7 @@ struct Pcsx2Config
 		bool StereoFixStencilShadows1 = false;
 		bool StereoFixStencilShadows2 = false;
 		bool StereoFixStencilShadows3 = false;
+		bool StereoFixStencilShadows4 = false;
 		bool StereoRejectFixedQ = false;
 		bool StereoRejectZTestAlways = false;
 		bool StereoUiDetectSkyDepth = false;
